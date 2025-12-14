@@ -3,33 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سیستم سوال و جواب داخلی</title>
-    <link rel="stylesheet" href="assets/styles.css">
+    <title>سیستم پرسش و پاسخ</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
-        <nav class="navbar" role="navigation" aria-label="منوی اصلی">
-            <div class="container">
-                <div class="nav-brand">
-                    <a href="#/questions" class="logo">سوال و جواب</a>
-                </div>
-                <div class="nav-menu" id="navMenu">
-                    <a href="#/questions" class="nav-link">سوال‌ها</a>
-                    <a href="#/questions/new" class="nav-link">سوال جدید</a>
-                    <span id="userInfo" class="user-info"></span>
-                    <a href="#/admin" id="adminLink" class="nav-link" style="display: none;">مدیریت</a>
-                    <button id="logoutBtn" class="btn btn-secondary" style="display: none;">خروج</button>
-                </div>
+    <div class="container">
+        <header>
+            <h1>💬 سیستم پرسش و پاسخ</h1>
+            <div class="user-section">
+                <input type="text" id="username" placeholder="نام کاربری خود را وارد کنید" />
+                <button id="setUsername" class="btn btn-primary">ثبت نام کاربری</button>
+                <button id="exportBtn" class="btn btn-secondary">📥 خروجی JSON</button>
             </div>
-        </nav>
+        </header>
 
-        <main class="main-content" id="mainContent" role="main">
-            <!-- Views will be rendered here -->
-        </main>
+        <div class="main-content">
+            <div class="new-question-section">
+                <h2>سوال جدید بپرسید</h2>
+                <textarea id="questionInput" placeholder="سوال خود را بنویسید..."></textarea>
+                <button id="submitQuestion" class="btn btn-primary">ارسال سوال</button>
+            </div>
 
-        <div id="toastContainer" class="toast-container" role="status" aria-live="polite"></div>
+            <div class="questions-list" id="questionsList">
+                <!-- سوالات اینجا نمایش داده می‌شوند -->
+            </div>
+        </div>
     </div>
 
-    <script type="module" src="src/main.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

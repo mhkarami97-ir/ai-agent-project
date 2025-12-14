@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم چت</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="chat-header">
+            <h1>💬 سیستم چت</h1>
+            <div class="user-info" id="userInfo">
+                <input type="text" id="usernameInput" placeholder="نام کاربری خود را وارد کنید..." maxlength="20">
+                <button id="setUsernameBtn">ورود</button>
+            </div>
+            <div class="current-user" id="currentUser" style="display: none;">
+                <span>کاربر: <strong id="usernameDisplay"></strong></span>
+                <button id="logoutBtn">خروج</button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="messages" id="messages">
+                <div class="welcome-message">
+                    <p>👋 به سیستم چت خوش آمدید!</p>
+                    <p>لطفاً ابتدا نام کاربری خود را وارد کنید.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-container" id="chatInputContainer" style="display: none;">
+            <div class="input-wrapper">
+                <input type="text" id="messageInput" placeholder="پیام خود را بنویسید..." maxlength="500">
+                <button id="sendBtn">ارسال</button>
+            </div>
+            <div class="info-text">
+                <p>💡 این چت از GitHub Gists برای ذخیره پیام‌ها استفاده می‌کند</p>
+            </div>
+        </div>
+
+        <div class="setup-section" id="setupSection" style="display: none;">
+            <div class="setup-box">
+                <h2>⚙️ تنظیمات اولیه</h2>
+                <p>برای استفاده از این چت، نیاز به یک GitHub Personal Access Token دارید:</p>
+                <ol>
+                    <li>به <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings → Developer settings → Personal access tokens</a> بروید</li>
+                    <li>یک Token جدید با دسترسی <code>gist</code> ایجاد کنید</li>
+                    <li>Token را در فیلد زیر وارد کنید (فقط یک بار نیاز است)</li>
+                </ol>
+                <input type="password" id="githubTokenInput" placeholder="GitHub Personal Access Token">
+                <button id="saveTokenBtn">ذخیره Token</button>
+                <p class="note">⚠️ Token شما فقط در مرورگر شما ذخیره می‌شود و به سرور ارسال نمی‌شود</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
