@@ -64,8 +64,8 @@ export class QuestionDetailView {
         const answerVotesMap = this.currentUser ? await this.loadAnswerVotes(this.answers) : {};
 
         // Create question card
-        const questionCard = this.createQuestionCard(author, questionVote);
-        this.container.appendChild(questionCard);
+        const qCard = this.createQuestionCard(author, questionVote);
+        this.container.appendChild(qCard);
 
         // Create answers section
         const answersSection = this.createAnswersSection(answerAuthorsMap, answerVotesMap);
