@@ -117,6 +117,42 @@ class DataManager {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
+
+    importData(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // اعتبارسنجی ساختار داده
+                    if (!importedData || !Array.isArray(importedData.questions)) {
+                        reject(new Error('فرمت فایل نامعتبر است. فایل باید شامل یک آرایه questions باشد.'));
+                        return;
+                    }
+
+                    // اعتبارسنجی ساختار سوالات
+                    for (const question of importedData.questions) {
+                        if (!question.id || !question.text || !question.author || !question.createdAt) {
+                            reject(new Error('ساختار داده‌های وارد شده نامعتبر است.'));
+                            return;
+                        }
+                        if (!Array.isArray(question.answers)) {
+                            question.answers = [];
+                        }
+                    }
+
+                    // ذخیره داده‌های وارد شده
+                    this.saveData(importedData);
+                    resolve(importedData);
+                } catch (error) {
+                    reject(new Error('خطا در خواندن فایل JSON: ' + error.message));
+                }
+            };
+            reader.onerror = () => reject(new Error('خطا در خواندن فایل'));
+            reader.readAsText(file);
+        });
+    }
 }
 
 // سیستم نمایش UI
@@ -138,6 +174,10 @@ class UI {
         document.getElementById('setUsername').addEventListener('click', () => this.setUsername());
         document.getElementById('submitQuestion').addEventListener('click', () => this.submitQuestion());
         document.getElementById('exportBtn').addEventListener('click', () => this.dataManager.exportData());
+        document.getElementById('importBtn').addEventListener('click', () => {
+            document.getElementById('importFile').click();
+        });
+        document.getElementById('importFile').addEventListener('change', (e) => this.handleImport(e));
         
         // Enter key برای ثبت نام کاربری
         document.getElementById('username').addEventListener('keypress', (e) => {
@@ -485,6 +525,43 @@ class UI {
         div.textContent = text;
         return div.innerHTML;
     }
+
+    async handleImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // بررسی نوع فایل
+        if (!file.name.endsWith('.json')) {
+            alert('لطفا یک فایل JSON انتخاب کنید');
+            event.target.value = '';
+            return;
+        }
+
+        // تایید از کاربر برای جایگزینی داده‌ها
+        const currentData = this.dataManager.getData();
+        const hasExistingData = currentData.questions && currentData.questions.length > 0;
+        
+        let confirmMessage = 'آیا مطمئن هستید که می‌خواهید داده‌ها را وارد کنید؟';
+        if (hasExistingData) {
+            confirmMessage = '⚠️ هشدار: با وارد کردن داده‌های جدید، تمام داده‌های فعلی جایگزین خواهند شد.\n\nآیا مطمئن هستید؟';
+        }
+
+        if (!confirm(confirmMessage)) {
+            event.target.value = '';
+            return;
+        }
+
+        try {
+            await this.dataManager.importData(file);
+            alert('✅ داده‌ها با موفقیت وارد شدند!');
+            this.renderQuestions();
+        } catch (error) {
+            alert('❌ خطا در وارد کردن داده‌ها: ' + error.message);
+        } finally {
+            // پاک کردن مقدار input برای امکان انتخاب مجدد همان فایل
+            event.target.value = '';
+        }
+    }
 }
 
 // راه‌اندازی برنامه
@@ -492,3 +569,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const dataManager = new DataManager();
     const ui = new UI(dataManager);
 });
+

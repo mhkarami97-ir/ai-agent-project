@@ -39,6 +39,7 @@
             </div>
             <div class="info-text">
                 <p>💡 این چت از GitHub Gists برای ذخیره پیام‌ها استفاده می‌کند</p>
+                <p id="gistIdInfo" style="margin-top: 5px; font-size: 11px; display: none;">🔗 Gist ID: <code id="gistIdDisplay"></code></p>
             </div>
         </div>
 
@@ -54,6 +55,9 @@
                 <input type="password" id="githubTokenInput" placeholder="GitHub Personal Access Token">
                 <button id="saveTokenBtn">ذخیره Token</button>
                 <p class="note">⚠️ Token شما فقط در مرورگر شما ذخیره می‌شود و به سرور ارسال نمی‌شود</p>
+                <p class="note" style="margin-top: 10px;">
+                    📝 <strong>نکته مهم:</strong> برای اینکه همه کاربران بتوانند با هم چت کنند، باید Gist ID مشترک را در فایل script.js قرار دهید (متغیر SHARED_GIST_ID). اولین کاربری که Token دارد، Gist را ایجاد می‌کند و Gist ID را دریافت می‌کند.
+                </p>
             </div>
         </div>
     </div>
@@ -61,4 +65,5 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 

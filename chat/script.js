@@ -1,5 +1,7 @@
 // Configuration
-const GIST_ID_KEY = 'chat_gist_id';
+// این Gist ID را با Gist ID خودتان جایگزین کنید (بعد از ایجاد Gist)
+// یا خالی بگذارید تا اولین کاربر با Token آن را ایجاد کند
+const SHARED_GIST_ID = 'a849e740120bdad160bc14c49873285b'; // Gist ID مشترک برای همه کاربران
 const GITHUB_TOKEN_KEY = 'github_token';
 const USERNAME_KEY = 'chat_username';
 const POLL_INTERVAL = 2000; // 2 seconds
@@ -7,7 +9,7 @@ const POLL_INTERVAL = 2000; // 2 seconds
 // State
 let currentUsername = '';
 let githubToken = '';
-let gistId = '';
+let gistId = SHARED_GIST_ID || '';
 let messages = [];
 let pollInterval = null;
 
@@ -21,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function loadSavedData() {
     currentUsername = localStorage.getItem(USERNAME_KEY) || '';
     githubToken = localStorage.getItem(GITHUB_TOKEN_KEY) || '';
-    gistId = localStorage.getItem(GIST_ID_KEY) || '';
+    // استفاده از Gist ID مشترک یا از localStorage
+    gistId = SHARED_GIST_ID || localStorage.getItem('chat_gist_id') || '';
 
     if (currentUsername) {
         showChatInterface();
@@ -47,14 +50,18 @@ function setupEventListeners() {
 }
 
 function checkSetup() {
-    if (!githubToken) {
-        document.getElementById('setupSection').style.display = 'block';
-        return;
-    }
-
+    // اگر Gist ID وجود دارد، می‌توانیم پیام‌ها را بخوانیم (بدون Token)
     if (gistId) {
         startPolling();
-    } else {
+    }
+    
+    // برای ارسال پیام نیاز به Token است
+    if (!githubToken) {
+        document.getElementById('setupSection').style.display = 'block';
+    }
+    
+    // اگر Gist ID نداریم و Token داریم، Gist ایجاد می‌کنیم
+    if (!gistId && githubToken) {
         createGist();
     }
 }
@@ -81,6 +88,7 @@ async function createGist() {
     if (!githubToken) return;
 
     try {
+        // Gist را public می‌کنیم تا همه بتوانند بخوانند
         const response = await fetch('https://api.github.com/gists', {
             method: 'POST',
             headers: {
@@ -89,8 +97,8 @@ async function createGist() {
                 'Accept': 'application/vnd.github.v3+json'
             },
             body: JSON.stringify({
-                description: 'Chat Messages Storage',
-                public: false,
+                description: 'Chat Messages Storage - Shared Chat Room',
+                public: true, // Public برای اینکه همه بتوانند بخوانند
                 files: {
                     'messages.json': {
                         content: JSON.stringify([], null, 2)
@@ -112,7 +120,20 @@ async function createGist() {
 
         const data = await response.json();
         gistId = data.id;
-        localStorage.setItem(GIST_ID_KEY, gistId);
+        // ذخیره Gist ID برای استفاده بعدی
+        localStorage.setItem('chat_gist_id', gistId);
+        
+        // نمایش Gist ID در رابط کاربری
+        const gistIdDisplay = document.getElementById('gistIdDisplay');
+        const gistIdInfo = document.getElementById('gistIdInfo');
+        if (gistIdDisplay && gistIdInfo) {
+            gistIdDisplay.textContent = gistId;
+            gistIdInfo.style.display = 'block';
+        }
+        
+        // نمایش Gist ID به کاربر برای به‌اشتراک‌گذاری
+        alert(`✅ Gist با موفقیت ایجاد شد!\n\nGist ID: ${gistId}\n\nلطفاً این ID را در فایل script.js قرار دهید (خط 4، متغیر SHARED_GIST_ID) تا همه کاربران بتوانند از آن استفاده کنند.`);
+        
         startPolling();
     } catch (error) {
         console.error('Error creating gist:', error);
@@ -121,22 +142,37 @@ async function createGist() {
 }
 
 async function loadMessages() {
-    if (!gistId || !githubToken) return;
+    if (!gistId) return;
 
     try {
+        // برای خواندن Gist public نیازی به Token نیست
+        const headers = {
+            'Accept': 'application/vnd.github.v3+json'
+        };
+        
+        // اگر Token داریم، از آن استفاده می‌کنیم (برای Gist private)
+        if (githubToken) {
+            headers['Authorization'] = `token ${githubToken}`;
+        }
+
         const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-            headers: {
-                'Authorization': `token ${githubToken}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
+            headers: headers
         });
 
         if (!response.ok) {
             if (response.status === 404) {
-                // Gist not found, create a new one
-                gistId = '';
-                localStorage.removeItem(GIST_ID_KEY);
-                createGist();
+                // Gist not found
+                if (githubToken) {
+                    // اگر Token داریم، Gist جدید ایجاد می‌کنیم
+                    createGist();
+                } else {
+                    console.log('Gist پیدا نشد. برای ایجاد Gist نیاز به Token است.');
+                }
+                return;
+            }
+            if (response.status === 401 || response.status === 403) {
+                // نیاز به Token برای خواندن Gist private
+                console.log('برای خواندن این Gist نیاز به Token است.');
                 return;
             }
             throw new Error('خطا در بارگذاری پیام‌ها');
@@ -221,15 +257,37 @@ function showChatInterface() {
     document.getElementById('userInfo').style.display = 'none';
     document.getElementById('currentUser').style.display = 'flex';
     document.getElementById('usernameDisplay').textContent = currentUsername;
-    document.getElementById('chatInputContainer').style.display = 'block';
+    
+    // نمایش Gist ID اگر وجود دارد
+    const gistIdDisplay = document.getElementById('gistIdDisplay');
+    const gistIdInfo = document.getElementById('gistIdInfo');
+    if (gistId && gistIdDisplay && gistIdInfo) {
+        gistIdDisplay.textContent = gistId;
+        gistIdInfo.style.display = 'block';
+    }
+    
+    // اگر Token نداریم، فقط می‌توانیم بخوانیم
+    if (githubToken) {
+        document.getElementById('chatInputContainer').style.display = 'block';
+    } else {
+        document.getElementById('chatInputContainer').style.display = 'none';
+        // نمایش پیام که برای ارسال نیاز به Token است
+        const messagesDiv = document.getElementById('messages');
+        if (!messagesDiv.querySelector('.welcome-message')) {
+            const welcomeMsg = document.createElement('div');
+            welcomeMsg.className = 'welcome-message';
+            welcomeMsg.innerHTML = '<p>💬 شما می‌توانید پیام‌ها را ببینید</p><p>⚠️ برای ارسال پیام نیاز به GitHub Token دارید</p>';
+            messagesDiv.appendChild(welcomeMsg);
+        }
+    }
     
     // Clear welcome message
     const messagesDiv = document.getElementById('messages');
-    if (messagesDiv.querySelector('.welcome-message')) {
+    if (messagesDiv.querySelector('.welcome-message') && githubToken) {
         messagesDiv.innerHTML = '';
     }
 
-    if (gistId && githubToken) {
+    if (gistId) {
         loadMessages();
         startPolling();
     }
@@ -314,4 +372,5 @@ window.addEventListener('beforeunload', () => {
         clearInterval(pollInterval);
     }
 });
+
 
