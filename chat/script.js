@@ -1,7 +1,11 @@
 // Configuration
 // این Gist ID را با Gist ID خودتان جایگزین کنید (بعد از ایجاد Gist)
-// یا خالی بگذارید تا اولین کاربر با Token آن را ایجاد کند
 const SHARED_GIST_ID = 'a849e740120bdad160bc14c49873285b'; // Gist ID مشترک برای همه کاربران
+
+// Token مشترک برای نوشتن روی Gist (اختیاری - اگر خالی باشد، کاربر باید Token خود را وارد کند)
+// برای ایجاد Token: https://github.com/settings/tokens → Generate new token → دسترسی gist را فعال کنید
+const SHARED_TOKEN = ''; // Token مشترک - اگر می‌خواهید همه بتوانند بنویسند، اینجا قرار دهید
+
 const GITHUB_TOKEN_KEY = 'github_token';
 const USERNAME_KEY = 'chat_username';
 const POLL_INTERVAL = 2000; // 2 seconds
@@ -22,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function loadSavedData() {
     currentUsername = localStorage.getItem(USERNAME_KEY) || '';
-    githubToken = localStorage.getItem(GITHUB_TOKEN_KEY) || '';
+    // استفاده از Token مشترک یا Token شخصی کاربر
+    githubToken = SHARED_TOKEN || localStorage.getItem(GITHUB_TOKEN_KEY) || '';
     // استفاده از Gist ID مشترک یا از localStorage
     gistId = SHARED_GIST_ID || localStorage.getItem('chat_gist_id') || '';
 
@@ -56,8 +61,11 @@ function checkSetup() {
     }
     
     // برای ارسال پیام نیاز به Token است
-    if (!githubToken) {
+    // اگر Token مشترک وجود دارد، نیازی به وارد کردن Token نیست
+    if (!githubToken && !SHARED_TOKEN) {
         document.getElementById('setupSection').style.display = 'block';
+    } else {
+        document.getElementById('setupSection').style.display = 'none';
     }
     
     // اگر Gist ID نداریم و Token داریم، Gist ایجاد می‌کنیم
@@ -73,8 +81,14 @@ function saveToken() {
         return;
     }
 
-    githubToken = token;
-    localStorage.setItem(GITHUB_TOKEN_KEY, token);
+    // اگر Token مشترک وجود دارد، از آن استفاده می‌کنیم، در غیر این صورت از Token شخصی
+    if (SHARED_TOKEN) {
+        githubToken = SHARED_TOKEN;
+    } else {
+        githubToken = token;
+        localStorage.setItem(GITHUB_TOKEN_KEY, token);
+    }
+    
     document.getElementById('setupSection').style.display = 'none';
     
     if (!gistId) {
@@ -85,14 +99,16 @@ function saveToken() {
 }
 
 async function createGist() {
-    if (!githubToken) return;
+    // استفاده از Token مشترک یا Token شخصی
+    const tokenToUse = SHARED_TOKEN || githubToken;
+    if (!tokenToUse) return;
 
     try {
         // Gist را public می‌کنیم تا همه بتوانند بخوانند
         const response = await fetch('https://api.github.com/gists', {
             method: 'POST',
             headers: {
-                'Authorization': `token ${githubToken}`,
+                'Authorization': `token ${tokenToUse}`,
                 'Content-Type': 'application/json',
                 'Accept': 'application/vnd.github.v3+json'
             },
@@ -193,7 +209,14 @@ async function loadMessages() {
 }
 
 async function saveMessage(message) {
-    if (!gistId || !githubToken) return;
+    if (!gistId) return;
+    
+    // استفاده از Token مشترک یا Token شخصی
+    const tokenToUse = SHARED_TOKEN || githubToken;
+    if (!tokenToUse) {
+        alert('برای ارسال پیام نیاز به GitHub Token است. لطفاً Token را وارد کنید.');
+        return;
+    }
 
     messages.push(message);
 
@@ -201,7 +224,7 @@ async function saveMessage(message) {
         const response = await fetch(`https://api.github.com/gists/${gistId}`, {
             method: 'PATCH',
             headers: {
-                'Authorization': `token ${githubToken}`,
+                'Authorization': `token ${tokenToUse}`,
                 'Content-Type': 'application/json',
                 'Accept': 'application/vnd.github.v3+json'
             },
@@ -215,6 +238,9 @@ async function saveMessage(message) {
         });
 
         if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                throw new Error('Token نامعتبر است یا دسترسی ندارید');
+            }
             throw new Error('خطا در ذخیره پیام');
         }
 
@@ -222,7 +248,7 @@ async function saveMessage(message) {
     } catch (error) {
         console.error('Error saving message:', error);
         messages.pop(); // Remove message if save failed
-        alert('خطا در ارسال پیام. لطفاً دوباره تلاش کنید.');
+        alert('خطا در ارسال پیام: ' + error.message);
     }
 }
 
@@ -266,8 +292,9 @@ function showChatInterface() {
         gistIdInfo.style.display = 'block';
     }
     
-    // اگر Token نداریم، فقط می‌توانیم بخوانیم
-    if (githubToken) {
+    // اگر Token مشترک یا Token شخصی داریم، می‌توانیم بنویسیم
+    const tokenToUse = SHARED_TOKEN || githubToken;
+    if (tokenToUse) {
         document.getElementById('chatInputContainer').style.display = 'block';
     } else {
         document.getElementById('chatInputContainer').style.display = 'none';
@@ -283,7 +310,7 @@ function showChatInterface() {
     
     // Clear welcome message
     const messagesDiv = document.getElementById('messages');
-    if (messagesDiv.querySelector('.welcome-message') && githubToken) {
+    if (messagesDiv.querySelector('.welcome-message') && tokenToUse) {
         messagesDiv.innerHTML = '';
     }
 
@@ -302,8 +329,12 @@ function sendMessage() {
         alert('لطفاً ابتدا نام کاربری خود را وارد کنید');
         return;
     }
-    if (!githubToken) {
+    
+    // بررسی وجود Token (مشترک یا شخصی)
+    const tokenToUse = SHARED_TOKEN || githubToken;
+    if (!tokenToUse) {
         alert('لطفاً ابتدا GitHub Token را تنظیم کنید');
+        document.getElementById('setupSection').style.display = 'block';
         return;
     }
 

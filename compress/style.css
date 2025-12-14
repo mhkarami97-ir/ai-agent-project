@@ -1,0 +1,73 @@
+/* Vazirmatn font (Persian/Arabic script) */
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600&display=swap');
+
+:root {
+  --bg: #0f172a;
+  --panel: #111827;
+  --muted: #9ca3af;
+  --text: #e5e7eb;
+  --accent: #22c55e;
+  --danger: #ef4444;
+  --border: #1f2937;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Vazirmatn', system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  direction: rtl;
+}
+.app {
+  width: 100%;
+  max-width: 960px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.title { font-size: 18px; font-weight: 600; }
+.muted { color: var(--muted); }
+.controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 860px) { .controls { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .controls { grid-template-columns: 1fr; } }
+.card { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: #0b1220; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; height: 40px; padding: 0 14px; border-radius: 10px;
+  border: 1px solid var(--border); background: #0b1220; color: var(--text);
+  cursor: pointer; transition: 0.15s ease background, 0.15s ease border-color, 0.15s ease transform;
+}
+.btn:hover { background: #0e1626; border-color: #283548; }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: #0f2917; border-color: #1e3a2f; }
+.btn-primary:hover { background: #10331b; }
+.btn-accent { background: #072611; border-color: #134e2a; color: #9ef3c2; }
+.btn-danger { background: #2a0f14; border-color: #3a1e22; color: #f9c5cc; }
+.input, select { width: 100%; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: #0b1220; color: var(--text); padding: 0 12px; }
+.range { width: 100%; }
+.dropzone { display: grid; place-items: center; text-align: center; padding: 22px; border: 1px dashed #334155; border-radius: 12px; background: #0b1220; }
+.dropzone.drag { border-color: #22c55e; background: #0f2917; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 860px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
+.thumb { position: relative; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #0b1220; }
+.thumb img { display: block; width: 100%; height: 160px; object-fit: cover; }
+.thumb .meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px; font-size: 12px; color: var(--muted); }
+.progress { height: 6px; background: #111827; }
+.progress > div { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s ease; }
+.footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.small { font-size: 12px; }

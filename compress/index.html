@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fa">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>فشرده‌ساز تصاویر (بدون هاست)</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="style.css">
+	<!-- JSZip via CDN for ZIP creation on client-side -->
+	<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+	<!-- FileSaver for saveAs fallback (optional, but helpful for Safari) -->
+	<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+<body>
+	<div class="app" id="app">
+		<div class="header">
+			<div>
+				<div class="title">فشرده‌ساز تصاویر در مرورگر</div>
+				<div class="muted small">بدون نیاز به هاست؛ مناسب GitHub Pages</div>
+			</div>
+			<div style="display:flex; gap:8px;">
+				<button class="btn" id="resetBtn">ریست</button>
+				<button class="btn btn-danger" id="clearBtn">حذف همه</button>
+			</div>
+		</div>
+
+		<div class="controls">
+			<div class="card">
+				<label class="small muted">انتخاب فایل‌ها</label>
+				<input type="file" id="fileInput" class="input" accept="image/*" multiple />
+			</div>
+			<div class="card">
+				<label class="small muted">کیفیت JPEG/WebP (%): <span id="qualityVal">80</span></label>
+				<input type="range" id="quality" class="range" min="40" max="95" value="80" />
+			</div>
+			<div class="card">
+				<label class="small muted">حداکثر عرض/ارتفاع (px؛ 0 = بدون تغییر)</label>
+				<input type="number" id="maxDim" class="input" min="0" step="1" value="0" />
+			</div>
+			<div class="card">
+				<label class="small muted">فرمت خروجی</label>
+				<select id="format" class="input">
+					<option value="jpeg">JPEG</option>
+					<option value="webp">WebP</option>
+					<option value="png">PNG (بدون افت کیفیت، حجم بیشتر)</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="card" style="margin-top:12px;">
+			<div class="dropzone" id="dropzone">
+				<div>
+					<div>فایل‌ها را اینجا رها کنید یا از بالا انتخاب کنید</div>
+					<div class="muted small">فرمت‌های پشتیبانی‌شده: JPG، PNG، WebP، HEIC (در مرورگرهای سازگار)</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="card" style="margin-top:12px;">
+			<div class="footer">
+				<div style="display:flex; gap:8px;">
+					<button class="btn btn-primary" id="compressBtn">فشرده‌سازی</button>
+					<button class="btn btn-accent" id="zipBtn" disabled>دانلود ZIP</button>
+				</div>
+				<div class="muted small" id="summary">۰ فایل انتخاب شده</div>
+			</div>
+		</div>
+
+		<div class="card" style="margin-top:12px;">
+			<div class="grid" id="preview"></div>
+		</div>
+
+		<div class="small muted" style="margin-top:10px; text-align:center;">
+			تمام پردازش‌ها در دستگاه کاربر انجام می‌شود. داده‌ای ارسال نمی‌گردد.
+		</div>
+	</div>
+	<script src="app.js"></script>
+</body>
+</html>
