@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>برنامه چک لیست</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <p class="eyebrow">ابزاری برای پیگیری کارهای روزانه</p>
+      <h1>چک لیست با دسته بندی</h1>
+      <p class="lede">برای هر دسته بندی، آیتم ها را اضافه، ویرایش و ریست کنید و در صورت نیاز فهرست کامل را جا‌به‌جا کنید.</p>
+    </header>
+    <main>
+      <section class="panel list-manager" aria-label="مدیریت دسته بندی ها">
+        <div class="panel-header">
+          <h2>دسته بندی ها</h2>
+        </div>
+        <div class="list-tabs" id="listTabs"></div>
+        <form id="newListForm" class="inline-form">
+          <input id="listTitleInput" type="text" placeholder="نام دسته جدید" required />
+          <button type="submit">افزودن دسته</button>
+        </form>
+      </section>
+      <section class="panel item-manager" aria-label="مدیریت آیتم ها">
+        <div class="panel-header">
+          <div>
+            <p class="subhead">در حال نمایش:</p>
+            <h2 id="activeListTitle">یک دسته را انتخاب کنید</h2>
+          </div>
+          <div class="panel-actions">
+            <button id="resetListButton" type="button">پاک کردن آیتم‌ها</button>
+            <button id="revertCompletedButton" type="button" class="ghost">بازگرداندن انجام‌شده‌ها</button>
+          </div>
+        </div>
+        <form id="newItemForm" class="inline-form">
+          <input id="newItemInput" type="text" placeholder="عنوان آیتم" required />
+          <button type="submit">افزودن آیتم</button>
+        </form>
+        <ul id="itemsList" class="item-list" aria-live="polite"></ul>
+        <p class="empty-state" id="emptyState">در این دسته هنوز آیتمی ثبت نشده است.</p>
+      </section>
+      <section class="panel export-panel" aria-label="صدور و واردسازی لیست">
+        <div class="panel-header">
+          <div>
+            <h2>صدور و واردسازی</h2>
+            <p class="subhead">لیست فعلی را دانلود کنید یا فایل ذخیره شده را بارگذاری کنید.</p>
+          </div>
+        </div>
+        <div class="export-import-row">
+          <div class="export-controls">
+            <button id="downloadListButton" type="button">ذخیره لیست فعلی</button>
+            <p class="muted">فایل JSON دسته فعال بلافاصله دانلود می‌شود.</p>
+          </div>
+          <div class="import-controls">
+            <p class="muted">فایل صادر شده را برای واردسازی انتخاب کنید.</p>
+            <div class="file-row">
+              <input id="listFileInput" type="file" accept="application/json" />
+              <button id="uploadFileButton" type="button">وارد کردن فایل</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="assertive"></div>
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
+

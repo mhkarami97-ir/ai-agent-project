@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>رهیاب عادت‌ها</title>
+    <meta
+      name="description"
+      content="نرم‌افزار ردیابی عادت‌ها با نمودار پیشرفت و یادآوری"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <p class="hero-label">رهیاب روزانه</p>
+        <h1>مرتب‌تر از قبل پیش برو</h1>
+        <p class="hero-subtitle">
+          عادت‌های روزانه را ثبت کن، پیشرفت را دنبال کن و بدون فراموشی به یادآوری‌ها پاسخ بده.
+        </p>
+      </header>
+
+      <section class="panel" aria-labelledby="new-habit-heading">
+        <div class="panel-heading">
+          <div>
+            <h2 id="new-habit-heading">افزودن عادت جدید</h2>
+            <p>کارهایی که به طور مداوم انجام می‌دهی را ثبت کن تا نمودارها رشد کنند.</p>
+          </div>
+        </div>
+        <form id="habitForm" class="grid-form">
+          <label>
+            عنوان عادت
+            <input type="text" id="habitTitle" name="title" required placeholder="مثلاً مطالعه ۲۰ دقیقه" />
+          </label>
+          <label>
+            توضیح کوتاه
+            <textarea id="habitDescription" name="description" placeholder="هدف اصلی یا توضیح را وارد کن"></textarea>
+          </label>
+          <label>
+            تعداد دفعات هدف در روز
+            <input type="number" id="habitTarget" name="target" min="1" value="1" required />
+          </label>
+          <label>
+            زمان یادآوری (اختیاری)
+            <input type="time" id="habitReminder" name="reminder" />
+          </label>
+          <button type="submit" class="primary-btn">ثبت عادت</button>
+        </form>
+      </section>
+
+      <section class="panel stats-panel" aria-label="وضعیت کلی">
+        <h2>وضعیت کلی</h2>
+        <div class="stats-grid">
+          <article>
+            <p class="label">عادت‌های فعال</p>
+            <p class="value" id="totalHabits">۰</p>
+          </article>
+          <article>
+            <p class="label">تکمیل شده این هفته</p>
+            <p class="value" id="weeklyCompletions">۰</p>
+          </article>
+          <article>
+            <p class="label">بهترین استرک</p>
+            <p class="value" id="bestStreak">۰</p>
+          </article>
+          <article>
+            <p class="label">یادآوری‌های برنامه‌ریزی‌شده</p>
+            <p class="value" id="reminderCount">۰</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="habits-heading">
+        <div class="panel-heading">
+          <div>
+            <h2 id="habits-heading">لیست عادت‌ها</h2>
+            <p id="habitSummary">هنوز عادت اضافه نشده.</p>
+          </div>
+        </div>
+        <div id="habitList" class="habit-list"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="chart-heading">
+        <div class="panel-heading">
+          <div>
+            <h2 id="chart-heading">نمودار هفتگی</h2>
+            <p>جمع تکمیل‌های هر روز را ببین.</p>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="progressChart" width="600" height="300" aria-label="نمودار پیشرفت"></canvas>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="reminder-heading">
+        <div class="panel-heading">
+          <div>
+            <h2 id="reminder-heading">یادآورها</h2>
+            <p>آخرین یادآوری‌هایی که در زمان مشخص شده فعال شده‌اند.</p>
+          </div>
+        </div>
+        <div id="reminderFeed" class="reminder-feed">
+          <p class="placeholder">هنوز یادآوری‌ای اجرا نشده.</p>
+        </div>
+      </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>
