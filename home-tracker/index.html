@@ -1,0 +1,244 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="مدیریت موجودی خانه با تاریخ انقضا و هشدار هوشمند">
+    <title>مدیریت موجودی خانه</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 مدیریت موجودی خانه</h1>
+            <p class="subtitle">مدیریت هوشمند مواد غذایی و لوازم خانه</p>
+        </header>
+
+        <!-- Alert Banner -->
+        <div id="alertBanner" class="alert-banner hidden">
+            <div class="alert-content">
+                <span class="alert-icon">⚠️</span>
+                <span class="alert-text"></span>
+                <button class="alert-close" onclick="closeAlert()">×</button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="totalItems">0</div>
+                    <div class="stat-label">کل اقلام</div>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">⏰</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="expiringItems">0</div>
+                    <div class="stat-label">در حال انقضا</div>
+                </div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-icon">❌</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="expiredItems">0</div>
+                    <div class="stat-label">منقضی شده</div>
+                </div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="freshItems">0</div>
+                    <div class="stat-label">تازه</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Item Form -->
+        <div class="form-card">
+            <h2>➕ افزودن قلم جدید</h2>
+            <form id="itemForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="itemName">نام قلم *</label>
+                        <input type="text" id="itemName" placeholder="مثال: شیر، برنج، روغن" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">دسته‌بندی *</label>
+                        <select id="category" required>
+                            <option value="">انتخاب کنید</option>
+                            <option value="dairy">لبنیات</option>
+                            <option value="meat">گوشت و پروتئین</option>
+                            <option value="vegetables">سبزیجات</option>
+                            <option value="fruits">میوه‌جات</option>
+                            <option value="grains">غلات و حبوبات</option>
+                            <option value="canned">کنسرو</option>
+                            <option value="beverages">نوشیدنی</option>
+                            <option value="snacks">تنقلات</option>
+                            <option value="cleaning">لوازم نظافت</option>
+                            <option value="personal">لوازم بهداشتی</option>
+                            <option value="other">سایر</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quantity">تعداد/مقدار *</label>
+                        <input type="text" id="quantity" placeholder="مثال: 2 عدد، 1 کیلو" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expiryDate">تاریخ انقضا *</label>
+                        <input type="date" id="expiryDate" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">محل قرارگیری</label>
+                    <select id="location">
+                        <option value="fridge">یخچال</option>
+                        <option value="freezer">فریزر</option>
+                        <option value="pantry">انباری</option>
+                        <option value="cabinet">کابینت</option>
+                        <option value="other">سایر</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">یادداشت</label>
+                    <textarea id="notes" rows="2" placeholder="یادداشت اختیاری..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <span>💾</span> ذخیره
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        <span>🔄</span> پاک کردن فرم
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Filter and Search -->
+        <div class="filter-section">
+            <h2>🔍 جستجو و فیلتر</h2>
+            <div class="filter-controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="جستجو بر اساس نام...">
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">همه</button>
+                    <button class="filter-btn" data-filter="fresh">تازه</button>
+                    <button class="filter-btn" data-filter="expiring">در حال انقضا</button>
+                    <button class="filter-btn" data-filter="expired">منقضی شده</button>
+                </div>
+                <div class="sort-controls">
+                    <select id="sortBy">
+                        <option value="expiry-asc">نزدیک‌ترین انقضا</option>
+                        <option value="expiry-desc">دورترین انقضا</option>
+                        <option value="name-asc">نام (الف تا ی)</option>
+                        <option value="name-desc">نام (ی تا الف)</option>
+                        <option value="date-desc">جدیدترین</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items List -->
+        <div class="items-section">
+            <div class="section-header">
+                <h2>📋 لیست اقلام</h2>
+                <button class="btn btn-danger" onclick="clearAllItems()" id="clearAllBtn">
+                    <span>🗑️</span> حذف همه
+                </button>
+            </div>
+            <div id="itemsList" class="items-grid">
+                <div class="empty-state">
+                    <div class="empty-icon">📦</div>
+                    <h3>هنوز هیچ قلمی اضافه نشده</h3>
+                    <p>با استفاده از فرم بالا، اولین قلم خود را اضافه کنید</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ ویرایش قلم</h2>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editItemId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editItemName">نام قلم *</label>
+                        <input type="text" id="editItemName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCategory">دسته‌بندی *</label>
+                        <select id="editCategory" required>
+                            <option value="dairy">لبنیات</option>
+                            <option value="meat">گوشت و پروتئین</option>
+                            <option value="vegetables">سبزیجات</option>
+                            <option value="fruits">میوه‌جات</option>
+                            <option value="grains">غلات و حبوبات</option>
+                            <option value="canned">کنسرو</option>
+                            <option value="beverages">نوشیدنی</option>
+                            <option value="snacks">تنقلات</option>
+                            <option value="cleaning">لوازم نظافت</option>
+                            <option value="personal">لوازم بهداشتی</option>
+                            <option value="other">سایر</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editQuantity">تعداد/مقدار *</label>
+                        <input type="text" id="editQuantity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editExpiryDate">تاریخ انقضا *</label>
+                        <input type="date" id="editExpiryDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editLocation">محل قرارگیری</label>
+                    <select id="editLocation">
+                        <option value="fridge">یخچال</option>
+                        <option value="freezer">فریزر</option>
+                        <option value="pantry">انباری</option>
+                        <option value="cabinet">کابینت</option>
+                        <option value="other">سایر</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editNotes">یادداشت</label>
+                    <textarea id="editNotes" rows="2"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <span>💾</span> ذخیره تغییرات
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
+                        <span>❌</span> انصراف
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 مدیریت موجودی خانه. تمامی حقوق محفوظ است.</p>
+    </footer>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

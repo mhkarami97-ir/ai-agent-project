@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فرمت و فشرده‌ساز کد</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>فرمت و فشرده‌ساز کد</h1>
+            <p class="subtitle">ابزاری برای فرمت‌دهی و فشرده‌سازی کدهای HTML، CSS و JavaScript</p>
+        </header>
+
+        <main class="main-content">
+            <div class="controls-panel">
+                <div class="language-selector">
+                    <button class="lang-btn active" data-lang="html">HTML</button>
+                    <button class="lang-btn" data-lang="css">CSS</button>
+                    <button class="lang-btn" data-lang="js">JavaScript</button>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-format" id="formatBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 7h16M4 12h16M4 17h16"></path>
+                        </svg>
+                        فرمت‌دهی
+                    </button>
+                    <button class="btn btn-compress" id="compressBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        فشرده‌سازی
+                    </button>
+                </div>
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-panel">
+                    <div class="panel-header">
+                        <h3>ورودی</h3>
+                        <div class="panel-actions">
+                            <button class="icon-btn" id="pasteBtn" title="چسباندن از کلیپ‌بورد">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                            </button>
+                            <button class="icon-btn" id="clearInputBtn" title="پاک کردن">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                            <button class="icon-btn" id="uploadBtn" title="بارگذاری فایل">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </button>
+                            <input type="file" id="fileInput" accept=".html,.css,.js" style="display: none;">
+                        </div>
+                    </div>
+                    <textarea id="inputCode" class="code-textarea" placeholder="کد خود را اینجا وارد کنید..."></textarea>
+                    <div class="stats">
+                        <span id="inputStats">حجم: 0 بایت | خطوط: 0</span>
+                    </div>
+                </div>
+
+                <div class="editor-panel">
+                    <div class="panel-header">
+                        <h3>خروجی</h3>
+                        <div class="panel-actions">
+                            <button class="icon-btn" id="copyBtn" title="کپی کردن">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                            <button class="icon-btn" id="downloadBtn" title="دانلود فایل">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="outputCode" class="code-textarea" readonly placeholder="نتیجه اینجا نمایش داده می‌شود..."></textarea>
+                    <div class="stats">
+                        <span id="outputStats">حجم: 0 بایت | خطوط: 0</span>
+                        <span id="compressionRatio" class="compression-ratio"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="options-panel">
+                <h3>تنظیمات</h3>
+                <div class="options-grid">
+                    <label class="option-item">
+                        <input type="checkbox" id="removeComments" checked>
+                        <span>حذف کامنت‌ها</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" id="removeWhitespace" checked>
+                        <span>حذف فضای خالی اضافی</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="number" id="indentSize" min="2" max="8" value="2" style="width: 60px;">
+                        <span>تعداد فاصله تورفتگی</span>
+                    </label>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>نسخه 1.0.0</p>
+        </footer>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

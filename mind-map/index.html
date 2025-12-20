@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ابزار رسم نقشه ذهنی آنلاین">
+    <title>نقشه ذهنی</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>نقشه ذهنی</h1>
+            <div class="toolbar">
+                <button id="addNodeBtn" class="btn btn-primary" title="افزودن نود جدید">
+                    <span>➕</span> افزودن نود
+                </button>
+                <button id="saveBtn" class="btn btn-success" title="ذخیره نقشه">
+                    <span>💾</span> ذخیره
+                </button>
+                <button id="loadBtn" class="btn btn-info" title="بارگذاری نقشه">
+                    <span>📂</span> بارگذاری
+                </button>
+                <button id="exportBtn" class="btn btn-secondary" title="دانلود JSON">
+                    <span>⬇️</span> دانلود
+                </button>
+                <button id="importBtn" class="btn btn-secondary" title="آپلود JSON">
+                    <span>⬆️</span> آپلود
+                </button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+                <button id="clearBtn" class="btn btn-danger" title="پاک کردن همه">
+                    <span>🗑️</span> پاک کردن
+                </button>
+                <button id="toggleModeBtn" class="btn btn-mode" title="تغییر حالت">
+                    <span>🔗</span> اتصال
+                </button>
+            </div>
+        </header>
+
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div id="nodesContainer"></div>
+        </div>
+
+        <div class="info-panel">
+            <p>
+                <strong>راهنما:</strong>
+                <span class="help-text">برای افزودن نود روی دکمه "افزودن نود" کلیک کنید</span>
+                <span class="help-text">برای اتصال دو نود، حالت "اتصال" را فعال کنید و روی دو نود کلیک کنید</span>
+                <span class="help-text">برای جابجایی نود، آن را بکشید</span>
+                <span class="help-text">برای حذف نود، روی دکمه × کلیک کنید</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Modal for Node Edit -->
+    <div id="nodeModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>ویرایش نود</h2>
+            <form id="nodeForm">
+                <div class="form-group">
+                    <label for="nodeTitle">عنوان:</label>
+                    <input type="text" id="nodeTitle" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="nodeDescription">توضیحات:</label>
+                    <textarea id="nodeDescription" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="nodeColor">رنگ:</label>
+                    <select id="nodeColor" class="form-control">
+                        <option value="#4A90E2">آبی</option>
+                        <option value="#7ED321">سبز</option>
+                        <option value="#F5A623">نارنجی</option>
+                        <option value="#D0021B">قرمز</option>
+                        <option value="#9013FE">بنفش</option>
+                        <option value="#50E3C2">فیروزه‌ای</option>
+                        <option value="#F8E71C">زرد</option>
+                        <option value="#BD10E0">صورتی</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">ذخیره</button>
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">انصراف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

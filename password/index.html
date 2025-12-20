@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="تولید کننده رمز عبور امن و قابل تنظیم">
+    <title>تولید کننده رمز عبور</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔐 تولید کننده رمز عبور</h1>
+            <p class="subtitle">رمز عبورهای قوی و امن بسازید</p>
+        </header>
+
+        <main>
+            <div class="password-display-section">
+                <div class="password-output" id="passwordOutput">
+                    <span class="placeholder">رمز عبور اینجا نمایش داده می‌شود</span>
+                </div>
+                <div class="action-buttons">
+                    <button id="generateBtn" class="btn btn-primary">
+                        <span class="icon">⚡</span>
+                        تولید رمز عبور
+                    </button>
+                    <button id="copyBtn" class="btn btn-secondary" disabled>
+                        <span class="icon">📋</span>
+                        کپی
+                    </button>
+                </div>
+                <div id="copyNotification" class="copy-notification">رمز عبور کپی شد!</div>
+            </div>
+
+            <div class="settings-section">
+                <h2>⚙️ تنظیمات</h2>
+                
+                <div class="setting-item">
+                    <div class="setting-header">
+                        <label for="lengthSlider">طول رمز عبور:</label>
+                        <span class="value-display" id="lengthValue">16</span>
+                    </div>
+                    <input type="range" id="lengthSlider" min="4" max="64" value="16" class="slider">
+                </div>
+
+                <div class="setting-item">
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="uppercaseCheck" checked>
+                            <span class="checkmark"></span>
+                            حروف بزرگ (A-Z)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="lowercaseCheck" checked>
+                            <span class="checkmark"></span>
+                            حروف کوچک (a-z)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="numbersCheck" checked>
+                            <span class="checkmark"></span>
+                            اعداد (0-9)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="symbolsCheck" checked>
+                            <span class="checkmark"></span>
+                            نمادها (!@#$%^&*)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="excludeSimilarCheck">
+                            <span class="checkmark"></span>
+                            حذف کاراکترهای مشابه (i, l, 1, L, o, 0, O)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="excludeAmbiguousCheck">
+                            <span class="checkmark"></span>
+                            حذف نمادهای مبهم ({}[]()/\'"~,;:.<>)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="strength-section">
+                <h3>قدرت رمز عبور</h3>
+                <div class="strength-meter">
+                    <div class="strength-bar" id="strengthBar"></div>
+                </div>
+                <p class="strength-text" id="strengthText">رمز عبوری تولید نشده است</p>
+            </div>
+
+            <div class="history-section">
+                <div class="history-header">
+                    <h2>📜 تاریخچه</h2>
+                    <button id="clearHistoryBtn" class="btn btn-danger btn-small">پاک کردن تاریخچه</button>
+                </div>
+                <div id="historyList" class="history-list">
+                    <p class="empty-history">هنوز رمز عبوری تولید نشده است</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2025 - ساخته شده با ❤️</p>
+        </footer>
+    </div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

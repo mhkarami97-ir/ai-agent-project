@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ریجکس پلی‌گراند - آزمایشگاه عبارات منظم</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>ریجکس پلی‌گراند</h1>
+            <p>آزمایشگاه عبارات منظم فارسی</p>
+        </header>
+
+        <main class="main">
+            <section class="regex-section">
+                <div class="input-group">
+                    <label for="regex-input">عبارت منظم (Regex):</label>
+                    <div class="regex-input-container">
+                        <input type="text" id="regex-input" placeholder="مثال: \d{4}" autocomplete="off">
+                        <div class="regex-flags">
+                            <label>
+                                <input type="checkbox" id="flag-global" checked>
+                                <span>g (سراسری)</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" id="flag-case">
+                                <span>i (نادیده‌گیری حروف)</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" id="flag-multiline">
+                                <span>m (چند خطی)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="test-input">متن آزمایشی:</label>
+                    <textarea id="test-input" rows="6" placeholder="متن خود را اینجا وارد کنید..."></textarea>
+                </div>
+
+                <div class="buttons">
+                    <button id="test-btn" class="btn-primary">تست کن</button>
+                    <button id="clear-btn" class="btn-secondary">پاک کن</button>
+                    <button id="save-snippet-btn" class="btn-success">ذخیره Snippet</button>
+                </div>
+            </section>
+
+            <section class="results-section">
+                <div class="results-grid">
+                    <div class="results-panel">
+                        <h3>نتایج مطابقت</h3>
+                        <div id="matches-container" class="matches-container">
+                            <p class="no-results">هنوز هیچ تستی انجام نشده است</p>
+                        </div>
+                    </div>
+
+                    <div class="results-panel">
+                        <h3>توضیحات</h3>
+                        <div id="explanation-container" class="explanation-container">
+                            <p class="no-results">عبارت منظم را وارد کرده و تست کنید</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlighted-text-panel">
+                    <h3>متن با برجسته‌سازی مطابقت‌ها</h3>
+                    <div id="highlighted-text" class="highlighted-text">
+                        <p class="no-results">نتایج اینجا نمایش داده می‌شود</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="snippets-section">
+                <h3>Snippets ذخیره شده</h3>
+                <div id="snippets-container" class="snippets-container">
+                    <p class="no-results">هنوز هیچ snippet ذخیره نشده است</p>
+                </div>
+            </section>
+
+            <section class="quick-patterns-section">
+                <h3>الگوهای آماده</h3>
+                <div class="quick-patterns">
+                    <button class="pattern-btn" data-pattern="\d+" data-desc="اعداد">اعداد</button>
+                    <button class="pattern-btn" data-pattern="[a-zA-Z]+" data-desc="حروف انگلیسی">حروف انگلیسی</button>
+                    <button class="pattern-btn" data-pattern="[\u0600-\u06FF]+" data-desc="حروف فارسی">حروف فارسی</button>
+                    <button class="pattern-btn" data-pattern="\w+@\w+\.\w+" data-desc="ایمیل ساده">ایمیل</button>
+                    <button class="pattern-btn" data-pattern="09\d{9}" data-desc="شماره موبایل ایران">موبایل ایران</button>
+                    <button class="pattern-btn" data-pattern="\b\w{4}\b" data-desc="کلمات ۴ حرفی">کلمات ۴ حرفی</button>
+                    <button class="pattern-btn" data-pattern="^.*$" data-desc="کل خط">کل خط</button>
+                    <button class="pattern-btn" data-pattern="\s+" data-desc="فاصله‌ها">فاصله‌ها</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; ۱۴۰۳ ریجکس پلی‌گراند - ساخته شده با ❤️</p>
+        </footer>
+    </div>
+
+    <!-- Modal for saving snippets -->
+    <div id="save-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>ذخیره Snippet</h3>
+            <div class="input-group">
+                <label for="snippet-name">نام Snippet:</label>
+                <input type="text" id="snippet-name" placeholder="نام دلخواه برای snippet">
+            </div>
+            <div class="input-group">
+                <label for="snippet-description">توضیحات:</label>
+                <textarea id="snippet-description" rows="3" placeholder="توضیح اختیاری"></textarea>
+            </div>
+            <div class="buttons">
+                <button id="confirm-save-btn" class="btn-primary">ذخیره</button>
+                <button id="cancel-save-btn" class="btn-secondary">لغو</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>

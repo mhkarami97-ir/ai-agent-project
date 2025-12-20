@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>امن‌ساز یادداشت‌ها</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <!-- Login/Setup Screen -->
+    <div id="loginScreen" class="screen">
+        <div class="container">
+            <div class="card">
+                <div class="header">
+                    <h1>🔒 امن‌ساز یادداشت‌ها</h1>
+                    <p class="subtitle">یادداشت‌های شما با رمزنگاری محافظت می‌شوند</p>
+                </div>
+                
+                <div id="setupMode" class="form-container">
+                    <h2>ایجاد رمز عبور</h2>
+                    <p class="info-text">یک رمز عبور قوی برای محافظت از یادداشت‌های خود ایجاد کنید</p>
+                    
+                    <div class="form-group">
+                        <label for="setupPassword">رمز عبور:</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="setupPassword" placeholder="رمز عبور خود را وارد کنید" autocomplete="new-password">
+                            <button type="button" class="toggle-password" data-target="setupPassword">
+                                <span class="eye-icon">👁️</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">تایید رمز عبور:</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="confirmPassword" placeholder="رمز عبور را دوباره وارد کنید" autocomplete="new-password">
+                            <button type="button" class="toggle-password" data-target="confirmPassword">
+                                <span class="eye-icon">👁️</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button id="setupBtn" class="btn btn-primary">ایجاد و ورود</button>
+                </div>
+                
+                <div id="loginMode" class="form-container" style="display: none;">
+                    <h2>ورود به یادداشت‌ها</h2>
+                    <p class="info-text">برای دسترسی به یادداشت‌های خود، رمز عبور را وارد کنید</p>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">رمز عبور:</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="loginPassword" placeholder="رمز عبور خود را وارد کنید" autocomplete="current-password">
+                            <button type="button" class="toggle-password" data-target="loginPassword">
+                                <span class="eye-icon">👁️</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button id="loginBtn" class="btn btn-primary">ورود</button>
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ توجه:</strong> در صورت فراموشی رمز عبور، امکان بازیابی یادداشت‌ها وجود ندارد.
+                    </div>
+                </div>
+                
+                <div id="errorMsg" class="error-msg" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Screen -->
+    <div id="appScreen" class="screen" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="container">
+                <div class="header-content">
+                    <h1>🔒 امن‌ساز یادداشت‌ها</h1>
+                    <div class="header-actions">
+                        <div class="auto-lock-status" id="autoLockStatus">
+                            <span class="lock-timer">⏱️ <span id="lockTimer"></span></span>
+                        </div>
+                        <button id="settingsBtn" class="btn btn-icon" title="تنظیمات">⚙️</button>
+                        <button id="lockBtn" class="btn btn-icon" title="قفل کردن">🔒</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                <div class="content-wrapper">
+                    <!-- Sidebar -->
+                    <aside class="sidebar">
+                        <div class="sidebar-header">
+                            <button id="newNoteBtn" class="btn btn-primary btn-block">
+                                ➕ یادداشت جدید
+                            </button>
+                        </div>
+                        
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="🔍 جستجو در یادداشت‌ها...">
+                        </div>
+                        
+                        <div id="notesList" class="notes-list">
+                            <!-- Notes will be dynamically added here -->
+                        </div>
+                        
+                        <div class="notes-count">
+                            <span id="notesCount">0 یادداشت</span>
+                        </div>
+                    </aside>
+
+                    <!-- Editor -->
+                    <section class="editor-section">
+                        <div id="emptyState" class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <h2>یادداشتی انتخاب نشده</h2>
+                            <p>یک یادداشت انتخاب کنید یا یادداشت جدید ایجاد کنید</p>
+                        </div>
+                        
+                        <div id="editorContainer" class="editor-container" style="display: none;">
+                            <div class="editor-header">
+                                <input type="text" id="noteTitle" placeholder="عنوان یادداشت..." class="note-title-input">
+                                <div class="editor-actions">
+                                    <button id="saveNoteBtn" class="btn btn-success">💾 ذخیره</button>
+                                    <button id="deleteNoteBtn" class="btn btn-danger">🗑️ حذف</button>
+                                </div>
+                            </div>
+                            
+                            <div class="editor-body">
+                                <textarea id="noteContent" placeholder="محتوای یادداشت خود را اینجا بنویسید..."></textarea>
+                            </div>
+                            
+                            <div class="editor-footer">
+                                <span id="lastModified" class="last-modified"></span>
+                                <span id="charCount" class="char-count">0 کاراکتر</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ تنظیمات</h2>
+                <button class="modal-close" id="closeSettingsBtn">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="settings-group">
+                    <h3>قفل خودکار</h3>
+                    <p class="settings-description">پس از مدت زمان مشخص بدون فعالیت، برنامه به طور خودکار قفل می‌شود</p>
+                    
+                    <div class="form-group">
+                        <label for="autoLockTime">زمان قفل خودکار (دقیقه):</label>
+                        <select id="autoLockTime" class="form-select">
+                            <option value="1">1 دقیقه</option>
+                            <option value="2">2 دقیقه</option>
+                            <option value="5" selected>5 دقیقه</option>
+                            <option value="10">10 دقیقه</option>
+                            <option value="15">15 دقیقه</option>
+                            <option value="30">30 دقیقه</option>
+                            <option value="60">60 دقیقه</option>
+                            <option value="0">غیرفعال</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h3>تغییر رمز عبور</h3>
+                    <p class="settings-description">رمز عبور فعلی خود را تغییر دهید</p>
+                    
+                    <div class="form-group">
+                        <label for="currentPassword">رمز عبور فعلی:</label>
+                        <input type="password" id="currentPassword" placeholder="رمز عبور فعلی">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newPassword">رمز عبور جدید:</label>
+                        <input type="password" id="newPassword" placeholder="رمز عبور جدید">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmNewPassword">تایید رمز عبور جدید:</label>
+                        <input type="password" id="confirmNewPassword" placeholder="تایید رمز عبور جدید">
+                    </div>
+                    
+                    <button id="changePasswordBtn" class="btn btn-primary">تغییر رمز عبور</button>
+                </div>
+                
+                <div class="settings-group danger-zone">
+                    <h3>⚠️ منطقه خطر</h3>
+                    <p class="settings-description">حذف تمام یادداشت‌ها و بازنشانی برنامه</p>
+                    <button id="resetAppBtn" class="btn btn-danger">حذف همه داده‌ها</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2 id="confirmTitle">تایید</h2>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmYes" class="btn btn-danger">بله</button>
+                <button id="confirmNo" class="btn btn-secondary">خیر</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

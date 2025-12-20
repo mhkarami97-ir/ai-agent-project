@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>یافتن زمان مناسب جلسه</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>یافتن زمان مناسب جلسه</h1>
+            <p class="subtitle">بازه‌های زمانی آزاد خود را وارد کنید تا بهترین زمان برای جلسه پیدا شود</p>
+        </header>
+
+        <main>
+            <!-- Add Person Section -->
+            <section class="add-person-section">
+                <div class="input-group">
+                    <label for="personName">نام شرکت‌کننده:</label>
+                    <input type="text" id="personName" placeholder="نام خود را وارد کنید">
+                </div>
+                <button id="addPersonBtn" class="btn btn-primary">افزودن شرکت‌کننده</button>
+            </section>
+
+            <!-- Participants List -->
+            <section class="participants-section">
+                <h2>شرکت‌کنندگان</h2>
+                <div id="participantsList" class="participants-list"></div>
+            </section>
+
+            <!-- Time Slots Section -->
+            <section class="time-slots-section" id="timeSlotsSection" style="display: none;">
+                <div class="section-header">
+                    <h2>بازه‌های زمانی برای: <span id="currentPersonName"></span></h2>
+                    <button id="backToListBtn" class="btn btn-secondary">بازگشت</button>
+                </div>
+                
+                <div class="add-time-slot">
+                    <div class="time-inputs">
+                        <div class="input-group">
+                            <label for="startDate">تاریخ شروع:</label>
+                            <input type="date" id="startDate">
+                        </div>
+                        <div class="input-group">
+                            <label for="startTime">ساعت شروع:</label>
+                            <input type="time" id="startTime">
+                        </div>
+                        <div class="input-group">
+                            <label for="endDate">تاریخ پایان:</label>
+                            <input type="date" id="endDate">
+                        </div>
+                        <div class="input-group">
+                            <label for="endTime">ساعت پایان:</label>
+                            <input type="time" id="endTime">
+                        </div>
+                    </div>
+                    <button id="addTimeSlotBtn" class="btn btn-primary">افزودن بازه زمانی</button>
+                </div>
+
+                <div id="timeSlotsList" class="time-slots-list"></div>
+            </section>
+
+            <!-- Find Overlap Section -->
+            <section class="find-overlap-section">
+                <button id="findOverlapBtn" class="btn btn-success">یافتن زمان‌های مشترک</button>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <h2>زمان‌های مشترک پیدا شده</h2>
+                <div id="resultsList" class="results-list"></div>
+            </section>
+        </main>
+
+        <footer>
+            <button id="clearAllBtn" class="btn btn-danger">پاک کردن همه داده‌ها</button>
+        </footer>
+    </div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

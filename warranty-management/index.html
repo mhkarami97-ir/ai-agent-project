@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>مدیریت ضمانت‌نامه‌ها</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <p class="eyebrow">مروری سریع</p>
+      <h1>مدیریت ضمانت‌نامه‌ها</h1>
+      <p class="lede">در یک جا کالا، تاریخ خرید و مدت گارانتی را ثبت کنید تا نزدیک پایان، به شما یادآوری شود.</p>
+    </header>
+
+    <section class="reminder-panel" aria-live="polite">
+      <p id="reminder-text">هنوز هیچ ضمانت‌نامه‌ای ثبت نشده است.</p>
+    </section>
+
+    <section class="form-section">
+      <form id="warranty-form">
+        <div class="form-row">
+          <label for="product-name">کالا</label>
+          <input id="product-name" name="product" type="text" placeholder="نام کالا یا خدمت" required>
+        </div>
+        <div class="form-row">
+          <label for="purchase-date">تاریخ خرید</label>
+          <input id="purchase-date" name="purchaseDate" type="date" required>
+        </div>
+        <div class="form-row">
+          <label for="duration">مدت گارانتی (ماه)</label>
+          <input id="duration" name="duration" type="number" min="1" placeholder="مثلاً ۱۲" required>
+        </div>
+        <div class="actions">
+          <button type="submit">ثبت ضمانت</button>
+          <button id="cancel-edit" type="button" class="ghost">پاک کردن فرم</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="list-section">
+      <header>
+        <h2>ضمانت‌نامه‌ها</h2>
+        <p>لیست تمام کالاها به‌ترتیب ثبت را مشاهده کنید، ویرایش یا حذف کنید.</p>
+      </header>
+      <div id="warranty-list" class="list" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
+

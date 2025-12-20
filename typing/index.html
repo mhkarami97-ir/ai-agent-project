@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="تمرین تایپ فارسی و انگلیسی - بهبود سرعت و دقت تایپ با نمودار پیشرفت">
+    <meta name="keywords" content="تمرین تایپ, تایپ فارسی, تایپ انگلیسی, WPM, سرعت تایپ">
+    <meta name="author" content="Typing Practice">
+    <title>تمرین تایپ</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>تمرین تایپ</h1>
+            <div class="language-toggle">
+                <button class="lang-btn active" data-lang="fa">فارسی</button>
+                <button class="lang-btn" data-lang="en">English</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-value" id="wpm">0</div>
+                    <div class="stat-label" id="wpm-label">WPM</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="accuracy">100%</div>
+                    <div class="stat-label" id="accuracy-label">دقت</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="timer">0:00</div>
+                    <div class="stat-label" id="timer-label">زمان</div>
+                </div>
+            </section>
+
+            <section class="text-selection">
+                <label for="text-select" id="text-select-label">انتخاب متن:</label>
+                <select id="text-select">
+                    <option value="0">متن ۱</option>
+                    <option value="1">متن ۲</option>
+                    <option value="2">متن ۳</option>
+                    <option value="3">متن ۴</option>
+                    <option value="4">متن ۵</option>
+                </select>
+            </section>
+
+            <section class="typing-area">
+                <div class="reference-text" id="reference-text"></div>
+                <div class="current-char-display" id="current-char-display"></div>
+                <textarea 
+                    id="input-text" 
+                    class="input-area" 
+                    placeholder="شروع به تایپ کنید..."
+                    rows="5"
+                ></textarea>
+            </section>
+
+            <section class="controls">
+                <button id="reset-btn" class="btn btn-primary">شروع مجدد</button>
+                <button id="history-btn" class="btn btn-secondary">مشاهده تاریخچه</button>
+            </section>
+
+            <section class="chart-section">
+                <h2 id="chart-title">نمودار پیشرفت</h2>
+                <canvas id="progress-chart"></canvas>
+            </section>
+
+            <section class="history-section" id="history-section" style="display: none;">
+                <h2 id="history-title">تاریخچه تمرین‌ها</h2>
+                <div id="history-list"></div>
+                <button id="close-history-btn" class="btn btn-secondary">بستن</button>
+            </section>
+        </main>
+    </div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

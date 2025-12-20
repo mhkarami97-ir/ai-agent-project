@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحلیلگر لاگ</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 تحلیلگر لاگ</h1>
+            <p class="subtitle">بارگذاری و تحلیل فایل‌های لاگ</p>
+        </header>
+
+        <main>
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <p>فایل لاگ خود را اینجا بکشید یا کلیک کنید</p>
+                    <p class="upload-hint">فرمت‌های پشتیبانی شده: TXT, JSON</p>
+                    <input type="file" id="fileInput" accept=".txt,.json,.log" hidden>
+                </div>
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <div class="file-details">
+                        <span class="file-name" id="fileName"></span>
+                        <span class="file-size" id="fileSize"></span>
+                    </div>
+                    <button class="btn-secondary" id="clearFile">پاک کردن</button>
+                </div>
+            </section>
+
+            <!-- Controls Section -->
+            <section class="controls-section" id="controlsSection" style="display: none;">
+                <div class="control-group">
+                    <label for="searchInput">جستجو:</label>
+                    <input type="text" id="searchInput" placeholder="جستجوی متن...">
+                </div>
+
+                <div class="control-group">
+                    <label for="regexInput">الگوی Regex:</label>
+                    <div class="regex-group">
+                        <input type="text" id="regexInput" placeholder="مثال: ERROR|WARN">
+                        <button class="btn-secondary" id="applyRegex">اعمال</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="levelFilter">فیلتر سطح:</label>
+                    <select id="levelFilter">
+                        <option value="all">همه</option>
+                        <option value="error">ERROR</option>
+                        <option value="warn">WARN</option>
+                        <option value="info">INFO</option>
+                        <option value="debug">DEBUG</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="groupBy">گروه‌بندی بر اساس:</label>
+                    <select id="groupBy">
+                        <option value="none">بدون گروه‌بندی</option>
+                        <option value="level">سطح لاگ</option>
+                        <option value="date">تاریخ</option>
+                        <option value="source">منبع</option>
+                    </select>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" id="exportBtn">📥 خروجی JSON</button>
+                    <button class="btn-secondary" id="saveAnalysisBtn">💾 ذخیره تحلیل</button>
+                    <button class="btn-secondary" id="loadAnalysisBtn">📂 بارگذاری تحلیل</button>
+                </div>
+            </section>
+
+            <!-- Statistics Section -->
+            <section class="stats-section" id="statsSection" style="display: none;">
+                <h2>آمار کلی</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalLines">0</div>
+                        <div class="stat-label">کل خطوط</div>
+                    </div>
+                    <div class="stat-card error">
+                        <div class="stat-value" id="errorCount">0</div>
+                        <div class="stat-label">خطاها</div>
+                    </div>
+                    <div class="stat-card warn">
+                        <div class="stat-value" id="warnCount">0</div>
+                        <div class="stat-label">هشدارها</div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-value" id="infoCount">0</div>
+                        <div class="stat-label">اطلاعات</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Log Display Section -->
+            <section class="log-section" id="logSection" style="display: none;">
+                <div class="log-header">
+                    <h2>محتوای لاگ</h2>
+                    <div class="log-controls">
+                        <button class="btn-icon" id="copyBtn" title="کپی">📋</button>
+                        <button class="btn-icon" id="toggleWrapBtn" title="تغییر حالت شکستن خط">↔️</button>
+                    </div>
+                </div>
+                <div class="log-display" id="logDisplay"></div>
+            </section>
+
+            <!-- Saved Analyses Section -->
+            <section class="saved-section" id="savedSection" style="display: none;">
+                <h2>تحلیل‌های ذخیره شده</h2>
+                <div id="savedList" class="saved-list"></div>
+            </section>
+        </main>
+
+        <footer>
+            <p>تحلیلگر لاگ محلی - تمام عملیات در مرورگر شما انجام می‌شود</p>
+        </footer>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
+

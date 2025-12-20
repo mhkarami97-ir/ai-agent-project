@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تبدیل‌کننده زمان</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>تبدیل‌کننده Timestamp</h1>
+            <p class="subtitle">تبدیل یونیکس به تاریخ و زمان</p>
+        </header>
+
+        <!-- Current Time Display -->
+        <section class="current-time-section">
+            <h2>زمان فعلی شما</h2>
+            <div class="clocks-container">
+                <div class="digital-clock">
+                    <div class="digital-time" id="digitalTime">00:00:00</div>
+                    <div class="digital-date" id="digitalDate">۱۴۰۰/۰۱/۰۱</div>
+                </div>
+                <div class="analog-clock">
+                    <div class="clock-face">
+                        <div class="clock-center"></div>
+                        <div class="hand hour-hand" id="hourHand"></div>
+                        <div class="hand minute-hand" id="minuteHand"></div>
+                        <div class="hand second-hand" id="secondHand"></div>
+                        <div class="clock-number" style="--i:1;"><span>۱</span></div>
+                        <div class="clock-number" style="--i:2;"><span>۲</span></div>
+                        <div class="clock-number" style="--i:3;"><span>۳</span></div>
+                        <div class="clock-number" style="--i:4;"><span>۴</span></div>
+                        <div class="clock-number" style="--i:5;"><span>۵</span></div>
+                        <div class="clock-number" style="--i:6;"><span>۶</span></div>
+                        <div class="clock-number" style="--i:7;"><span>۷</span></div>
+                        <div class="clock-number" style="--i:8;"><span>۸</span></div>
+                        <div class="clock-number" style="--i:9;"><span>۹</span></div>
+                        <div class="clock-number" style="--i:10;"><span>۱۰</span></div>
+                        <div class="clock-number" style="--i:11;"><span>۱۱</span></div>
+                        <div class="clock-number" style="--i:12;"><span>۱۲</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="current-timestamp">
+                <span>Timestamp فعلی:</span>
+                <strong id="currentTimestamp">0</strong>
+                <button class="copy-btn" id="copyCurrentTimestamp" title="کپی">📋</button>
+            </div>
+        </section>
+
+        <!-- Unix to Date Converter -->
+        <section class="converter-section">
+            <h2>تبدیل Unix Timestamp به تاریخ</h2>
+            <div class="input-group">
+                <input type="text" id="unixInput" placeholder="مثال: 1703073600" value="">
+                <div class="button-group">
+                    <button id="convertToDate">تبدیل</button>
+                    <button id="useCurrentTimestamp" class="secondary">استفاده از زمان فعلی</button>
+                </div>
+            </div>
+            <div class="results" id="unixResults"></div>
+        </section>
+
+        <!-- Date to Unix Converter -->
+        <section class="converter-section">
+            <h2>تبدیل تاریخ به Unix Timestamp</h2>
+            <div class="datetime-inputs">
+                <div class="input-row">
+                    <label for="dateInput">تاریخ:</label>
+                    <input type="date" id="dateInput">
+                </div>
+                <div class="input-row">
+                    <label for="timeInput">ساعت:</label>
+                    <input type="time" id="timeInput" step="1">
+                </div>
+                <div class="input-row">
+                    <label for="timezoneInput">منطقه زمانی:</label>
+                    <select id="timezoneInput">
+                        <option value="local">زمان محلی</option>
+                        <option value="utc">UTC</option>
+                    </select>
+                </div>
+            </div>
+            <button id="convertToUnix">تبدیل به Unix</button>
+            <div class="results" id="dateResults"></div>
+        </section>
+
+        <!-- Timezone Converter -->
+        <section class="converter-section">
+            <h2>تبدیل بین مناطق زمانی</h2>
+            <div class="timezone-grid">
+                <div class="timezone-card" data-timezone="Asia/Tehran">
+                    <h3>🇮🇷 تهران</h3>
+                    <div class="timezone-time" data-tz-display="Asia/Tehran">--:--:--</div>
+                    <div class="timezone-offset" data-tz-offset="Asia/Tehran">UTC +3:30</div>
+                    <button class="copy-btn-small" data-copy-tz="Asia/Tehran">کپی</button>
+                </div>
+                <div class="timezone-card" data-timezone="UTC">
+                    <h3>🌍 UTC</h3>
+                    <div class="timezone-time" data-tz-display="UTC">--:--:--</div>
+                    <div class="timezone-offset" data-tz-offset="UTC">UTC +0:00</div>
+                    <button class="copy-btn-small" data-copy-tz="UTC">کپی</button>
+                </div>
+                <div class="timezone-card" data-timezone="America/New_York">
+                    <h3>🇺🇸 نیویورک</h3>
+                    <div class="timezone-time" data-tz-display="America/New_York">--:--:--</div>
+                    <div class="timezone-offset" data-tz-offset="America/New_York">UTC -5:00</div>
+                    <button class="copy-btn-small" data-copy-tz="America/New_York">کپی</button>
+                </div>
+                <div class="timezone-card" data-timezone="Europe/London">
+                    <h3>🇬🇧 لندن</h3>
+                    <div class="timezone-time" data-tz-display="Europe/London">--:--:--</div>
+                    <div class="timezone-offset" data-tz-offset="Europe/London">UTC +0:00</div>
+                    <button class="copy-btn-small" data-copy-tz="Europe/London">کپی</button>
+                </div>
+                <div class="timezone-card" data-timezone="Europe/Paris">
+                    <h3>🇫🇷 پاریس</h3>
+                    <div class="timezone-time" data-tz-display="Europe/Paris">--:--:--</div>
+                    <div class="timezone-offset" data-tz-offset="Europe/Paris">UTC +1:00</div>
+                    <button class="copy-btn-small" data-copy-tz="Europe/Paris">کپی</button>
+                </div>
+                <div class="timezone-card" data-timezone="Asia/Dubai">
+                    <h3>🇦🇪 دبی</h3>
+                    <div class="timezone-time" data-tz-display="Asia/Dubai">--:--:--</div>
+                    <div class="timezone-offset" data-tz-offset="Asia/Dubai">UTC +4:00</div>
+                    <button class="copy-btn-small" data-copy-tz="Asia/Dubai">کپی</button>
+                </div>
+                <div class="timezone-card" data-timezone="Asia/Tokyo">
+                    <h3>🇯🇵 توکیو</h3>
+                    <div class="timezone-time" data-tz-display="Asia/Tokyo">--:--:--</div>
+                    <div class="timezone-offset" data-tz-offset="Asia/Tokyo">UTC +9:00</div>
+                    <button class="copy-btn-small" data-copy-tz="Asia/Tokyo">کپی</button>
+                </div>
+                <div class="timezone-card" data-timezone="Australia/Sydney">
+                    <h3>🇦🇺 سیدنی</h3>
+                    <div class="timezone-time" data-tz-display="Australia/Sydney">--:--:--</div>
+                    <div class="timezone-offset" data-tz-offset="Australia/Sydney">UTC +11:00</div>
+                    <button class="copy-btn-small" data-copy-tz="Australia/Sydney">کپی</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section class="converter-section">
+            <h2>تاریخچه تبدیل‌ها</h2>
+            <div class="history-controls">
+                <button id="clearHistory" class="danger">پاک کردن تاریخچه</button>
+            </div>
+            <div id="historyList" class="history-list"></div>
+        </section>
+
+        <footer>
+            <p>ساخته شده با ❤️ برای تبدیل آسان زمان</p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

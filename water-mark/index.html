@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="افزودن واترمارک به تصاویر به صورت آنلاین و رایگان">
+    <title>افزودن واترمارک به تصویر</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>افزودن واترمارک به تصویر</h1>
+            <p class="subtitle">واترمارک متنی یا تصویری خود را به راحتی اضافه کنید</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-box" id="uploadBox">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p class="upload-text">تصویر خود را اینجا بکشید یا کلیک کنید</p>
+                    <p class="upload-hint">فرمت‌های پشتیبانی شده: JPG، PNG، GIF</p>
+                    <input type="file" id="imageInput" accept="image/*" hidden>
+                </div>
+            </section>
+
+            <!-- Controls Section -->
+            <section class="controls-section" id="controlsSection" style="display: none;">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="text">واترمارک متنی</button>
+                    <button class="tab-btn" data-tab="image">واترمارک تصویری</button>
+                </div>
+
+                <!-- Text Watermark Controls -->
+                <div class="tab-content active" id="textTab">
+                    <div class="control-group">
+                        <label for="watermarkText">متن واترمارک</label>
+                        <input type="text" id="watermarkText" placeholder="متن خود را وارد کنید" value="نمونه واترمارک">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="fontSize">اندازه فونت: <span id="fontSizeValue">48</span>px</label>
+                        <input type="range" id="fontSize" min="12" max="200" value="48">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="textColor">رنگ متن</label>
+                        <input type="color" id="textColor" value="#ffffff">
+                    </div>
+                </div>
+
+                <!-- Image Watermark Controls -->
+                <div class="tab-content" id="imageTab">
+                    <div class="control-group">
+                        <label>انتخاب تصویر واترمارک</label>
+                        <div class="file-input-wrapper">
+                            <button class="btn-secondary" id="logoBtn">انتخاب لوگو</button>
+                            <span id="logoFileName">فایلی انتخاب نشده</span>
+                            <input type="file" id="logoInput" accept="image/*" hidden>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="logoSize">اندازه لوگو: <span id="logoSizeValue">100</span>px</label>
+                        <input type="range" id="logoSize" min="20" max="500" value="100">
+                    </div>
+                </div>
+
+                <!-- Common Controls -->
+                <div class="common-controls">
+                    <div class="control-group">
+                        <label for="opacity">شفافیت: <span id="opacityValue">70</span>%</label>
+                        <input type="range" id="opacity" min="0" max="100" value="70">
+                    </div>
+
+                    <div class="control-group">
+                        <label>موقعیت واترمارک</label>
+                        <div class="position-grid">
+                            <button class="position-btn" data-position="top-left">
+                                <span>بالا راست</span>
+                            </button>
+                            <button class="position-btn" data-position="top-center">
+                                <span>بالا وسط</span>
+                            </button>
+                            <button class="position-btn" data-position="top-right">
+                                <span>بالا چپ</span>
+                            </button>
+                            <button class="position-btn" data-position="center-left">
+                                <span>وسط راست</span>
+                            </button>
+                            <button class="position-btn active" data-position="center">
+                                <span>مرکز</span>
+                            </button>
+                            <button class="position-btn" data-position="center-right">
+                                <span>وسط چپ</span>
+                            </button>
+                            <button class="position-btn" data-position="bottom-left">
+                                <span>پایین راست</span>
+                            </button>
+                            <button class="position-btn" data-position="bottom-center">
+                                <span>پایین وسط</span>
+                            </button>
+                            <button class="position-btn" data-position="bottom-right">
+                                <span>پایین چپ</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="rotation">چرخش: <span id="rotationValue">0</span>°</label>
+                        <input type="range" id="rotation" min="-180" max="180" value="0">
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" id="downloadBtn">دانلود تصویر</button>
+                    <button class="btn-secondary" id="resetBtn">تصویر جدید</button>
+                </div>
+            </section>
+
+            <!-- Preview Section -->
+            <section class="preview-section" id="previewSection" style="display: none;">
+                <h2>پیش‌نمایش</h2>
+                <div class="canvas-wrapper">
+                    <canvas id="canvas"></canvas>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 - ابزار افزودن واترمارک</p>
+        </footer>
+    </div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

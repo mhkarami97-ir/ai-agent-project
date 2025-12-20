@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ایجاد آیکون‌های Favicon و PWA با سایزهای مختلف">
+    <title>سازنده آیکون</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎨 سازنده آیکون</h1>
+            <p class="subtitle">تصویر خود را آپلود کنید و آیکون‌های مورد نیاز را دریافت کنید</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-placeholder" id="uploadPlaceholder">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <h3>تصویر خود را اینجا رها کنید</h3>
+                        <p>یا روی دکمه زیر کلیک کنید</p>
+                        <button type="button" class="btn btn-primary" id="selectFileBtn">انتخاب تصویر</button>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" hidden>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="preview-section" id="previewSection" style="display: none;">
+                    <div class="preview-container">
+                        <img id="previewImage" src="" alt="پیش‌نمایش">
+                        <button type="button" class="btn btn-secondary btn-small" id="changeImageBtn">تغییر تصویر</button>
+                    </div>
+                    
+                    <div class="options-container">
+                        <h3>تنظیمات</h3>
+                        <div class="option-group">
+                            <label for="backgroundColorInput">رنگ پس‌زمینه:</label>
+                            <div class="color-input-group">
+                                <input type="color" id="backgroundColorInput" value="#ffffff">
+                                <input type="text" id="backgroundColorText" value="#ffffff" maxlength="7" aria-label="کد رنگ پس‌زمینه">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="transparentBg" checked>
+                                    <span>شفاف</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label for="paddingInput">فاصله از حاشیه (%):</label>
+                            <input type="range" id="paddingInput" min="0" max="30" value="10">
+                            <span id="paddingValue">10%</span>
+                        </div>
+
+                        <button type="button" class="btn btn-success btn-large" id="generateBtn">
+                            <span>تولید آیکون‌ها</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <h2>آیکون‌های تولید شده</h2>
+                
+                <div class="results-actions">
+                    <button type="button" class="btn btn-primary" id="downloadAllBtn">دانلود همه</button>
+                    <button type="button" class="btn btn-secondary" id="resetBtn">شروع دوباره</button>
+                </div>
+
+                <div class="results-grid" id="resultsGrid">
+                    <!-- Generated icons will be inserted here -->
+                </div>
+
+                <!-- History Section -->
+                <div class="history-section">
+                    <div class="history-header">
+                        <h3>تاریخچه</h3>
+                        <button type="button" class="btn btn-small btn-danger" id="clearHistoryBtn">پاک کردن تاریخچه</button>
+                    </div>
+                    <div class="history-grid" id="historyGrid">
+                        <!-- History items will be inserted here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>ساخته شده با ❤️ برای توسعه‌دهندگان</p>
+        </footer>
+    </div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

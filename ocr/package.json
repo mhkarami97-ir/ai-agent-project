@@ -1,0 +1,37 @@
+﻿{
+  "name": "ocr-webapp",
+  "version": "1.0.0",
+  "description": "یک برنامه تحت وب پیشرفته برای تشخیص و استخراج متن از تصاویر با پشتیبانی از زبان‌های مختلف",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx http-server -p 8000",
+    "dev": "npx live-server --port=8000"
+  },
+  "keywords": [
+    "ocr",
+    "persian",
+    "farsi",
+    "text-recognition",
+    "image-to-text",
+    "tesseract",
+    "rtl",
+    "vazirmatn"
+  ],
+  "author": "OCR WebApp Developer",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "http-server": "^14.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/ocr-webapp.git"
+  },
+  "homepage": "https://username.github.io/ocr-webapp",
+  "bugs": {
+    "url": "https://github.com/username/ocr-webapp/issues"
+  }
+}
+

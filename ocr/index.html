@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشخیص متن از تصویر</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>تشخیص متن از تصویر</h1>
+            <p class="subtitle">آپلود کنید، متن را استخراج کنید</p>
+            <div class="network-status" id="networkStatus" style="display: none;">
+                <span class="status-indicator"></span>
+                <span class="status-text">بررسی اتصال...</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <div class="upload-icon">📷</div>
+                        <h3>تصویر خود را انتخاب کنید</h3>
+                        <p>فایل را اینجا بکشید یا کلیک کنید</p>
+                        <input type="file" id="imageInput" accept="image/*" hidden>
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
+                            انتخاب فایل
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Language Selection -->
+            <section class="language-section">
+                <h3>زبان متن:</h3>
+                <select id="languageSelect" class="language-select">
+                    <option value="fas">فارسی</option>
+                    <option value="eng">انگلیسی</option>
+                    <option value="ara">عربی</option>
+                    <option value="fra">فرانسوی</option>
+                    <option value="deu">آلمانی</option>
+                    <option value="spa">اسپانیولی</option>
+                    <option value="tur">ترکی</option>
+                    <option value="rus">روسی</option>
+                    <option value="chi_sim">چینی ساده</option>
+                    <option value="jpn">ژاپنی</option>
+                </select>
+                <div class="language-note">
+                    <small>توجه: برای زبان‌های غیر از انگلیسی، اتصال اینترنت برای اولین بار ضروری است</small>
+                </div>
+            </section>
+
+            <!-- Preview Section -->
+            <section class="preview-section" id="previewSection" style="display: none;">
+                <h3>پیش‌نمایش تصویر:</h3>
+                <div class="image-preview">
+                    <img id="previewImage" alt="پیش‌نمایش">
+                </div>
+                <button type="button" class="btn btn-success" id="processBtn">
+                    شروع تشخیص متن
+                </button>
+            </section>
+
+            <!-- Progress Section -->
+            <section class="progress-section" id="progressSection" style="display: none;">
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">در حال پردازش...</p>
+                </div>
+            </section>
+
+            <!-- Result Section -->
+            <section class="result-section" id="resultSection" style="display: none;">
+                <h3>متن استخراج شده:</h3>
+                <div class="result-container">
+                    <textarea id="resultText" readonly></textarea>
+                    <div class="result-actions">
+                        <button type="button" class="btn btn-secondary" id="copyBtn">
+                            کپی متن
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="downloadBtn">
+                            دانلود متن
+                        </button>
+                        <button type="button" class="btn btn-info" id="saveBtn">
+                            ذخیره در تاریخچه
+                        </button>
+                        <button type="button" class="btn btn-warning" id="retryBtn" style="display: none;">
+                            تلاش مجدد OCR
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section class="history-section">
+                <h3>تاریخچه:</h3>
+                <div class="history-container" id="historyContainer">
+                    <p class="no-history">هیچ تاریخچه‌ای وجود ندارد</p>
+                </div>
+                <button type="button" class="btn btn-danger" id="clearHistoryBtn" style="display: none;">
+                    پاک کردن تاریخچه
+                </button>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 تشخیص متن از تصویر. تمام حقوق محفوظ است.</p>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Scripts -->
+    <script>
+        // Enhanced error handling for Tesseract.js loading
+        let tesseractLoaded = false;
+        
+        function loadTesseractFallback() {
+            if (tesseractLoaded) return;
+            
+            console.log('🔄 Loading Tesseract.js fallback...');
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js';
+            script.onload = () => {
+                tesseractLoaded = true;
+                console.log('✅ Tesseract.js fallback loaded successfully');
+            };
+            script.onerror = () => {
+                console.error('❌ All Tesseract.js sources failed - demo mode only');
+            };
+            document.head.appendChild(script);
+        }
+        
+        window.addEventListener('error', function(e) {
+            if (e.filename && e.filename.includes('tesseract')) {
+                console.error('❌ Tesseract.js failed to load:', e);
+                loadTesseractFallback();
+            }
+        });
+        
+        // Test if Tesseract loads properly
+        setTimeout(() => {
+            if (typeof Tesseract === 'undefined') {
+                console.warn('⚠️ Tesseract.js not detected, loading fallback...');
+                loadTesseractFallback();
+            } else {
+                tesseractLoaded = true;
+                console.log('✅ Tesseract.js loaded successfully');
+            }
+        }, 3000);
+    </script>
+    
+    <!-- Primary Tesseract.js source -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js" 
+            onload="tesseractLoaded = true; console.log('✅ Primary Tesseract.js loaded')"
+            onerror="console.error('❌ Primary Tesseract.js failed'); loadTesseractFallback()"></script>
+    
+    <script src="assets/script.js"></script>
+</body>
+</html>
+
+

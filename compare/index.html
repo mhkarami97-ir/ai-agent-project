@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مقایسه‌گر متن</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>مقایسه‌گر متن</h1>
+            <p class="subtitle">تغییرات بین دو متن را به صورت زنده مشاهده کنید</p>
+        </header>
+
+        <div class="controls">
+            <button id="clearBtn" class="btn btn-secondary">پاک کردن</button>
+            <button id="swapBtn" class="btn btn-secondary">جابه‌جایی</button>
+            <button id="compareBtn" class="btn btn-primary">مقایسه</button>
+        </div>
+
+        <div class="editor-container">
+            <div class="editor-panel">
+                <div class="panel-header">
+                    <h2>متن اصلی</h2>
+                    <span class="line-count" id="leftLineCount">0 خط</span>
+                </div>
+                <textarea 
+                    id="leftText" 
+                    class="text-input" 
+                    placeholder="متن اصلی خود را اینجا وارد کنید..."
+                    spellcheck="false"
+                    aria-label="متن اصلی"
+                ></textarea>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="editor-panel">
+                <div class="panel-header">
+                    <h2>متن جدید</h2>
+                    <span class="line-count" id="rightLineCount">0 خط</span>
+                </div>
+                <textarea 
+                    id="rightText" 
+                    class="text-input" 
+                    placeholder="متن جدید خود را اینجا وارد کنید..."
+                    spellcheck="false"
+                    aria-label="متن جدید"
+                ></textarea>
+            </div>
+        </div>
+
+        <div class="diff-container" id="diffContainer" style="display: none;">
+            <div class="diff-header">
+                <h2>نتیجه مقایسه</h2>
+                <div class="legend">
+                    <span class="legend-item">
+                        <span class="legend-box added"></span>
+                        افزوده شده
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-box removed"></span>
+                        حذف شده
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-box modified"></span>
+                        تغییر یافته
+                    </span>
+                </div>
+            </div>
+
+            <div class="diff-view">
+                <div class="diff-panel">
+                    <h3>متن اصلی</h3>
+                    <div class="diff-content" id="leftDiff"></div>
+                </div>
+
+                <div class="diff-panel">
+                    <h3>متن جدید</h3>
+                    <div class="diff-content" id="rightDiff"></div>
+                </div>
+            </div>
+
+            <div class="stats" id="stats"></div>
+        </div>
+
+        <footer>
+            <p>ابزار مقایسه متن - تمامی عملیات در مرورگر شما انجام می‌شود</p>
+        </footer>
+    </div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+

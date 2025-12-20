@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت کرون جاب‌ها</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmtn@v1.0.0/Vazirmtn-font-face.css" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>⏰ مدیریت کرون جاب‌ها</h1>
+            <p class="subtitle">ایجاد، مدیریت و نظارت بر کرون جاب‌های شما</p>
+        </header>
+
+        <main class="main">
+            <!-- فرم ایجاد کرون جاب جدید -->
+            <section class="create-job-section">
+                <div class="card">
+                    <h2>ایجاد کرون جاب جدید</h2>
+                    <form class="job-form" id="jobForm">
+                        <div class="form-group">
+                            <label for="jobName">نام جاب:</label>
+                            <input type="text" id="jobName" required placeholder="نام جاب را وارد کنید">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cronExpression">عبارت کرون:</label>
+                            <input type="text" id="cronExpression" required placeholder="* * * * *" 
+                                   pattern="^(\*|([0-5]?\d))( (\*|([01]?\d|2[0-3]))( (\*|([12]?\d|3[01]))( (\*|([1-9]|1[0-2]))( (\*|[0-6]))?)?)?)?$">
+                            <small class="help-text">فرمت: دقیقه ساعت روز ماه روز_هفته (مثال: 0 9 * * 1 = هر دوشنبه ساعت 9 صبح)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="jobDescription">توضیحات:</label>
+                            <textarea id="jobDescription" rows="3" placeholder="توضیحات جاب (اختیاری)"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="isActive" checked>
+                                فعال
+                            </label>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">ایجاد جاب</button>
+                            <button type="button" class="btn btn-secondary" id="resetForm">پاک کردن</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- پیش‌نمایش کرون -->
+            <section class="preview-section" id="previewSection" style="display: none;">
+                <div class="card">
+                    <h3>پیش‌نمایش اجرای بعدی</h3>
+                    <div class="next-runs" id="nextRuns">
+                        <!-- اجراهای بعدی اینجا نمایش داده می‌شود -->
+                    </div>
+                    <div class="show-more-container">
+                        <button class="btn btn-outline" id="showMoreRuns">نمایش بیشتر</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- لیست کرون جاب‌ها -->
+            <section class="jobs-section">
+                <div class="card">
+                    <div class="section-header">
+                        <h2>کرون جاب‌های موجود</h2>
+                        <div class="section-actions">
+                            <button class="btn btn-outline" id="clearAllJobs">پاک کردن همه</button>
+                            <button class="btn btn-secondary" id="exportJobs">خروجی</button>
+                            <input type="file" id="importJobs" accept=".json" style="display: none;">
+                            <button class="btn btn-secondary" id="importJobsBtn">ورودی</button>
+                        </div>
+                    </div>
+                    <div class="jobs-list" id="jobsList">
+                        <div class="empty-state" id="emptyState">
+                            <div class="empty-icon">📝</div>
+                            <p>هنوز هیچ کرون جابی ایجاد نکرده‌اید</p>
+                            <small>با استفاده از فرم بالا، اولین کرون جاب خود را ایجاد کنید</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- تاریخچه اجرا -->
+            <section class="history-section">
+                <div class="card">
+                    <div class="section-header">
+                        <h2>تاریخچه اجرا</h2>
+                        <button class="btn btn-outline" id="clearHistory">پاک کردن تاریخچه</button>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <div class="empty-state">
+                            <div class="empty-icon">📋</div>
+                            <p>تاریخچه‌ای موجود نیست</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- مودال ویرایش -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>ویرایش کرون جاب</h3>
+                <button class="btn-close" id="closeEditModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editJobForm">
+                    <div class="form-group">
+                        <label for="editJobName">نام جاب:</label>
+                        <input type="text" id="editJobName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCronExpression">عبارت کرون:</label>
+                        <input type="text" id="editCronExpression" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editJobDescription">توضیحات:</label>
+                        <textarea id="editJobDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="editIsActive">
+                            فعال
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="saveEditJob">ذخیره تغییرات</button>
+                <button class="btn btn-secondary" id="cancelEdit">لغو</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast برای نمایش پیام‌ها -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <span class="toast-message" id="toastMessage"></span>
+            <button class="toast-close" id="toastClose">&times;</button>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

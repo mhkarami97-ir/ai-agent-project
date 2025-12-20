@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>مدیریت دارو</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v33.1.2/dist/font-face.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero-card">
+      <div>
+        <p class="eyebrow">برنامه روزانه</p>
+        <h1>در زمان مناسب، داروی مناسب</h1>
+      </div>
+      <p class="hero-note">یادآوری‌ها، وضعیت دارو و گزارش مصرف در یک نگاه.</p>
+    </header>
+
+    <section class="grid two-col" aria-label="آمار مصرف">
+      <article class="summary-card">
+        <p class="label">کل داروهای ثبت‌شده</p>
+        <strong id="total-count">۰</strong>
+        <p class="subtext">برای مشاهده، اضافه کنید یا وضعیت را به‌روزرسانی نمایید.</p>
+      </article>
+      <article class="summary-card">
+        <p class="label">یادآورهای نزدیک</p>
+        <strong id="upcoming-count">۰</strong>
+        <p class="subtext">داروهایی که در ۳۰ دقیقه آینده موعد دارند.</p>
+      </article>
+    </section>
+
+    <section class="form-card" aria-label="ثبت دارو">
+      <h2>افزودن یادآور جدید</h2>
+      <form id="medicine-form">
+        <div class="form-row">
+          <label for="medicine-name">نام دارو</label>
+          <input id="medicine-name" name="name" type="text" required placeholder="مثلاً: متفورمین">
+        </div>
+        <div class="form-row">
+          <label for="medicine-dose">دوز / مقدار</label>
+          <input id="medicine-dose" name="dose" type="text" required placeholder="۱ قرص صبحانه">
+        </div>
+        <div class="form-row">
+          <label for="medicine-time">ساعت مصرف</label>
+          <input id="medicine-time" name="time" type="time" required>
+        </div>
+        <div class="form-row">
+          <label for="medicine-note">یادداشت</label>
+          <input id="medicine-note" name="note" type="text" placeholder="مثلاً: همراه غذا">
+        </div>
+        <button type="submit" class="primary-btn">ثبت یادآور</button>
+      </form>
+    </section>
+
+    <section class="list-card" aria-label="لیست داروها">
+      <header>
+        <h2>وضعیت داروها</h2>
+        <p id="list-empty">فعلاً هیچ یادآوری ثبت نشده است.</p>
+      </header>
+      <ul id="medicine-list"></ul>
+    </section>
+
+    <section class="alerts-card" aria-label="هشدار نزدیک">
+      <h2>هشدار ضروری</h2>
+      <p class="alerts-note">اگر مصرف دارویی در بازه زمان مشخص نشده، وضعیت آن را سریع ثبت کنید.</p>
+      <ul id="alert-list"></ul>
+    </section>
+  </div>
+  <script src="assets/scripts.js"></script>
+</body>
+</html>
+

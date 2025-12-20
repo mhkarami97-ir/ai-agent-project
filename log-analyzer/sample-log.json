@@ -1,0 +1,126 @@
+﻿[
+  {
+    "timestamp": "2024-12-20T10:15:23Z",
+    "level": "INFO",
+    "source": "APP",
+    "message": "Application started successfully",
+    "user": null,
+    "ip": null
+  },
+  {
+    "timestamp": "2024-12-20T10:15:24Z",
+    "level": "INFO",
+    "source": "AUTH",
+    "message": "User authentication system initialized",
+    "user": null,
+    "ip": null
+  },
+  {
+    "timestamp": "2024-12-20T10:16:01Z",
+    "level": "INFO",
+    "source": "API",
+    "message": "Received GET request",
+    "user": "john.doe",
+    "ip": "192.168.1.100"
+  },
+  {
+    "timestamp": "2024-12-20T10:17:45Z",
+    "level": "WARN",
+    "source": "AUTH",
+    "message": "Failed login attempt",
+    "user": "admin",
+    "ip": "192.168.1.150"
+  },
+  {
+    "timestamp": "2024-12-20T10:18:10Z",
+    "level": "ERROR",
+    "source": "DB",
+    "message": "Connection timeout after 30 seconds",
+    "user": null,
+    "ip": null,
+    "error": {
+      "code": "TIMEOUT",
+      "details": "Database server did not respond within timeout period"
+    }
+  },
+  {
+    "timestamp": "2024-12-20T10:18:11Z",
+    "level": "ERROR",
+    "source": "DB",
+    "message": "Failed to execute query",
+    "user": null,
+    "ip": null,
+    "query": "SELECT * FROM users",
+    "error": {
+      "code": "CONNECTION_LOST",
+      "details": "Lost connection to database server"
+    }
+  },
+  {
+    "timestamp": "2024-12-20T10:19:32Z",
+    "level": "WARN",
+    "source": "API",
+    "message": "Invalid data format in request body",
+    "user": "jane.smith",
+    "ip": "192.168.1.200"
+  },
+  {
+    "timestamp": "2024-12-20T10:19:33Z",
+    "level": "ERROR",
+    "source": "API",
+    "message": "Request validation failed",
+    "user": "jane.smith",
+    "ip": "192.168.1.200",
+    "error": {
+      "code": "VALIDATION_ERROR",
+      "fields": ["email", "phone"]
+    }
+  },
+  {
+    "timestamp": "2024-12-20T10:21:17Z",
+    "level": "ERROR",
+    "source": "API",
+    "message": "User does not have permission to delete resource",
+    "user": "john.doe",
+    "ip": "192.168.1.100",
+    "resource": {
+      "type": "document",
+      "id": "12345"
+    }
+  },
+  {
+    "timestamp": "2024-12-20T10:22:30Z",
+    "level": "WARN",
+    "source": "APP",
+    "message": "High memory usage detected",
+    "metrics": {
+      "usage": "85%",
+      "available": "2.5GB",
+      "total": "16GB"
+    }
+  },
+  {
+    "timestamp": "2024-12-20T10:22:45Z",
+    "level": "ERROR",
+    "source": "APP",
+    "message": "Out of memory exception",
+    "error": {
+      "code": "OOM",
+      "stack_trace": "at processRequest (app.js:125)\nat handleRequest (server.js:89)"
+    }
+  },
+  {
+    "timestamp": "2024-12-20T10:28:01Z",
+    "level": "ERROR",
+    "source": "API",
+    "message": "Rate limit exceeded",
+    "user": null,
+    "ip": "192.168.1.180",
+    "limit": {
+      "max_requests": 100,
+      "window": "1 hour",
+      "current": 157
+    }
+  }
+]
+

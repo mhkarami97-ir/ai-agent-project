@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ابزار پاک‌سازی و بهینه‌سازی متن فارسی و انگلیسی">
+    <title>پاک‌سازی متن</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>پاک‌سازی متن</h1>
+            <p class="subtitle">ابزار بهینه‌سازی متن‌های فارسی و انگلیسی</p>
+        </header>
+
+        <main>
+            <section class="text-area-section">
+                <div class="input-wrapper">
+                    <label for="inputText">متن ورودی:</label>
+                    <textarea 
+                        id="inputText" 
+                        placeholder="متن خود را اینجا بنویسید یا بچسبانید..."
+                        rows="10"
+                    ></textarea>
+                    <div class="char-count" id="inputCount">0 کاراکتر</div>
+                </div>
+
+                <div class="output-wrapper">
+                    <label for="outputText">متن پاک‌شده:</label>
+                    <textarea 
+                        id="outputText" 
+                        placeholder="نتیجه اینجا نمایش داده می‌شود..."
+                        rows="10"
+                        readonly
+                    ></textarea>
+                    <div class="char-count" id="outputCount">0 کاراکتر</div>
+                </div>
+            </section>
+
+            <section class="controls">
+                <div class="button-group">
+                    <button id="cleanAllBtn" class="btn btn-primary">
+                        <span class="icon">✨</span>
+                        پاک‌سازی کامل
+                    </button>
+                    <button id="removeZWNJBtn" class="btn btn-secondary">
+                        <span class="icon">🔧</span>
+                        حذف نیم‌فاصله‌های خراب
+                    </button>
+                    <button id="toEnglishNumberBtn" class="btn btn-secondary">
+                        <span class="icon">🔢</span>
+                        تبدیل به اعداد انگلیسی
+                    </button>
+                    <button id="toPersianNumberBtn" class="btn btn-secondary">
+                        <span class="icon">۱۲۳</span>
+                        تبدیل به اعداد فارسی
+                    </button>
+                    <button id="removeInvisibleBtn" class="btn btn-secondary">
+                        <span class="icon">👁️</span>
+                        حذف کاراکترهای نامرئی
+                    </button>
+                    <button id="smartTrimBtn" class="btn btn-secondary">
+                        <span class="icon">✂️</span>
+                        حذف فضاهای اضافی
+                    </button>
+                </div>
+
+                <div class="button-group action-buttons">
+                    <button id="copyBtn" class="btn btn-success">
+                        <span class="icon">📋</span>
+                        کپی نتیجه
+                    </button>
+                    <button id="replaceBtn" class="btn btn-info">
+                        <span class="icon">🔄</span>
+                        جایگزینی متن ورودی
+                    </button>
+                    <button id="clearBtn" class="btn btn-danger">
+                        <span class="icon">🗑️</span>
+                        پاک کردن همه
+                    </button>
+                </div>
+            </section>
+
+            <section class="info-box">
+                <h3>قابلیت‌ها:</h3>
+                <ul>
+                    <li>حذف و اصلاح نیم‌فاصله‌های (ZWNJ) نادرست در متن فارسی</li>
+                    <li>تبدیل اعداد فارسی به انگلیسی و بالعکس</li>
+                    <li>حذف کاراکترهای نامرئی و مشکل‌ساز</li>
+                    <li>حذف هوشمند فضاهای خالی اضافی، خط‌های خالی و فاصله‌های ابتدا و انتهای متن</li>
+                    <li>ذخیره خودکار متن در مرورگر</li>
+                </ul>
+            </section>
+        </main>
+
+        <footer>
+            <p>ساخته شده با ❤️ برای جامعه فارسی‌زبان</p>
+        </footer>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>
+

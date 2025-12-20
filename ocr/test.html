@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Test</title>
+    <style>
+        body {
+            font-family: 'Vazirmatn', Arial, sans-serif;
+            margin: 20px;
+            direction: rtl;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>آزمایش عملکرد OCR</h1>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        const results = [];
+        
+        function addResult(message, type) {
+            results.push({ message, type });
+            updateDisplay();
+        }
+        
+        function updateDisplay() {
+            const container = document.getElementById('test-results');
+            container.innerHTML = results.map(result => 
+                `<div class="test-result ${result.type}">${result.message}</div>`
+            ).join('');
+        }
+        
+        // Test 1: Check if Tesseract.js is available
+        if (typeof Tesseract !== 'undefined') {
+            addResult('✅ Tesseract.js بارگذاری شد', 'success');
+        } else {
+            addResult('⚠️ Tesseract.js در دسترس نیست - حالت نمایشی فعال است', 'warning');
+        }
+        
+        // Test 2: Check localStorage support
+        try {
+            localStorage.setItem('test', 'test');
+            localStorage.removeItem('test');
+            addResult('✅ LocalStorage پشتیبانی می‌شود', 'success');
+        } catch (e) {
+            addResult('❌ LocalStorage پشتیبانی نمی‌شود', 'error');
+        }
+        
+        // Test 3: Check File API support
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+            addResult('✅ File API پشتیبانی می‌شود', 'success');
+        } else {
+            addResult('❌ File API پشتیبانی نمی‌شود', 'error');
+        }
+        
+        // Test 4: Check Fetch API support
+        if (typeof fetch !== 'undefined') {
+            addResult('✅ Fetch API پشتیبانی می‌شود', 'success');
+        } else {
+            addResult('❌ Fetch API پشتیبانی نمی‌شود', 'error');
+        }
+        
+        // Test 5: Check Promise support
+        if (typeof Promise !== 'undefined') {
+            addResult('✅ Promise پشتیبانی می‌شود', 'success');
+        } else {
+            addResult('❌ Promise پشتیبانی نمی‌شود', 'error');
+        }
+        
+        // Test 6: Test network connectivity
+        fetch('https://httpbin.org/get', { method: 'HEAD' })
+            .then(() => {
+                addResult('✅ اتصال اینترنت برقرار است', 'success');
+            })
+            .catch(() => {
+                addResult('⚠️ مشکل در اتصال اینترنت - حالت نمایشی استفاده خواهد شد', 'warning');
+            });
+    </script>
+    
+    <p><a href="index.html">← برگشت به برنامه اصلی</a></p>
+</body>
+</html>
+

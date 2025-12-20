@@ -1,0 +1,228 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم لایتنر - تمرین واژگان</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 سیستم لایتنر</h1>
+            <p class="subtitle">یادگیری هوشمند واژگان</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="review">آزمون روزانه</button>
+            <button class="tab-btn" data-tab="add">افزودن کلمات</button>
+            <button class="tab-btn" data-tab="list">لیست کلمات</button>
+            <button class="tab-btn" data-tab="stats">آمار</button>
+        </nav>
+
+        <!-- Review Tab -->
+        <div class="tab-content active" id="review">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">امروز:</span>
+                    <span class="stat-value" id="todayCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">باقیمانده:</span>
+                    <span class="stat-value" id="remainingCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">درست:</span>
+                    <span class="stat-value" id="correctCount">0</span>
+                </div>
+            </div>
+
+            <div id="reviewContainer">
+                <div id="noCards" class="empty-state">
+                    <div class="empty-icon">✨</div>
+                    <h2>کارت آزمون برای امروز وجود ندارد!</h2>
+                    <p>می‌توانید کلمات جدید اضافه کنید یا فردا برگردید.</p>
+                </div>
+
+                <div id="cardDisplay" class="card-display" style="display: none;">
+                    <div class="card" id="flashcard">
+                        <div class="card-front">
+                            <div class="card-content">
+                                <div class="box-number">جعبه <span id="boxNumber">1</span></div>
+                                <h2 id="cardFront"></h2>
+                                <button class="btn btn-primary" id="flipBtn">نمایش پاسخ</button>
+                            </div>
+                        </div>
+                        <div class="card-back" style="display: none;">
+                            <div class="card-content">
+                                <div class="box-number">جعبه <span id="boxNumberBack">1</span></div>
+                                <div class="card-question" id="cardFrontSmall"></div>
+                                <h2 id="cardBack"></h2>
+                                <div class="answer-buttons">
+                                    <button class="btn btn-success" id="correctBtn">✓ می‌دانستم</button>
+                                    <button class="btn btn-danger" id="wrongBtn">✗ نمی‌دانستم</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="completionMessage" class="completion-message" style="display: none;">
+                    <div class="completion-icon">🎉</div>
+                    <h2>آفرین! تمام کارت‌های امروز را مرور کردید</h2>
+                    <p>تعداد پاسخ صحیح: <span id="finalCorrect">0</span></p>
+                    <p>تعداد کل: <span id="finalTotal">0</span></p>
+                    <button class="btn btn-primary" id="backToStart">بازگشت</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Tab -->
+        <div class="tab-content" id="add">
+            <div class="form-container">
+                <h2>افزودن کلمات جدید</h2>
+                
+                <div class="form-group">
+                    <label for="wordFront">کلمه/عبارت (جلو):</label>
+                    <input type="text" id="wordFront" placeholder="مثال: Apple">
+                </div>
+
+                <div class="form-group">
+                    <label for="wordBack">معنی (پشت):</label>
+                    <input type="text" id="wordBack" placeholder="مثال: سیب">
+                </div>
+
+                <button class="btn btn-primary btn-block" id="addSingleBtn">افزودن کلمه</button>
+
+                <div class="divider">یا</div>
+
+                <h3>افزودن دسته‌ای</h3>
+                <p class="help-text">هر خط یک کلمه به صورت: کلمه | معنی</p>
+                
+                <div class="form-group">
+                    <label for="bulkWords">لیست کلمات:</label>
+                    <textarea id="bulkWords" rows="8" placeholder="Apple | سیب&#10;Book | کتاب&#10;Cat | گربه"></textarea>
+                </div>
+
+                <button class="btn btn-primary btn-block" id="addBulkBtn">افزودن لیست</button>
+
+                <div id="addMessage" class="message" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- List Tab -->
+        <div class="tab-content" id="list">
+            <div class="list-header">
+                <h2>لیست تمام کلمات</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">همه (<span id="countAll">0</span>)</button>
+                    <button class="filter-btn" data-filter="1">جعبه 1 (<span id="countBox1">0</span>)</button>
+                    <button class="filter-btn" data-filter="2">جعبه 2 (<span id="countBox2">0</span>)</button>
+                    <button class="filter-btn" data-filter="3">جعبه 3 (<span id="countBox3">0</span>)</button>
+                    <button class="filter-btn" data-filter="4">جعبه 4 (<span id="countBox4">0</span>)</button>
+                    <button class="filter-btn" data-filter="5">جعبه 5 (<span id="countBox5">0</span>)</button>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <label for="searchInput" class="sr-only">جستجو:</label>
+                <input type="text" id="searchInput" placeholder="جستجوی کلمه..." aria-label="جستجوی کلمه">
+            </div>
+
+            <div id="wordsList" class="words-list">
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h3>هنوز کلمه‌ای اضافه نشده است!</h3>
+                    <p>از بخش "افزودن کلمات" شروع کنید.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div class="tab-content" id="stats">
+            <div class="stats-container">
+                <h2>آمار یادگیری</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-icon">📊</div>
+                        <div class="stat-card-value" id="totalWords">0</div>
+                        <div class="stat-card-label">کل کلمات</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-icon">✅</div>
+                        <div class="stat-card-value" id="totalReviewed">0</div>
+                        <div class="stat-card-label">مرور شده امروز</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-icon">🔥</div>
+                        <div class="stat-card-value" id="streakDays">0</div>
+                        <div class="stat-card-label">روز متوالی</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-icon">🎯</div>
+                        <div class="stat-card-value" id="accuracyRate">0%</div>
+                        <div class="stat-card-label">دقت امروز</div>
+                    </div>
+                </div>
+
+                <div class="box-distribution">
+                    <h3>توزیع جعبه‌ها</h3>
+                    <div class="boxes-visual">
+                        <div class="box-item">
+                            <div class="box-label">جعبه 1</div>
+                            <div class="box-bar">
+                                <div class="box-fill box-1" id="bar1" style="width: 0"></div>
+                            </div>
+                            <div class="box-count" id="statBox1">0</div>
+                        </div>
+                        <div class="box-item">
+                            <div class="box-label">جعبه 2</div>
+                            <div class="box-bar">
+                                <div class="box-fill box-2" id="bar2" style="width: 0"></div>
+                            </div>
+                            <div class="box-count" id="statBox2">0</div>
+                        </div>
+                        <div class="box-item">
+                            <div class="box-label">جعبه 3</div>
+                            <div class="box-bar">
+                                <div class="box-fill box-3" id="bar3" style="width: 0"></div>
+                            </div>
+                            <div class="box-count" id="statBox3">0</div>
+                        </div>
+                        <div class="box-item">
+                            <div class="box-label">جعبه 4</div>
+                            <div class="box-bar">
+                                <div class="box-fill box-4" id="bar4" style="width: 0"></div>
+                            </div>
+                            <div class="box-count" id="statBox4">0</div>
+                        </div>
+                        <div class="box-item">
+                            <div class="box-label">جعبه 5</div>
+                            <div class="box-bar">
+                                <div class="box-fill box-5" id="bar5" style="width: 0"></div>
+                            </div>
+                            <div class="box-count" id="statBox5">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="danger-zone">
+                    <h3>منطقه خطر</h3>
+                    <p>حذف تمام داده‌ها (قابل بازگشت نیست!)</p>
+                    <button class="btn btn-danger" id="clearAllBtn">پاک کردن همه چیز</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
+
