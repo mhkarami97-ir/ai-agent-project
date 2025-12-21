@@ -7,10 +7,22 @@
           content="width=device-width, initial-scale=1"/>
     <meta name="theme-color"
           content="#7c5cff"/>
+    <meta name="description"
+          content="مجموعه ابزارهای آنلاین ساخته شده با هوش مصنوعی - Web Tools Collection"/>
+    <meta name="apple-mobile-web-app-capable"
+          content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"/>
+    <meta name="apple-mobile-web-app-title"
+          content="Web Tools"/>
     <link rel="icon"
           type="image/png"
           sizes="32x32"
           href="/favicon.png">
+    <link rel="apple-touch-icon"
+          href="/favicon.png"/>
+    <link rel="manifest"
+          href="/manifest.json"/>
     <title>
         ابزارهای
         وب
@@ -337,6 +349,86 @@
 
         .theme-toggle:active {
             transform: scale(0.95);
+        }
+
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+            padding: 14px 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(124, 92, 255, .4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            animation: slideUp .3s ease;
+            max-width: calc(100% - 40px);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .install-prompt-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .install-prompt-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+
+        .install-prompt-desc {
+            font-size: 13px;
+            opacity: .9;
+        }
+
+        .install-btn {
+            background: rgba(255, 255, 255, .25);
+            border: 1px solid rgba(255, 255, 255, .3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Vazirmatn', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all .2s ease;
+            white-space: nowrap;
+        }
+
+        .install-btn:hover {
+            background: rgba(255, 255, 255, .35);
+            transform: scale(1.05);
+        }
+
+        .close-install {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 4px;
+            line-height: 1;
+            opacity: .8;
+            transition: opacity .2s;
+        }
+
+        .close-install:hover {
+            opacity: 1;
         }
 
         body[data-theme="light"] {
@@ -879,7 +971,7 @@
 
         toolsList.innerHTML = filteredTools.map(tool => `
         <li>
-            <a class="link" href="/${tool.path}/" rel="noopener noreferrer">
+            <a class="link" href="/${tool.path}/">
                 <div class="icon">${tool.icon}</div>
                 <div class="content">
                     <div class="lang-section fa">
@@ -983,7 +1075,70 @@
     });
 
     loadTheme();
+
+    let deferredPrompt;
+    const installPromptDismissed = localStorage.getItem('installPromptDismissed');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+
+        if (!installPromptDismissed) {
+            showInstallPrompt();
+        }
+    });
+
+    function showInstallPrompt() {
+        const prompt = document.createElement('div');
+        prompt.className = 'install-prompt';
+        prompt.innerHTML = `
+            <div class="install-prompt-text">
+                <div class="install-prompt-title">📱 نصب اپلیکیشن</div>
+                <div class="install-prompt-desc">برای دسترسی سریع‌تر نصب کنید</div>
+            </div>
+            <button class="install-btn" id="installBtn">نصب</button>
+            <button class="close-install" id="closeInstall">✕</button>
+        `;
+        document.body.appendChild(prompt);
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+
+            deferredPrompt.prompt();
+            const {outcome} = await deferredPrompt.userChoice;
+
+            if (outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+            }
+
+            deferredPrompt = null;
+            prompt.remove();
+        });
+
+        document.getElementById('closeInstall').addEventListener('click', () => {
+            localStorage.setItem('installPromptDismissed', 'true');
+            prompt.remove();
+        });
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('SW registered:', registration);
+                })
+                .catch(err => {
+                    console.log('SW registration failed:', err);
+                });
+        });
+    }
+
+    window.addEventListener('appinstalled', () => {
+        console.log('App installed successfully');
+        deferredPrompt = null;
+    });
 </script>
 </body>
 </html>
+
 
