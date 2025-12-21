@@ -12,6 +12,10 @@ body {
     direction: rtl;
 }
 
+input, button {
+    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 .container {
     max-width: 900px;
     margin: 0 auto;
@@ -104,7 +108,7 @@ header h1 {
 
 .btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    color: #333333;
 }
 
 .btn-primary:hover {
@@ -114,7 +118,7 @@ header h1 {
 
 .btn-secondary {
     background: #6c757d;
-    color: white;
+    color: #333333;
 }
 
 .btn-secondary:hover {
@@ -124,7 +128,7 @@ header h1 {
 
 .btn-danger {
     background: #dc3545;
-    color: white;
+    color: #333333;
     padding: 8px 15px;
     font-size: 14px;
 }
@@ -297,7 +301,7 @@ header h1 {
 
 .btn-success {
     background: #28a745;
-    color: white;
+    color: #333333;
 }
 
 .btn-success:hover {
@@ -330,7 +334,7 @@ header h1 {
 
 .btn-cancel {
     background: #6c757d;
-    color: white;
+    color: #333333;
     padding: 8px 15px;
     font-size: 14px;
 }
@@ -341,7 +345,7 @@ header h1 {
 
 .btn-save {
     background: #28a745;
-    color: white;
+    color: #333333;
     padding: 8px 15px;
     font-size: 14px;
 }

@@ -1,8 +1,6 @@
-﻿@import url("https://fonts.cdnfonts.com/css/vazirmtn");
-
-:root {
+﻿:root {
   color-scheme: light;
-  font-family: "Vazirmtn", "Vazir", "Tahoma", sans-serif;
+  font-family: "Vazirmtn", "Tahoma", sans-serif;
   background-color: #fdfdfb;
   color: #1f1f1f;
 }
@@ -118,7 +116,7 @@ button:disabled {
 
 .primary {
   background: linear-gradient(135deg, #4059ff, #7c6bff);
-  color: white;
+  color: #333333;
   box-shadow: 0 15px 35px -20px #4059ff;
 }
 
@@ -134,8 +132,7 @@ button:disabled {
 }
 
 .output {
-  background: #10101c;
-  color: #f7f7fb;
+  background: #f8f9fa;
   border-radius: 1.25rem;
   padding: 1.25rem;
   min-height: 220px;

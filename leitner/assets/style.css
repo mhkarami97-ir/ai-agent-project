@@ -52,7 +52,7 @@ body {
 
 header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    color: #333333;
     padding: 30px;
     text-align: center;
 }
@@ -190,7 +190,7 @@ header h1 {
 .box-number {
     display: inline-block;
     background: var(--primary-color);
-    color: white;
+    color: #333333;
     padding: 6px 16px;
     border-radius: 20px;
     font-size: 0.85rem;
@@ -237,7 +237,7 @@ header h1 {
 
 .btn-primary {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-primary:hover {
@@ -246,7 +246,7 @@ header h1 {
 
 .btn-success {
     background: var(--success-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-success:hover {
@@ -255,7 +255,7 @@ header h1 {
 
 .btn-danger {
     background: var(--danger-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-danger:hover {
@@ -456,7 +456,7 @@ header h1 {
 
 .filter-btn.active {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
     border-color: var(--primary-color);
 }
 
@@ -519,7 +519,7 @@ header h1 {
 
 .word-box {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
     padding: 6px 12px;
     border-radius: 6px;
     font-size: 0.85rem;
@@ -530,7 +530,7 @@ header h1 {
     font-family: 'Vazirmatn', sans-serif;
     padding: 6px 12px;
     background: var(--danger-color);
-    color: white;
+    color: #333333;
     border: none;
     border-radius: 6px;
     font-size: 0.85rem;
@@ -627,7 +627,7 @@ header h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #333333;
     font-weight: 500;
     font-size: 0.85rem;
 }

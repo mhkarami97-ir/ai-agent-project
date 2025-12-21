@@ -1,8 +1,4 @@
-﻿/* Import Vazirmatn Font */
-@import url('https://cdn.jsdelivr.net/npm/vazirmatn@33.003/Vazirmatn-font-face.css');
-
-/* Reset and Base Styles */
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -42,7 +38,7 @@ body {
 /* Header */
 header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    color: #333333;
     padding: 40px 30px;
     text-align: center;
 }
@@ -127,7 +123,7 @@ main {
 
 .btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    color: #333333;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -137,7 +133,7 @@ main {
 
 .btn-secondary {
     background: #6c757d;
-    color: white;
+    color: #333333;
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -148,7 +144,7 @@ main {
 
 .btn-danger {
     background: #dc3545;
-    color: white;
+    color: #333333;
 }
 
 .btn-danger:hover:not(:disabled) {
@@ -168,7 +164,7 @@ main {
 /* Copy Notification */
 .copy-notification {
     background: #28a745;
-    color: white;
+    color: #333333;
     padding: 12px;
     border-radius: 8px;
     text-align: center;
@@ -221,7 +217,7 @@ main {
 
 .value-display {
     background: #667eea;
-    color: white;
+    color: #333333;
     padding: 5px 15px;
     border-radius: 20px;
     font-weight: 700;
@@ -298,7 +294,7 @@ main {
     right: 0;
     height: 22px;
     width: 22px;
-    background-color: #fff;
+    background-color: #333333;
     border: 2px solid #dee2e6;
     border-radius: 5px;
     transition: all 0.3s ease;
@@ -452,7 +448,7 @@ main {
 
 .history-copy-btn {
     background: #667eea;
-    color: white;
+    color: #333333;
     border: none;
     padding: 8px 15px;
     border-radius: 6px;

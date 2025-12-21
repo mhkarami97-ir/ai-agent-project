@@ -1,11 +1,4 @@
-﻿@font-face {
-  font-family: 'Vazirmtn';
-  font-style: normal;
-  font-weight: 400;
-  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-Regular.woff2') format('woff2');
-}
-
-:root {
+﻿:root {
   font-family: 'Vazirmtn', 'Segoe UI', Tahoma, sans-serif;
   color: #0f172a;
   background-color: #f8fafc;
@@ -106,7 +99,7 @@ button:hover {
 
 button[type="submit"] {
   background: #6366f1;
-  color: #fff;
+  color: #333333;
 }
 
 button.ghost {

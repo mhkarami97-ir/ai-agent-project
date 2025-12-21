@@ -160,7 +160,7 @@ button:active:not(:disabled) {
 button[type="submit"],
 button:not(.secondary):not(.ghost) {
   background: var(--primary);
-  color: #fff;
+  color: #333333;
   box-shadow: 0 10px 30px rgba(15, 118, 110, 0.3);
 }
 
@@ -208,7 +208,7 @@ button.ghost {
 #qr-video {
   width: 100%;
   aspect-ratio: 4 / 3;
-  background: #0f172a;
+  background: #ffffff;
   border-radius: 1rem;
   object-fit: cover;
 }

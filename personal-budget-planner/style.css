@@ -1,7 +1,4 @@
-﻿/* فونت Vazirmatn */
-@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
-
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -35,7 +32,7 @@ body {
 
 header {
     text-align: center;
-    color: white;
+    color: #333333;
     margin-bottom: 40px;
     padding: 20px;
     animation: fadeInDown 0.6s ease;
@@ -193,7 +190,7 @@ select:focus {
 
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: white;
+    color: #333333;
 }
 
 .btn-primary:hover {
@@ -203,17 +200,17 @@ select:focus {
 
 .btn-secondary {
     background: var(--success-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-secondary:hover {
-    background: #059669;
+    background: #ffffff;
     transform: translateY(-2px);
 }
 
 .btn-danger {
     background: var(--danger-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-danger:hover {
@@ -240,7 +237,7 @@ select:focus {
 
 .tab-btn.active {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
     border-color: var(--primary-color);
 }
 
@@ -290,7 +287,7 @@ select:focus {
 
 .filter-btn.active {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
     border-color: var(--primary-color);
 }
 
@@ -422,7 +419,7 @@ select:focus {
 
 .edit-btn {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
 }
 
 .edit-btn:hover {
@@ -432,7 +429,7 @@ select:focus {
 
 .delete-btn {
     background: var(--danger-color);
-    color: white;
+    color: #333333;
 }
 
 .delete-btn:hover {
@@ -484,7 +481,7 @@ select:focus {
 }
 
 .modal-content {
-    background-color: white;
+    background-color: #333333;
     margin: 5% auto;
     padding: 30px;
     border-radius: 16px;

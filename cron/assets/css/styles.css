@@ -20,7 +20,7 @@ body {
 /* Header */
 .header {
     text-align: center;
-    color: white;
+    color: #333333;
     margin-bottom: 30px;
     animation: fadeInDown 0.6s ease;
 }
@@ -126,7 +126,7 @@ body {
 
 .btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    color: #333333;
 }
 
 .btn-primary:hover {
@@ -136,7 +136,7 @@ body {
 
 .btn-secondary {
     background: #6c757d;
-    color: white;
+    color: #333333;
 }
 
 .btn-secondary:hover {
@@ -152,12 +152,12 @@ body {
 
 .btn-outline:hover {
     background: #667eea;
-    color: white;
+    color: #333333;
 }
 
 .btn-danger {
     background: #dc3545;
-    color: white;
+    color: #333333;
 }
 
 .btn-danger:hover {
@@ -166,7 +166,7 @@ body {
 
 .btn-success {
     background: #28a745;
-    color: white;
+    color: #333333;
 }
 
 .btn-success:hover {

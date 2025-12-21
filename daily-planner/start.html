@@ -1,372 +1,0 @@
-﻿<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>راهنمای شروع سریع - برنامه‌ریز روزانه</title>
-    <style>
-        @import url('https://cdn.jsdelivr.net/npm/vazirmatn@33.003/Vazirmatn-font-face.css');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Vazirmatn', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2rem;
-            line-height: 1.8;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        
-        h1 {
-            color: #6366f1;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-        
-        h2 {
-            color: #8b5cf6;
-            font-size: 1.8rem;
-            margin: 2rem 0 1rem 0;
-            border-right: 4px solid #6366f1;
-            padding-right: 1rem;
-        }
-        
-        h3 {
-            color: #6366f1;
-            font-size: 1.3rem;
-            margin: 1.5rem 0 0.5rem 0;
-        }
-        
-        p {
-            color: #334155;
-            margin-bottom: 1rem;
-        }
-        
-        .highlight {
-            background: #fef3c7;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-        
-        .btn-primary {
-            display: inline-block;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: white;
-            padding: 1rem 2rem;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 1.2rem;
-            margin: 2rem auto;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
-        }
-        
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        
-        .feature-card {
-            background: #f8fafc;
-            padding: 1.5rem;
-            border-radius: 10px;
-            border-right: 3px solid #6366f1;
-        }
-        
-        .feature-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .feature-title {
-            font-weight: 600;
-            color: #6366f1;
-            margin-bottom: 0.5rem;
-        }
-        
-        .steps {
-            counter-reset: step;
-            list-style: none;
-            margin: 1rem 0;
-        }
-        
-        .steps li {
-            counter-increment: step;
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            background: #f1f5f9;
-            border-radius: 8px;
-            position: relative;
-            padding-right: 4rem;
-        }
-        
-        .steps li::before {
-            content: counter(step);
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-        
-        .info-box {
-            background: #dbeafe;
-            border-right: 4px solid #3b82f6;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-        }
-        
-        .success-box {
-            background: #d1fae5;
-            border-right: 4px solid #10b981;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-        }
-        
-        .warning-box {
-            background: #fef3c7;
-            border-right: 4px solid #f59e0b;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-        }
-        
-        .center {
-            text-align: center;
-        }
-        
-        code {
-            background: #1e293b;
-            color: #10b981;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 2px solid #e2e8f0;
-            color: #64748b;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🎉 به برنامه‌ریز روزانه خوش آمدید!</h1>
-        
-        <div class="center">
-            <p>برنامه‌ای هوشمند برای مدیریت وظایف روزانه با تقویم شمسی</p>
-            <a href="index.html" class="btn-primary">🚀 شروع استفاده از برنامه</a>
-        </div>
-        
-        <h2>✨ ویژگی‌های برجسته</h2>
-        
-        <div class="features">
-            <div class="feature-card">
-                <div class="feature-icon">📅</div>
-                <div class="feature-title">تقویم شمسی</div>
-                <p>نمایش کامل تقویم جلالی با امکان انتخاب تاریخ</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">✅</div>
-                <div class="feature-title">مدیریت وظایف</div>
-                <p>افزودن، ویرایش و حذف وظایف با جزئیات کامل</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">🔔</div>
-                <div class="feature-title">یادآوری‌ها</div>
-                <p>یادآوری‌های هوشمند در زمان‌های مختلف</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">💾</div>
-                <div class="feature-title">ذخیره‌سازی</div>
-                <p>ذخیره خودکار در مرورگر بدون نیاز به سرور</p>
-            </div>
-        </div>
-        
-        <h2>🚀 شروع سریع</h2>
-        
-        <ul class="steps">
-            <li>
-                <strong>باز کردن برنامه:</strong> روی دکمه بالا کلیک کنید یا فایل 
-                <code>index.html</code> را در مرورگر باز کنید.
-            </li>
-            
-            <li>
-                <strong>مشاهده تقویم:</strong> تقویم شمسی را در بالای صفحه مشاهده کنید. 
-                روز امروز با رنگ نارنجی مشخص شده است.
-            </li>
-            
-            <li>
-                <strong>انتخاب تاریخ:</strong> روی هر روز از تقویم کلیک کنید تا آن تاریخ 
-                در فرم وظیفه جدید قرار گیرد.
-            </li>
-            
-            <li>
-                <strong>افزودن وظیفه:</strong> عنوان وظیفه را بنویسید، تاریخ و زمان را 
-                مشخص کنید و دکمه "افزودن وظیفه" را بزنید.
-            </li>
-            
-            <li>
-                <strong>مدیریت:</strong> از آیکون‌های ✏️ برای ویرایش و 🗑️ برای حذف وظایف 
-                استفاده کنید.
-            </li>
-        </ul>
-        
-        <div class="success-box">
-            <strong>✅ نکته مهم:</strong> تمام وظایف شما به طور خودکار در مرورگر ذخیره می‌شوند 
-            و حتی پس از بستن برنامه باقی می‌مانند.
-        </div>
-        
-        <h2>🎯 نحوه استفاده از یادآوری‌ها</h2>
-        
-        <ol class="steps">
-            <li>
-                هنگام افزودن یا ویرایش وظیفه، حتماً <span class="highlight">زمان</span> را مشخص کنید.
-            </li>
-            
-            <li>
-                از قسمت "یادآوری" زمان مورد نظر را انتخاب کنید (مثلاً 15 دقیقه قبل).
-            </li>
-            
-            <li>
-                در اولین بار، مرورگر اجازه نمایش نوتیفیکیشن را درخواست می‌کند. 
-                روی "اجازه" کلیک کنید.
-            </li>
-        </ol>
-        
-        <div class="info-box">
-            <strong>💡 توجه:</strong> برای دریافت یادآوری‌ها، برگه مرورگر باید باز باشد 
-            یا برنامه در حال اجرا باشد.
-        </div>
-        
-        <h2>🔍 فیلتر و جستجو</h2>
-        
-        <p>از دکمه‌های فیلتر برای مشاهده وظایف خاص استفاده کنید:</p>
-        
-        <ul style="margin-right: 2rem; list-style: disc;">
-            <li><strong>همه:</strong> نمایش تمام وظایف</li>
-            <li><strong>امروز:</strong> فقط وظایف امروز</li>
-            <li><strong>این هفته:</strong> وظایف 7 روز آینده</li>
-            <li><strong>انجام شده:</strong> وظایف تکمیل شده</li>
-            <li><strong>در انتظار:</strong> وظایف باقی‌مانده</li>
-        </ul>
-        
-        <p>همچنین می‌توانید در کادر جستجو متن مورد نظر را تایپ کنید.</p>
-        
-        <h2>🎨 سطوح اولویت</h2>
-        
-        <div class="features">
-            <div class="feature-card" style="border-right-color: #3b82f6;">
-                <div class="feature-icon">🔵</div>
-                <div class="feature-title" style="color: #3b82f6;">کم</div>
-                <p>وظایف معمولی و غیر فوری</p>
-            </div>
-            
-            <div class="feature-card" style="border-right-color: #f59e0b;">
-                <div class="feature-icon">🟡</div>
-                <div class="feature-title" style="color: #f59e0b;">متوسط</div>
-                <p>وظایف مهم با زمان نرمال</p>
-            </div>
-            
-            <div class="feature-card" style="border-right-color: #ef4444;">
-                <div class="feature-icon">🔴</div>
-                <div class="feature-title" style="color: #ef4444;">زیاد</div>
-                <p>وظایف فوری و بسیار مهم</p>
-            </div>
-        </div>
-        
-        <h2>📊 آمار و گزارش</h2>
-        
-        <p>در پایین صفحه، آمار کامل وظایف خود را مشاهده کنید:</p>
-        
-        <ul style="margin-right: 2rem; list-style: disc;">
-            <li>تعداد کل وظایف ثبت شده</li>
-            <li>تعداد وظایف انجام شده</li>
-            <li>تعداد وظایف در انتظار</li>
-            <li>تعداد وظایف امروز</li>
-        </ul>
-        
-        <h2>🌐 استقرار روی GitHub Pages</h2>
-        
-        <p>برای قرار دادن این برنامه روی اینترنت:</p>
-        
-        <ol style="margin-right: 2rem;">
-            <li>یک ریپازیتوری در GitHub بسازید</li>
-            <li>فایل‌های پروژه را آپلود کنید</li>
-            <li>از بخش Settings > Pages فعال کنید</li>
-            <li>برنامه شما در آدرس GitHub در دسترس خواهد بود</li>
-        </ol>
-        
-        <div class="warning-box">
-            <strong>⚠️ توجه:</strong> فایل <code>.github/workflows/deploy.yml</code> برای 
-            استقرار خودکار آماده شده است.
-        </div>
-        
-        <h2>📚 مستندات بیشتر</h2>
-        
-        <ul style="margin-right: 2rem; list-style: disc;">
-            <li><strong>README.md:</strong> مستندات کامل پروژه</li>
-            <li><strong>GUIDE.md:</strong> راهنمای گام‌به‌گام</li>
-            <li><strong>FEATURES.md:</strong> توضیحات ویژگی‌ها</li>
-            <li><strong>PROJECT-SUMMARY.md:</strong> خلاصه کامل پروژه</li>
-        </ul>
-        
-        <div class="center" style="margin: 3rem 0;">
-            <a href="index.html" class="btn-primary">🎯 شروع استفاده از برنامه‌ریز روزانه</a>
-        </div>
-        
-        <div class="success-box center">
-            <strong>🎉 همه چیز آماده است!</strong><br>
-            کافیست دکمه بالا را بزنید و شروع کنید.
-        </div>
-        
-        <footer>
-            <p>ساخته شده با ❤️ برای مدیریت بهتر زمان</p>
-            <p style="font-size: 0.9rem; margin-top: 0.5rem;">
-                نسخه 1.0.0 | دسامبر 2025
-            </p>
-        </footer>
-    </div>
-</body>
-</html>
-

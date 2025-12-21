@@ -1,8 +1,4 @@
-﻿/* Import Vazirmatn Font */
-@import url('https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css');
-
-/* Global Styles */
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -28,7 +24,7 @@
 
 body {
     font-family: 'Vazirmatn', sans-serif;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     color: var(--text-color);
     min-height: 100vh;
     direction: rtl;
@@ -167,7 +163,7 @@ body {
 
 .btn-primary {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
     width: 100%;
 }
 
@@ -179,7 +175,7 @@ body {
 
 .btn-success {
     background: var(--success-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-success:hover {
@@ -189,7 +185,7 @@ body {
 
 .btn-danger {
     background: var(--danger-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-danger:hover {
@@ -224,7 +220,7 @@ body {
 
 /* Messages */
 .error-msg {
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(255, 255, 255, 0.95);
     border: 1px solid var(--danger-color);
     color: var(--danger-color);
     padding: 12px;
@@ -234,7 +230,7 @@ body {
 }
 
 .warning-box {
-    background: rgba(251, 191, 36, 0.1);
+    background: rgba(255, 255, 255, 0.95);
     border: 1px solid #f59e0b;
     color: #fbbf24;
     padding: 15px;
@@ -361,7 +357,7 @@ body {
 
 .note-item.active {
     border-color: var(--primary-color);
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(255, 255, 255, 0.95);
 }
 
 .note-item-title {
@@ -618,7 +614,7 @@ body {
 }
 
 .danger-zone {
-    background: rgba(239, 68, 68, 0.05);
+    background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(239, 68, 68, 0.2);
     padding: 20px;
     border-radius: 10px;

@@ -1,6 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap');
-
-:root {
+﻿:root {
   font-family: 'Vazirmatn', sans-serif;
   color: #111;
   background-color: #f6f7fb;
@@ -71,8 +69,8 @@ button.primary {
   padding: 10px 24px;
   border: none;
   border-radius: 12px;
-  background: #0f72ff;
-  color: white;
+  background: #ffffff;
+  color: #333333;
   font-weight: 600;
   cursor: pointer;
 }
@@ -134,8 +132,8 @@ button.primary {
 }
 
 .report-card {
-  background: #111f36;
-  color: white;
+  background: #f8f9fa;
+  color: #333333;
   padding: 12px 16px;
   border-radius: 12px;
 }

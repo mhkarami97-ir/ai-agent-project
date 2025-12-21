@@ -200,7 +200,7 @@ a {
 
 .btn--primary {
     background-color: var(--color-primary);
-    color: #fff;
+    color: #333333;
 }
 
 .btn--primary:disabled {
@@ -259,7 +259,7 @@ a {
 }
 
 .no-js {
-    background-color: #fee2e2;
+    background-color: #3333332e2;
     color: #b91c1c;
     text-align: center;
     margin: 0;

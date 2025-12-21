@@ -1,12 +1,4 @@
-﻿@font-face {
-  font-family: 'Vazirmtn';
-  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.0/dist/files/Vazirmatn-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-:root {
+﻿:root {
   font-family: 'Vazirmtn', 'Segoe UI', Tahoma, sans-serif;
   color: #131313;
   background-color: #f4f4f4;
@@ -29,7 +21,7 @@ body {
 
 .hero {
   background: linear-gradient(135deg, #372d6b, #64328b);
-  color: #fff;
+  color: #eee;
   padding: clamp(1.5rem, 2vw, 2rem);
   border-radius: 1.5rem;
   margin-bottom: 2rem;
@@ -122,7 +114,7 @@ button {
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   background: #634ce4;
-  color: #fff;
+  color: #333333;
 }
 
 button.ghost-button {
@@ -242,7 +234,7 @@ button:hover {
 
 .note-card button.delete {
   background: #ff7f7f;
-  color: #fff;
+  color: #333333;
 }
 
 .note-card.leave,

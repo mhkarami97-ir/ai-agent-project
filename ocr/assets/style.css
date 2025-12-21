@@ -31,7 +31,7 @@ header {
 
 header h1 {
     font-size: 2.5rem;
-    color: white;
+    color: #333333;
     margin-bottom: 0.5rem;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -75,7 +75,7 @@ header h1 {
 }
 
 .status-text {
-    color: white;
+    color: #333333;
     font-weight: 500;
 }
 
@@ -162,7 +162,7 @@ section:hover {
 
 .btn-primary {
     background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
+    color: #333333;
 }
 
 .btn-primary:hover {
@@ -172,19 +172,19 @@ section:hover {
 }
 
 .btn-success {
-    background: linear-gradient(135deg, #00c851, #007e33);
-    color: white;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #333333;
 }
 
 .btn-success:hover {
-    background: linear-gradient(135deg, #00a644, #006b2c);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 200, 81, 0.4);
 }
 
 .btn-secondary {
     background: linear-gradient(135deg, #6c757d, #5a6268);
-    color: white;
+    color: #333333;
 }
 
 .btn-secondary:hover {
@@ -194,7 +194,7 @@ section:hover {
 
 .btn-info {
     background: linear-gradient(135deg, #17a2b8, #138496);
-    color: white;
+    color: #333333;
 }
 
 .btn-info:hover {
@@ -204,7 +204,7 @@ section:hover {
 
 .btn-danger {
     background: linear-gradient(135deg, #dc3545, #c82333);
-    color: white;
+    color: #333333;
 }
 
 .btn-danger:hover {
@@ -353,7 +353,7 @@ section:hover {
 
 .history-language {
     background: #667eea;
-    color: white;
+    color: #333333;
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 0.8rem;
@@ -395,7 +395,7 @@ footer {
     backdrop-filter: blur(10px);
     text-align: center;
     padding: 2rem 0;
-    color: white;
+    color: #333333;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -406,7 +406,7 @@ footer {
     left: 50%;
     transform: translateX(-50%);
     background: #333;
-    color: white;
+    color: #333333;
     padding: 12px 24px;
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);

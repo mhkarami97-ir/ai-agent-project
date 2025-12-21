@@ -80,7 +80,7 @@ h2 {
 
 .lang-btn.active {
     background: #667eea;
-    color: white;
+    color: #333333;
 }
 
 .stats-section {
@@ -95,7 +95,7 @@ h2 {
     padding: 20px;
     border-radius: 15px;
     text-align: center;
-    color: white;
+    color: #333333;
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
     transition: transform 0.3s ease;
 }
@@ -184,7 +184,7 @@ h2 {
 
 .current-char-display {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    color: #333333;
     padding: 15px;
     border-radius: 10px;
     text-align: center;
@@ -268,7 +268,7 @@ h2 {
 
 .btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    color: #333333;
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
 }
 

@@ -6,7 +6,7 @@ body{margin:0;padding:0;background:var(--bg);color:#111;line-height:1.4;font-fam
 .app-root{max-width:900px;margin:0 auto;padding:16px}
 .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .h-title{font-size:1.2rem;font-weight:700}
-.btn{background:var(--accent);color:#fff;border-radius:8px;padding:8px 12px;border:none;cursor:pointer;font-family:"Vazirmtn",sans-serif}
+.btn{background:var(--accent);color:#333333;border-radius:8px;padding:8px 12px;border:none;cursor:pointer;font-family:"Vazirmtn",sans-serif}
 .card{background:var(--card);border-radius:var(--radius);padding:12px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .small{font-size:0.9rem;color:var(--muted)}
 .form-row{display:flex;gap:8px;flex-wrap:wrap}

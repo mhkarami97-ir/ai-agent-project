@@ -1,6 +1,6 @@
 ﻿@layer base {
   :root {
-    font-family: "Vazirmatn", "Vazir", "IranSans", sans-serif;
+    font-family: "Vazirmatn", sans-serif;
     color: #0f172a;
     background: #f9fafb;
   }
@@ -124,7 +124,7 @@ button:focus {
 
 .primary-btn {
   background: #2563eb;
-  color: white;
+  color: #333333;
   border: none;
   cursor: pointer;
   transition: background 0.2s ease;

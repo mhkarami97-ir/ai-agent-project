@@ -1,22 +1,4 @@
-﻿/* Import Vazirmatn Font */
-@font-face {
-    font-family: 'Vazirmatn';
-    src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-Regular.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Vazirmatn';
-    src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-Bold.woff2') format('woff2');
-    font-weight: bold;
-    font-style: normal;
-    font-display: swap;
-}
-
-/* Reset and Base Styles */
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -38,7 +20,7 @@ body {
 /* Header */
 header {
     text-align: center;
-    color: white;
+    color: #333333;
     margin-bottom: 40px;
     padding: 20px;
 }
@@ -87,7 +69,7 @@ header h1 {
     padding: 30px;
     border-radius: 15px;
     text-align: center;
-    color: white;
+    color: #333333;
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
 }
 
@@ -264,7 +246,7 @@ header h1 {
 button {
     padding: 12px 30px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    color: #333333;
     border: none;
     border-radius: 10px;
     font-size: 1rem;
@@ -412,7 +394,7 @@ button.danger {
 /* Footer */
 footer {
     text-align: center;
-    color: white;
+    color: #333333;
     padding: 20px;
     margin-top: 40px;
 }
@@ -424,7 +406,7 @@ footer {
     left: 50%;
     transform: translateX(-50%) translateY(100px);
     background: #28a745;
-    color: white;
+    color: #333333;
     padding: 15px 30px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);

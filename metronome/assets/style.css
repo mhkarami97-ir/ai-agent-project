@@ -1,8 +1,4 @@
-﻿/* واردات فونت Vazirmatn */
-@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
-
-/* ریست و تنظیمات پایه */
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -40,7 +36,7 @@ body {
 
 header {
     text-align: center;
-    color: white;
+    color: #333333;
     margin-bottom: 30px;
     animation: fadeInDown 0.6s ease-out;
 }
@@ -115,7 +111,7 @@ h2 {
     border-radius: 50%;
     border: none;
     background: var(--primary-color);
-    color: white;
+    color: #333333;
     font-size: 1.8rem;
     font-weight: 700;
     cursor: pointer;
@@ -191,7 +187,7 @@ h2 {
 
 .btn-quick:hover {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
     transform: translateY(-2px);
 }
 
@@ -234,7 +230,7 @@ h2 {
 
 .btn-beats.active {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
     border-color: var(--primary-color);
 }
 
@@ -268,7 +264,7 @@ h2 {
     border-radius: 50px;
     border: none;
     background: var(--secondary-color);
-    color: white;
+    color: #333333;
     font-size: 1.4rem;
     font-weight: 700;
     cursor: pointer;
@@ -281,7 +277,7 @@ h2 {
 }
 
 .btn-play:hover {
-    background: #059669;
+    background: #ffffff;
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
 }
@@ -370,7 +366,7 @@ h2 {
 
 .btn-preset:hover {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
 }
 
 .timer-custom {
@@ -403,7 +399,7 @@ h2 {
     border-radius: 10px;
     border: none;
     background: var(--primary-color);
-    color: white;
+    color: #333333;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -429,7 +425,7 @@ h2 {
     border-radius: 10px;
     border: none;
     background: var(--secondary-color);
-    color: white;
+    color: #333333;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -438,7 +434,7 @@ h2 {
 }
 
 .btn-timer:hover:not(:disabled) {
-    background: #059669;
+    background: #ffffff;
     transform: translateY(-2px);
 }
 
@@ -485,7 +481,7 @@ h2 {
     border-radius: 10px;
     border: none;
     background: var(--danger-color);
-    color: white;
+    color: #333333;
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
@@ -510,7 +506,7 @@ h2 {
     padding: 20px;
     border-radius: 15px;
     text-align: center;
-    color: white;
+    color: #333333;
 }
 
 .stat-label {
@@ -607,7 +603,7 @@ h2 {
     border-radius: 8px;
     border: none;
     background: var(--danger-color);
-    color: white;
+    color: #333333;
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
@@ -621,7 +617,7 @@ h2 {
 
 footer {
     text-align: center;
-    color: white;
+    color: #333333;
     margin-top: 30px;
     padding: 20px;
     font-size: 1rem;

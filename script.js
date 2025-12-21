@@ -113,7 +113,7 @@ const tools = [
         icon: '🔒'
     },
     {
-        path: 'convertor',
+        path: 'mapper',
         faName: 'تبدیل واحد',
         enName: 'Unit Converter',
         faDesc: 'تبدیل واحدهای مختلف',

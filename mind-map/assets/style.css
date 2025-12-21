@@ -1,22 +1,4 @@
-﻿/* Import Vazirmatn Font */
-@font-face {
-    font-family: 'Vazirmatn';
-    src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-Regular.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Vazirmatn';
-    src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-Bold.woff2') format('woff2');
-    font-weight: bold;
-    font-style: normal;
-    font-display: swap;
-}
-
-/* Reset and Base Styles */
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -90,7 +72,7 @@ header h1 {
 
 .btn-primary {
     background: #4A90E2;
-    color: white;
+    color: #333333;
 }
 
 .btn-primary:hover {
@@ -99,7 +81,7 @@ header h1 {
 
 .btn-success {
     background: #7ED321;
-    color: white;
+    color: #333333;
 }
 
 .btn-success:hover {
@@ -108,7 +90,7 @@ header h1 {
 
 .btn-info {
     background: #50E3C2;
-    color: white;
+    color: #333333;
 }
 
 .btn-info:hover {
@@ -117,7 +99,7 @@ header h1 {
 
 .btn-secondary {
     background: #95A5A6;
-    color: white;
+    color: #333333;
 }
 
 .btn-secondary:hover {
@@ -126,7 +108,7 @@ header h1 {
 
 .btn-danger {
     background: #D0021B;
-    color: white;
+    color: #333333;
 }
 
 .btn-danger:hover {
@@ -135,7 +117,7 @@ header h1 {
 
 .btn-mode {
     background: #9013FE;
-    color: white;
+    color: #333333;
 }
 
 .btn-mode:hover {
@@ -373,7 +355,7 @@ textarea.form-control {
     bottom: 30px;
     right: 30px;
     background: #333;
-    color: white;
+    color: #333333;
     padding: 15px 20px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);

@@ -45,7 +45,7 @@ body {
 /* Header Styles */
 header {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    color: white;
+    color: #333333;
     padding: 40px 30px;
     text-align: center;
 }
@@ -121,7 +121,7 @@ main {
 
 .btn-primary {
     background: var(--primary-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-primary:hover {
@@ -132,7 +132,7 @@ main {
 
 .btn-secondary {
     background: var(--secondary-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-secondary:hover {
@@ -403,16 +403,16 @@ main {
 
 .btn-restore {
     background: var(--success-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-restore:hover {
-    background: #059669;
+    background: #ffffff;
 }
 
 .btn-delete {
     background: var(--danger-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-delete:hover {
@@ -421,7 +421,7 @@ main {
 
 .btn-toggle {
     background: var(--secondary-color);
-    color: white;
+    color: #333333;
 }
 
 .btn-toggle:hover {
@@ -431,7 +431,7 @@ main {
 /* Footer */
 footer {
     background: var(--text-primary);
-    color: white;
+    color: #eee;
     text-align: center;
     padding: 20px;
     font-size: 0.875rem;
