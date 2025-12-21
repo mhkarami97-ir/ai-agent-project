@@ -28,7 +28,11 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["utilities", "productivity", "tools"],
+  "categories": [
+    "utilities",
+    "productivity",
+    "tools"
+  ],
   "screenshots": [],
   "share_target": {
     "action": "/",
