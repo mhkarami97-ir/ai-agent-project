@@ -1,6 +1,14 @@
 ﻿// Tools data
 const tools = [
     {
+        path: 'license-plate',
+        faName: 'پلاک و شماره تلفن استانها',
+        enName: 'LicensePlate',
+        faDesc: 'نمایش جزئیات پلاک و شماره تلفن استانها',
+        enDesc: 'Show details of license plates and phone numbers of provinces',
+        icon: '🌤️'
+    },
+    {
         path: 'weather',
         faName: 'وضعیت هوا',
         enName: 'Weather',
