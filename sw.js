@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'web-tools-v1';
+﻿const CACHE_NAME = 'web-tools-v2';
 const urlsToCache = [
     '/',
     '/index.html',
@@ -18,7 +18,43 @@ self.addEventListener('install', (event) => {
                 return cache.addAll(urlsToCache);
             })
     );
-    self.skipWaiting();
+    // Don't skip waiting - let the controlling event handle it
+});
+
+// Send message to all clients when new version is ready
+self.addEventListener('activate', (event) => {
+    const cacheWhitelist = [CACHE_NAME];
+
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => {
+            // Notify all clients about the update
+            return self.clients.matchAll().then((clients) => {
+                clients.forEach(client => {
+                    client.postMessage({
+                        type: 'SW_UPDATED',
+                        message: 'نسخه جدید در دسترس است'
+                    });
+                });
+            });
+        })
+    );
+
+    return self.clients.claim();
+});
+
+// Listen for skip waiting message from page
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
 
 self.addEventListener('fetch', (event) => {
@@ -49,23 +85,6 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-self.addEventListener('activate', (event) => {
-    const cacheWhitelist = [CACHE_NAME];
-
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheWhitelist.indexOf(cacheName) === -1) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
-    );
-
-    return self.clients.claim();
-});
 
 self.addEventListener('sync', (event) => {
     if (event.tag === 'sync-data') {
