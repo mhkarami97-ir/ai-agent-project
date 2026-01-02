@@ -1,0 +1,167 @@
+﻿{
+  "fa": {
+    "title": "مختل‌کننده اسپیکر بلوتوث",
+    "subtitle": "ابزار حمله بلوتوث تحت وب",
+    "controlPanel": {
+      "title": "پنل کنترل",
+      "attackThreads": "تعداد Thread های حمله:",
+      "attackThreadsInfo": "تعداد Thread های همزمان برای حمله",
+      "attackDuration": "مدت زمان حمله (ثانیه):",
+      "attackDurationInfo": "تنظیم مدت زمان حمله (0 برای نامحدود)",
+      "autoRandomizeUUID": "تصادفی‌سازی خودکار UUID",
+      "autoRandomizeUUIDInfo": "تولید خودکار UUID های تصادفی برای هر حمله",
+      "optimizeAttack": "بهینه‌سازی Thread های حمله",
+      "optimizeAttackInfo": "استفاده از Thread های بهینه‌شده برای عملکرد بهتر",
+      "showLogs": "نمایش لاگ‌ها",
+      "showLogsInfo": "نمایش لاگ‌های حمله به صورت زنده"
+    },
+    "buttons": {
+      "scan": "اسکن دستگاه‌ها",
+      "start": "شروع حمله",
+      "stop": "توقف حمله",
+      "clearLogs": "پاک کردن لاگ‌ها"
+    },
+    "devices": {
+      "title": "دستگاه‌های کشف شده",
+      "emptyState": "هنوز دستگاهی کشف نشده است. برای شروع روی \"اسکن دستگاه‌ها\" کلیک کنید.",
+      "status": {
+        "connected": "متصل",
+        "attacking": "در حال حمله",
+        "disconnected": "قطع شده"
+      }
+    },
+    "stats": {
+      "title": "آمار حملات",
+      "totalAttacks": "مجموع حملات",
+      "successful": "موفق",
+      "failed": "ناموفق",
+      "activeThreads": "Thread های فعال",
+      "timeRemaining": "زمان باقی‌مانده"
+    },
+    "logs": {
+      "title": "لاگ‌های حمله",
+      "initialized": "مختل‌کننده بلوتوث با موفقیت راه‌اندازی شد.",
+      "ready": "آماده برای اسکن دستگاه‌ها.",
+      "bluetoothNotSupported": "Web Bluetooth API در این مرورگر پشتیبانی نمی‌شود.",
+      "useChrome": "لطفاً از مرورگر Chrome، Edge یا Opera استفاده کنید.",
+      "scanStarted": "اسکن بلوتوث شروع شد...",
+      "deviceFound": "دستگاه پیدا شد:",
+      "deviceAdded": "دستگاه به لیست اضافه شد:",
+      "scanCancelled": "اسکن دستگاه توسط کاربر لغو شد.",
+      "scanError": "خطای اسکن:",
+      "attackStarted": "شروع حمله با {threads} Thread...",
+      "optimization": "بهینه‌سازی:",
+      "uuidRandomization": "تصادفی‌سازی خودکار UUID:",
+      "duration": "مدت زمان حمله:",
+      "durationUnlimited": "مدت زمان حمله: نامحدود (نیاز به توقف دستی)",
+      "willStopAt": "حمله به صورت خودکار در {time} متوقف می‌شود",
+      "attackSuccess": "[Thread {id}] حمله موفق روی {device} با استفاده از {method}",
+      "attackFailed": "[Thread {id}] حمله ناموفق روی {device}: {error}",
+      "usingUUID": "[Thread {id}] استفاده از UUID: {uuid}",
+      "durationReached": "مدت زمان حمله ({duration}s) به پایان رسید. توقف حمله...",
+      "attackStopped": "حمله متوقف شد.",
+      "attackSummary": "مجموع حملات: {total}، موفق: {success}، ناموفق: {failed}",
+      "logsCleared": "لاگ‌ها پاک شدند.",
+      "enabled": "فعال",
+      "disabled": "غیرفعال",
+      "seconds": "ثانیه"
+    },
+    "footer": {
+      "warning": "⚠️ فقط برای اهداف آموزشی. دسترسی غیرمجاز به دستگاه‌های بلوتوث غیرقانونی است.",
+      "version": "نسخه 1.1.0 | © 2026"
+    },
+    "attackMethods": {
+      "connectionFlooding": "سیل اتصال",
+      "gattOverload": "اضافه‌بار سرویس GATT",
+      "pairingSpam": "اسپم درخواست جفت‌شدن",
+      "audioInjection": "تزریق جریان صوتی",
+      "l2capFlood": "سیل L2CAP",
+      "sdpSpam": "اسپم پرس‌وجوی SDP",
+      "mtuAttack": "حمله اندازه MTU",
+      "notificationFlood": "سیل اعلان"
+    }
+  },
+  "en": {
+    "title": "Bluetooth Speaker Jammer",
+    "subtitle": "Web Bluetooth Attack Tool",
+    "controlPanel": {
+      "title": "Control Panel",
+      "attackThreads": "Attack Threads:",
+      "attackThreadsInfo": "Number of concurrent attack threads",
+      "attackDuration": "Attack Duration (seconds):",
+      "attackDurationInfo": "Set attack duration (0 for unlimited)",
+      "autoRandomizeUUID": "Auto Randomize UUID",
+      "autoRandomizeUUIDInfo": "Automatically generate random UUIDs for each attack",
+      "optimizeAttack": "Optimize Attack Threads",
+      "optimizeAttackInfo": "Use optimized threading for better performance",
+      "showLogs": "Show Logs",
+      "showLogsInfo": "Display attack logs in real-time"
+    },
+    "buttons": {
+      "scan": "Scan Devices",
+      "start": "Start Attack",
+      "stop": "Stop Attack",
+      "clearLogs": "Clear Logs"
+    },
+    "devices": {
+      "title": "Discovered Devices",
+      "emptyState": "No devices discovered yet. Click \"Scan Devices\" to start.",
+      "status": {
+        "connected": "CONNECTED",
+        "attacking": "ATTACKING",
+        "disconnected": "DISCONNECTED"
+      }
+    },
+    "stats": {
+      "title": "Attack Statistics",
+      "totalAttacks": "Total Attacks",
+      "successful": "Successful",
+      "failed": "Failed",
+      "activeThreads": "Active Threads",
+      "timeRemaining": "Time Remaining"
+    },
+    "logs": {
+      "title": "Attack Logs",
+      "initialized": "Bluetooth Jammer initialized successfully.",
+      "ready": "Ready to scan for devices.",
+      "bluetoothNotSupported": "Web Bluetooth API is not supported in this browser.",
+      "useChrome": "Please use Chrome, Edge, or Opera browser.",
+      "scanStarted": "Starting Bluetooth scan...",
+      "deviceFound": "Device found:",
+      "deviceAdded": "Added device to list:",
+      "scanCancelled": "Device scan cancelled by user.",
+      "scanError": "Scan error:",
+      "attackStarted": "Starting attack with {threads} threads...",
+      "optimization": "Optimization:",
+      "uuidRandomization": "Auto UUID Randomization:",
+      "duration": "Attack Duration:",
+      "durationUnlimited": "Attack Duration: UNLIMITED (manual stop required)",
+      "willStopAt": "Attack will stop automatically at {time}",
+      "attackSuccess": "[Thread {id}] Attack successful on {device} using {method}",
+      "attackFailed": "[Thread {id}] Attack failed on {device}: {error}",
+      "usingUUID": "[Thread {id}] Using UUID: {uuid}",
+      "durationReached": "Attack duration ({duration}s) reached. Stopping attack...",
+      "attackStopped": "Attack stopped.",
+      "attackSummary": "Total attacks: {total}, Success: {success}, Failed: {failed}",
+      "logsCleared": "Logs cleared.",
+      "enabled": "ENABLED",
+      "disabled": "DISABLED",
+      "seconds": "seconds"
+    },
+    "footer": {
+      "warning": "⚠️ Educational purposes only. Unauthorized access to Bluetooth devices is illegal.",
+      "version": "Version 1.1.0 | © 2026"
+    },
+    "attackMethods": {
+      "connectionFlooding": "Connection Flooding",
+      "gattOverload": "GATT Service Overload",
+      "pairingSpam": "Pairing Request Spam",
+      "audioInjection": "Audio Stream Injection",
+      "l2capFlood": "L2CAP Flood",
+      "sdpSpam": "SDP Query Spam",
+      "mtuAttack": "MTU Size Attack",
+      "notificationFlood": "Notification Flood"
+    }
+  }
+}
+

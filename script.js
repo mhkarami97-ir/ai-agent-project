@@ -1,12 +1,20 @@
 ﻿// Tools data
 const tools = [
     {
+        path: 'bluethooth-killer',
+        faName: 'قطع کردن بلوتوث',
+        enName: 'bluethooth Killer',
+        faDesc: 'قطع کردن دستگاه‌های بلوتوث اطراف مثل اسپیکرها',
+        enDesc: 'kill bluethooth devices nearby',
+        icon: '📶'
+    },
+    {
         path: 'license-plate',
         faName: 'پلاک و شماره تلفن استانها',
         enName: 'LicensePlate',
         faDesc: 'نمایش جزئیات پلاک و شماره تلفن استانها',
         enDesc: 'Show details of license plates and phone numbers of provinces',
-        icon: '📱️'
+        icon: '🚗'
     },
     {
         path: 'weather',

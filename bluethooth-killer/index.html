@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="title">مختل‌کننده اسپیکر بلوتوث</title>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body dir="rtl">
+    <div class="container">
+        <header>
+            <button class="language-toggle" id="languageToggle">English</button>
+            <h1 data-i18n="title">🎵 مختل‌کننده اسپیکر بلوتوث</h1>
+            <p class="subtitle" data-i18n="subtitle">ابزار حمله بلوتوث تحت وب</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <div class="control-group">
+                    <label for="threadCount" data-i18n="controlPanel.attackThreads">تعداد Thread های حمله:</label>
+                    <input type="number" id="threadCount" min="1" max="50" value="10">
+                    <span class="info-text" data-i18n="controlPanel.attackThreadsInfo">تعداد Thread های همزمان برای حمله</span>
+                </div>
+
+                <div class="control-group">
+                    <label for="attackDuration" data-i18n="controlPanel.attackDuration">مدت زمان حمله (ثانیه):</label>
+                    <input type="number" id="attackDuration" min="0" max="3600" value="0" placeholder="0 = نامحدود">
+                    <span class="info-text" data-i18n="controlPanel.attackDurationInfo">تنظیم مدت زمان حمله (0 برای نامحدود)</span>
+                </div>
+
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="autoRandomizeUUID" checked>
+                        <span data-i18n="controlPanel.autoRandomizeUUID">تصادفی‌سازی خودکار UUID</span>
+                    </label>
+                    <span class="info-text" data-i18n="controlPanel.autoRandomizeUUIDInfo">تولید خودکار UUID های تصادفی برای هر حمله</span>
+                </div>
+
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="optimizeAttack" checked>
+                        <span data-i18n="controlPanel.optimizeAttack">بهینه‌سازی Thread های حمله</span>
+                    </label>
+                    <span class="info-text" data-i18n="controlPanel.optimizeAttackInfo">استفاده از Thread های بهینه‌شده برای عملکرد بهتر</span>
+                </div>
+
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="showLogs" checked>
+                        <span data-i18n="controlPanel.showLogs">نمایش لاگ‌ها</span>
+                    </label>
+                    <span class="info-text" data-i18n="controlPanel.showLogsInfo">نمایش لاگ‌های حمله به صورت زنده</span>
+                </div>
+
+                <div class="button-group">
+                    <button id="scanBtn" class="btn btn-primary">
+                        <span data-i18n="buttons.scan">🔍 اسکن دستگاه‌ها</span>
+                    </button>
+                    <button id="startBtn" class="btn btn-success" disabled>
+                        <span data-i18n="buttons.start">▶️ شروع حمله</span>
+                    </button>
+                    <button id="stopBtn" class="btn btn-danger" disabled>
+                        <span data-i18n="buttons.stop">⏹️ توقف حمله</span>
+                    </button>
+                    <button id="clearLogsBtn" class="btn btn-secondary">
+                        <span data-i18n="buttons.clearLogs">🗑️ پاک کردن لاگ‌ها</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Devices List -->
+            <div class="devices-section">
+                <h2 data-i18n="devices.title">📱 دستگاه‌های کشف شده</h2>
+                <div id="devicesList" class="devices-list">
+                    <p class="empty-state" data-i18n="devices.emptyState">هنوز دستگاهی کشف نشده است. برای شروع روی "اسکن دستگاه‌ها" کلیک کنید.</p>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-section">
+                <h2 data-i18n="stats.title">📊 آمار حملات</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="attacksCount">0</div>
+                        <div class="stat-label" data-i18n="stats.totalAttacks">مجموع حملات</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="successCount">0</div>
+                        <div class="stat-label" data-i18n="stats.successful">موفق</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="failedCount">0</div>
+                        <div class="stat-label" data-i18n="stats.failed">ناموفق</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activeThreads">0</div>
+                        <div class="stat-label" data-i18n="stats.activeThreads">Thread های فعال</div>
+                    </div>
+                    <div class="stat-card" id="timeRemainingCard" style="display: none;">
+                        <div class="stat-value" id="timeRemaining">--</div>
+                        <div class="stat-label" data-i18n="stats.timeRemaining">زمان باقی‌مانده</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Section -->
+            <div class="logs-section" id="logsSection">
+                <h2 data-i18n="logs.title">📝 لاگ‌های حمله</h2>
+                <div id="logsContainer" class="logs-container"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p data-i18n="footer.warning">⚠️ فقط برای اهداف آموزشی. </p>
+            <p class="version" data-i18n="footer.version">© 2026</p>
+        </footer>
+    </div>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>
+
