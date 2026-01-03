@@ -236,6 +236,11 @@ footer {
     flex-wrap: wrap;
 }
 
+footer a, footer span a{
+    text-decoration: none;
+    color: var(--muted);
+}
+
 .kbd {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
     padding: 2px 8px;

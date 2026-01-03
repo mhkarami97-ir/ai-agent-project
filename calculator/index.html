@@ -1,0 +1,259 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ماشین حساب پیشرفته</title>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ماشین حساب پیشرفته</h1>
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="simple">ساده</button>
+                <button class="mode-btn" data-mode="engineering">مهندسی</button>
+                <button class="mode-btn" data-mode="programming">برنامه‌نویسی</button>
+                <button class="mode-btn" data-mode="graph">نمودار</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- حالت ساده -->
+            <div class="calculator-mode active" id="simple-mode">
+                <div class="display">
+                    <div class="history" id="simple-history"></div>
+                    <input type="text" class="result" id="simple-result" value="0" readonly>
+                </div>
+                <div class="buttons">
+                    <button class="btn btn-function" onclick="clearDisplay('simple')">C</button>
+                    <button class="btn btn-function" onclick="deleteLast('simple')">⌫</button>
+                    <button class="btn btn-function" onclick="percentage('simple')">%</button>
+                    <button class="btn btn-operator" onclick="appendOperator('simple', '/')">÷</button>
+                    
+                    <button class="btn" onclick="appendNumber('simple', '7')">7</button>
+                    <button class="btn" onclick="appendNumber('simple', '8')">8</button>
+                    <button class="btn" onclick="appendNumber('simple', '9')">9</button>
+                    <button class="btn btn-operator" onclick="appendOperator('simple', '*')">×</button>
+                    
+                    <button class="btn" onclick="appendNumber('simple', '4')">4</button>
+                    <button class="btn" onclick="appendNumber('simple', '5')">5</button>
+                    <button class="btn" onclick="appendNumber('simple', '6')">6</button>
+                    <button class="btn btn-operator" onclick="appendOperator('simple', '-')">−</button>
+                    
+                    <button class="btn" onclick="appendNumber('simple', '1')">1</button>
+                    <button class="btn" onclick="appendNumber('simple', '2')">2</button>
+                    <button class="btn" onclick="appendNumber('simple', '3')">3</button>
+                    <button class="btn btn-operator" onclick="appendOperator('simple', '+')">+</button>
+                    
+                    <button class="btn" onclick="appendNumber('simple', '0')">0</button>
+                    <button class="btn" onclick="appendNumber('simple', '.')">.</button>
+                    <button class="btn btn-equals" onclick="calculate('simple')">=</button>
+                    <button class="btn btn-history" onclick="showHistory()">📜</button>
+                </div>
+            </div>
+
+            <!-- حالت مهندسی -->
+            <div class="calculator-mode" id="engineering-mode">
+                <div class="display">
+                    <div class="history" id="eng-history"></div>
+                    <input type="text" class="result" id="eng-result" value="0" readonly>
+                </div>
+                <div class="angle-selector">
+                    <label>
+                        <input type="radio" name="angle" value="deg" checked> درجه
+                    </label>
+                    <label>
+                        <input type="radio" name="angle" value="rad"> رادیان
+                    </label>
+                </div>
+                <div class="buttons engineering-buttons">
+                    <button class="btn btn-function" onclick="clearDisplay('eng')">C</button>
+                    <button class="btn btn-function" onclick="deleteLast('eng')">⌫</button>
+                    <button class="btn btn-function" onclick="percentage('eng')">%</button>
+                    <button class="btn btn-operator" onclick="appendOperator('eng', '/')">÷</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'sin')">sin</button>
+                    
+                    <button class="btn" onclick="appendNumber('eng', '7')">7</button>
+                    <button class="btn" onclick="appendNumber('eng', '8')">8</button>
+                    <button class="btn" onclick="appendNumber('eng', '9')">9</button>
+                    <button class="btn btn-operator" onclick="appendOperator('eng', '*')">×</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'cos')">cos</button>
+                    
+                    <button class="btn" onclick="appendNumber('eng', '4')">4</button>
+                    <button class="btn" onclick="appendNumber('eng', '5')">5</button>
+                    <button class="btn" onclick="appendNumber('eng', '6')">6</button>
+                    <button class="btn btn-operator" onclick="appendOperator('eng', '-')">−</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'tan')">tan</button>
+                    
+                    <button class="btn" onclick="appendNumber('eng', '1')">1</button>
+                    <button class="btn" onclick="appendNumber('eng', '2')">2</button>
+                    <button class="btn" onclick="appendNumber('eng', '3')">3</button>
+                    <button class="btn btn-operator" onclick="appendOperator('eng', '+')">+</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'asin')">asin</button>
+                    
+                    <button class="btn" onclick="appendNumber('eng', '0')">0</button>
+                    <button class="btn" onclick="appendNumber('eng', '.')">.</button>
+                    <button class="btn btn-equals" onclick="calculate('eng')">=</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'sqrt')">√</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'acos')">acos</button>
+                    
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'pow')">x^y</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'square')">x²</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'cube')">x³</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'exp')">e^x</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'atan')">atan</button>
+                    
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'ln')">ln</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'log')">log</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'pi')">π</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'e')">e</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'factorial')">n!</button>
+                    
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'abs')">|x|</button>
+                    <button class="btn btn-function" onclick="appendOperator('eng', '(')">(</button>
+                    <button class="btn btn-function" onclick="appendOperator('eng', ')')">)</button>
+                    <button class="btn btn-function" onclick="engineeringFunc('eng', 'inv')">1/x</button>
+                    <button class="btn btn-history" onclick="showHistory()">📜</button>
+                </div>
+            </div>
+
+            <!-- حالت برنامه‌نویسی -->
+            <div class="calculator-mode" id="programming-mode">
+                <div class="display">
+                    <div class="base-display">
+                        <div class="base-result">
+                            <span>HEX:</span> <span id="hex-result">0</span>
+                        </div>
+                        <div class="base-result">
+                            <span>DEC:</span> <span id="dec-result">0</span>
+                        </div>
+                        <div class="base-result">
+                            <span>OCT:</span> <span id="oct-result">0</span>
+                        </div>
+                        <div class="base-result">
+                            <span>BIN:</span> <span id="bin-result">0</span>
+                        </div>
+                    </div>
+                    <input type="text" class="result" id="prog-result" value="0" readonly>
+                </div>
+                <div class="base-selector">
+                    <label>
+                        <input type="radio" name="base" value="16" checked> HEX
+                    </label>
+                    <label>
+                        <input type="radio" name="base" value="10"> DEC
+                    </label>
+                    <label>
+                        <input type="radio" name="base" value="8"> OCT
+                    </label>
+                    <label>
+                        <input type="radio" name="base" value="2"> BIN
+                    </label>
+                </div>
+                <div class="buttons programming-buttons">
+                    <button class="btn btn-function" onclick="clearDisplay('prog')">C</button>
+                    <button class="btn btn-function" onclick="deleteLast('prog')">⌫</button>
+                    <button class="btn btn-function hex-only" onclick="appendNumber('prog', 'A')">A</button>
+                    <button class="btn btn-function hex-only" onclick="appendNumber('prog', 'B')">B</button>
+                    <button class="btn btn-function hex-only" onclick="appendNumber('prog', 'C')">C</button>
+                    
+                    <button class="btn btn-function hex-only" onclick="appendNumber('prog', 'D')">D</button>
+                    <button class="btn btn-function hex-only" onclick="appendNumber('prog', 'E')">E</button>
+                    <button class="btn btn-function hex-only" onclick="appendNumber('prog', 'F')">F</button>
+                    <button class="btn btn-operator" onclick="bitwiseOp('prog', 'AND')">AND</button>
+                    <button class="btn btn-operator" onclick="bitwiseOp('prog', 'OR')">OR</button>
+                    
+                    <button class="btn oct-disabled" onclick="appendNumber('prog', '7')">7</button>
+                    <button class="btn oct-disabled" onclick="appendNumber('prog', '8')">8</button>
+                    <button class="btn oct-disabled" onclick="appendNumber('prog', '9')">9</button>
+                    <button class="btn btn-operator" onclick="bitwiseOp('prog', 'XOR')">XOR</button>
+                    <button class="btn btn-operator" onclick="bitwiseOp('prog', 'NOT')">NOT</button>
+                    
+                    <button class="btn" onclick="appendNumber('prog', '4')">4</button>
+                    <button class="btn" onclick="appendNumber('prog', '5')">5</button>
+                    <button class="btn" onclick="appendNumber('prog', '6')">6</button>
+                    <button class="btn btn-operator" onclick="bitwiseOp('prog', 'LSH')">LSH</button>
+                    <button class="btn btn-operator" onclick="bitwiseOp('prog', 'RSH')">RSH</button>
+                    
+                    <button class="btn" onclick="appendNumber('prog', '1')">1</button>
+                    <button class="btn bin-disabled" onclick="appendNumber('prog', '2')">2</button>
+                    <button class="btn bin-disabled" onclick="appendNumber('prog', '3')">3</button>
+                    <button class="btn btn-operator" onclick="appendOperator('prog', '+')">+</button>
+                    <button class="btn btn-operator" onclick="appendOperator('prog', '-')">−</button>
+                    
+                    <button class="btn" onclick="appendNumber('prog', '0')">0</button>
+                    <button class="btn btn-equals" onclick="calculate('prog')">=</button>
+                    <button class="btn btn-operator" onclick="appendOperator('prog', '*')">×</button>
+                    <button class="btn btn-operator" onclick="appendOperator('prog', '/')">÷</button>
+                    <button class="btn btn-history" onclick="showHistory()">📜</button>
+                </div>
+            </div>
+
+            <!-- حالت نمودار -->
+            <div class="calculator-mode" id="graph-mode">
+                <div class="graph-container">
+                    <div class="graph-controls">
+                        <h3>رسم نمودار تابع</h3>
+                        <div class="control-group">
+                            <label>تابع (از x استفاده کنید):</label>
+                            <input type="text" id="graph-function" placeholder="مثال: x^2 یا sin(x) یا 2*x+3">
+                        </div>
+                        <div class="control-group">
+                            <label>محدوده X از:</label>
+                            <input type="number" id="x-min" value="-10">
+                            <label>تا:</label>
+                            <input type="number" id="x-max" value="10">
+                        </div>
+                        <div class="control-group">
+                            <label>محدوده Y از:</label>
+                            <input type="number" id="y-min" value="-10">
+                            <label>تا:</label>
+                            <input type="number" id="y-max" value="10">
+                        </div>
+                        <div class="control-group">
+                            <button class="btn btn-equals" onclick="drawGraph()">رسم نمودار</button>
+                            <button class="btn btn-function" onclick="clearGraph()">پاک کردن</button>
+                        </div>
+                        <div class="function-examples">
+                            <h4>مثال‌های تابع:</h4>
+                            <ul>
+                                <li onclick="setGraphFunction('x^2')">x^2 (سهمی)</li>
+                                <li onclick="setGraphFunction('sin(x)')">sin(x) (سینوسی)</li>
+                                <li onclick="setGraphFunction('cos(x)')">cos(x) (کسینوسی)</li>
+                                <li onclick="setGraphFunction('tan(x)')">tan(x) (تانژانتی)</li>
+                                <li onclick="setGraphFunction('exp(x)')">exp(x) (نمایی)</li>
+                                <li onclick="setGraphFunction('ln(x)')">ln(x) (لگاریتمی)</li>
+                                <li onclick="setGraphFunction('sqrt(x)')">sqrt(x) (رادیکالی)</li>
+                                <li onclick="setGraphFunction('abs(x)')">abs(x) (قدر مطلق)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="graph-canvas-container">
+                        <canvas id="graph-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- تاریخچه محاسبات -->
+        <div class="history-modal" id="history-modal">
+            <div class="history-content">
+                <div class="history-header">
+                    <h2>تاریخچه محاسبات</h2>
+                    <button class="close-btn" onclick="closeHistory()">×</button>
+                </div>
+                <div class="history-list" id="history-list"></div>
+                <div class="history-footer">
+                    <button class="btn btn-function" onclick="clearHistory()">پاک کردن تاریخچه</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
+

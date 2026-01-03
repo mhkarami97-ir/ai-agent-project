@@ -1,6 +1,22 @@
 ﻿// Tools data
 const tools = [
     {
+        path: 'planet',
+        faName: 'مراقبت از گیاهان',
+        enName: 'Plant Care',
+        faDesc: 'راهنمای مراقبت از گیاهان خانگی',
+        enDesc: 'Guide to caring for houseplants',
+        icon: '🌿'
+    },
+    {
+        path: 'calculator',
+        faName: 'ماشین حساب',
+        enName: 'Calculator',
+        faDesc: 'ماشین حساب ساده و پیشرفته',
+        enDesc: 'Simple and advanced calculator',
+        icon: '🧮'
+    },
+    {
         path: 'voice-change',
         faName: 'تغییر صدا',
         enName: 'Voice Changer',

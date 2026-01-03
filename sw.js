@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'web-tools-v3';
+﻿const CACHE_NAME = 'web-tools-v1.0.0';
 const urlsToCache = [
     '/',
     '/index.html',
