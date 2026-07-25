@@ -59,7 +59,7 @@ h1 {
   border-radius: 1.5rem;
   padding: 1.5rem;
   margin-top: 1.5rem;
-  background: rgba(15, 18, 30, 0.95);
+  background: rgb(128, 143, 201, 0.95);
 }
 
 .panel + .panel {

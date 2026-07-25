@@ -117,6 +117,15 @@ const reminderCount = document.getElementById("reminderCount");
 const habitSummary = document.getElementById("habitSummary");
 const reminderFeed = document.getElementById("reminderFeed");
 
+function createHabitId() {
+  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function getFieldValue(name) {
+  const field = form.elements.namedItem(name);
+  return field && "value" in field ? field.value.trim() : "";
+}
+
 function loadHabits() {
   const saved = localStorage.getItem(STORAGE_KEY);
   habits = saved ? JSON.parse(saved) : [];
@@ -211,15 +220,15 @@ function updateStats() {
 
 function registerHabit(event) {
   event.preventDefault();
-  const title = form.title.value.trim();
+  const title = getFieldValue("title");
   if (!title) return;
 
   const newHabit = {
-    id: crypto.randomUUID(),
+    id: createHabitId(),
     title,
-    description: form.description.value.trim(),
-    target: parseInt(form.target.value, 10) || 1,
-    reminder: form.reminder.value,
+    description: getFieldValue("description"),
+    target: parseInt(getFieldValue("target"), 10) || 1,
+    reminder: getFieldValue("reminder"),
     streak: 0,
     histories: Array(7).fill(0),
   };
@@ -304,4 +313,3 @@ initChart();
 updateChart();
 scheduleReminders();
 setInterval(scheduleReminders, 60 * 1000);
-

@@ -136,6 +136,28 @@ class MeetingFinder {
 
         // Clear all
         document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAll());
+
+        // Participant and time slot actions
+        document.getElementById('participantsList').addEventListener('click', (e) => {
+            const button = e.target.closest('button[data-action]');
+            if (!button) return;
+
+            const id = Number(button.dataset.id);
+            if (button.dataset.action === 'edit-person') {
+                this.editPersonTimeSlots(id);
+            } else if (button.dataset.action === 'delete-person') {
+                this.deletePerson(id);
+            }
+        });
+
+        document.getElementById('timeSlotsList').addEventListener('click', (e) => {
+            const button = e.target.closest('button[data-action]');
+            if (!button) return;
+
+            if (button.dataset.action === 'delete-time-slot') {
+                this.deleteTimeSlot(Number(button.dataset.id));
+            }
+        });
     }
 
     // Storage methods
@@ -373,10 +395,10 @@ class MeetingFinder {
                     <div class="participant-slots">${person.timeSlots.length} بازه زمانی</div>
                 </div>
                 <div class="participant-actions">
-                    <button class="btn btn-secondary btn-small" onclick="app.editPersonTimeSlots(${person.id})">
+                    <button class="btn btn-secondary btn-small" data-action="edit-person" data-id="${person.id}">
                         ویرایش
                     </button>
-                    <button class="btn btn-danger btn-small" onclick="app.deletePerson(${person.id})">
+                    <button class="btn btn-danger btn-small" data-action="delete-person" data-id="${person.id}">
                         حذف
                     </button>
                 </div>
@@ -411,7 +433,7 @@ class MeetingFinder {
                         </div>
                         <div class="time-slot-duration">مدت: ${duration}</div>
                     </div>
-                    <button class="btn btn-danger btn-small" onclick="app.deleteTimeSlot(${slot.id})">
+                    <button class="btn btn-danger btn-small" data-action="delete-time-slot" data-id="${slot.id}">
                         حذف
                     </button>
                 </div>
@@ -512,5 +534,4 @@ class MeetingFinder {
 }
 
 // Initialize app
-const app = new MeetingFinder();
-
+window.app = new MeetingFinder();

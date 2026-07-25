@@ -69,10 +69,10 @@ button.primary {
   padding: 10px 24px;
   border: none;
   border-radius: 12px;
-  background: #ffffff;
   color: #333333;
   font-weight: 600;
   cursor: pointer;
+  background: beige;
 }
 
 .task-list {

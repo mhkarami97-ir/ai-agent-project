@@ -129,14 +129,6 @@ const tools = [
         icon: '🌤️'
     },
     {
-        path: 'chat',
-        faName: 'چت',
-        enName: 'Chat',
-        faDesc: 'سیستم چت آنلاین',
-        enDesc: 'Online chat system',
-        icon: '💬'
-    },
-    {
         path: 'compress',
         faName: 'فشرده‌ساز تصویر',
         enName: 'Image Compressor',
@@ -361,14 +353,6 @@ const tools = [
         icon: '✈️'
     },
     {
-        path: 'meeting-finder',
-        faName: 'جلسه‌یاب',
-        enName: 'Meeting Finder',
-        faDesc: 'زمان‌بندی جلسات',
-        enDesc: 'Schedule meetings',
-        icon: '🤝'
-    },
-    {
         path: 'regex',
         faName: 'رجکس',
         enName: 'Regex Tester',
@@ -383,22 +367,6 @@ const tools = [
         faDesc: 'مقایسه متن‌ها',
         enDesc: 'Compare texts',
         icon: '🔀'
-    },
-    {
-        path: 'mapper',
-        faName: 'نقشه',
-        enName: 'Mapper',
-        faDesc: 'نقشه و مکان‌یابی',
-        enDesc: 'Map and location',
-        icon: '🗺️'
-    },
-    {
-        path: 'downloader',
-        faName: 'دانلودر',
-        enName: 'Downloader',
-        faDesc: 'دانلود فایل‌ها',
-        enDesc: 'Download files',
-        icon: '⬇️'
     },
     {
         path: 'meta-data',
@@ -455,14 +423,6 @@ const tools = [
         faDesc: 'بهبود سرعت تایپ',
         enDesc: 'Improve typing speed',
         icon: '⌨️'
-    },
-    {
-        path: 'mime',
-        faName: 'MIME',
-        enName: 'MIME Types',
-        faDesc: 'شناسایی نوع فایل',
-        enDesc: 'Identify file types',
-        icon: '📎'
     },
     {
         path: 'mind-map',
