@@ -33,14 +33,6 @@ const tools = [
         icon: '📁'
     },
     {
-        path: 'local-call',
-        faName: 'تماس تصویری و صوتی محلی',
-        enName: 'Local Call',
-        faDesc: 'تماس تصویری و صوتی به صورت محلی در یک شبکه اینترنت',
-        enDesc: 'Make local video and audio calls over a network',
-        icon: '📞'
-    },
-    {
         path: 'planet',
         faName: 'مراقبت از گیاهان',
         enName: 'Plant Care',
@@ -87,14 +79,6 @@ const tools = [
         faDesc: 'ثبت و مشاهده نقاط امن در بلایای طبیعی',
         enDesc: 'Register and view safe zones during natural disasters',
         icon: '🆘'
-    },
-    {
-        path: 'local-board',
-        faName: 'اعلام رویداد محلی آفلاین',
-        enName: 'Local Event Board',
-        faDesc: 'اعلام و مشاهده رویدادهای محلی به صورت آفلاین',
-        enDesc: 'Announce and view local events offline',
-        icon: '📌'
     },
     {
         path: 'event-logger',
@@ -263,14 +247,6 @@ const tools = [
         faDesc: 'تبدیل ارزهای مختلف',
         enDesc: 'Convert currencies',
         icon: '💱'
-    },
-    {
-        path: 'date',
-        faName: 'تاریخ',
-        enName: 'Date Converter',
-        faDesc: 'تبدیل و نمایش تاریخ',
-        enDesc: 'Convert and display dates',
-        icon: '📅'
     },
     {
         path: 'time',
@@ -487,22 +463,6 @@ const tools = [
         faDesc: 'شناسایی نوع فایل',
         enDesc: 'Identify file types',
         icon: '📎'
-    },
-    {
-        path: 'osint',
-        faName: 'اطلاعات افراد',
-        enName: 'OSINT',
-        faDesc: 'جستجوی اطلاعات عمومی افراد',
-        enDesc: 'Open source intelligence',
-        icon: '🕵️'
-    },
-    {
-        path: 'question-answer',
-        faName: 'پرسش و پاسخ',
-        enName: 'Q&A',
-        faDesc: 'سیستم پرسش و پاسخ',
-        enDesc: 'Question and answer system',
-        icon: '❓'
     },
     {
         path: 'mind-map',

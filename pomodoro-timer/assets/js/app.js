@@ -324,10 +324,11 @@ const initElements = () => {
 };
 
 const hydrateForm = () => {
-  elements.settingsForm.focus.value = state.config.focus;
-  elements.settingsForm.short.value = state.config.short;
-  elements.settingsForm.long.value = state.config.long;
-  elements.settingsForm.interval.value = state.config.interval;
+  const formElements = elements.settingsForm.elements;
+  formElements.namedItem("focus").value = state.config.focus;
+  formElements.namedItem("short").value = state.config.short;
+  formElements.namedItem("long").value = state.config.long;
+  formElements.namedItem("interval").value = state.config.interval;
 };
 
 const boot = () => {
