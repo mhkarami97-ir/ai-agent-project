@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "web-tools-v2.0.1";
+﻿const CACHE_NAME = "web-tools-v2.0.2";
 const OFFLINE_PAGE = "/offline.html";
 
 const urlsToCache = [
@@ -15,6 +15,7 @@ const urlsToCache = [
   "/assets/contact-form.css",
   "/assets/contact-form.js",
   "/assets/contact-form.html",
+  "/assets/tools.css",
 ];
 
 function shouldCache(url) {

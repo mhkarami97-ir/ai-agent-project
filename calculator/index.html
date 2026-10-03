@@ -1,239 +1,200 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html dir="rtl" lang="fa">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">ماشین حساب پیشرفته</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="assets/css/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">ماشین حساب پیشرفته</title>
+    <meta name="description" content="ماشین حساب ساده، مهندسی، برنامه‌نویسی و رسم نمودار تابع">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+    <script src="assets/js/app.js" defer></script>
+    <script src="../assets/tool-wrapper.js" defer></script>
 </head>
+
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">ماشین حساب پیشرفته</h1>
-<div class="mode-selector">
-<button class="mode-btn active" data-i18n="button_0" data-mode="simple">ساده</button>
-<button class="mode-btn" data-i18n="button_1" data-mode="engineering">مهندسی</button>
-<button class="mode-btn" data-i18n="button_2" data-mode="programming">برنامه‌نویسی</button>
-<button class="mode-btn" data-i18n="button_3" data-mode="graph">نمودار</button>
-</div>
-</header>
-<main>
-<!-- حالت ساده -->
-<div class="calculator-mode active" id="simple-mode">
-<div class="display">
-<div class="history" id="simple-history"></div>
-<input class="result" id="simple-result" readonly="" type="text" value="0"/>
-</div>
-<div class="buttons">
-<button class="btn btn-function" data-i18n="button_4" onclick="clearDisplay('simple')">C</button>
-<button class="btn btn-function" data-i18n="button_5" onclick="deleteLast('simple')">⌫</button>
-<button class="btn btn-function" data-i18n="button_6" onclick="percentage('simple')">%</button>
-<button class="btn btn-operator" data-i18n="button_7" onclick="appendOperator('simple', '/')">÷</button>
-<button class="btn" data-i18n="button_8" onclick="appendNumber('simple', '7')">7</button>
-<button class="btn" data-i18n="button_9" onclick="appendNumber('simple', '8')">8</button>
-<button class="btn" data-i18n="button_10" onclick="appendNumber('simple', '9')">9</button>
-<button class="btn btn-operator" data-i18n="button_11" onclick="appendOperator('simple', '*')">×</button>
-<button class="btn" data-i18n="button_12" onclick="appendNumber('simple', '4')">4</button>
-<button class="btn" data-i18n="button_13" onclick="appendNumber('simple', '5')">5</button>
-<button class="btn" data-i18n="button_14" onclick="appendNumber('simple', '6')">6</button>
-<button class="btn btn-operator" data-i18n="button_15" onclick="appendOperator('simple', '-')">−</button>
-<button class="btn" data-i18n="button_16" onclick="appendNumber('simple', '1')">1</button>
-<button class="btn" data-i18n="button_17" onclick="appendNumber('simple', '2')">2</button>
-<button class="btn" data-i18n="button_18" onclick="appendNumber('simple', '3')">3</button>
-<button class="btn btn-operator" data-i18n="button_19" onclick="appendOperator('simple', '+')">+</button>
-<button class="btn" data-i18n="button_20" onclick="appendNumber('simple', '0')">0</button>
-<button class="btn" data-i18n="button_21" onclick="appendNumber('simple', '.')">.</button>
-<button class="btn btn-equals" data-i18n="button_22" onclick="calculate('simple')">=</button>
-<button class="btn btn-history" data-i18n="button_23" onclick="showHistory()">📜</button>
-</div>
-</div>
-<!-- حالت مهندسی -->
-<div class="calculator-mode" id="engineering-mode">
-<div class="display">
-<div class="history" id="eng-history"></div>
-<input class="result" id="eng-result" readonly="" type="text" value="0"/>
-</div>
-<div class="angle-selector">
-<label data-i18n="label_0">
-<input checked="" name="angle" type="radio" value="deg"/> درجه
+    <main class="page page--narrow">
+        <header class="page-header">
+            <h2 class="page-title" data-i18n="heading_0">ماشین حساب پیشرفته</h2>
+        </header>
+
+        <div class="stack">
+            <div class="tabs" role="tablist" aria-label="Calculator mode">
+                <button type="button" class="tab" role="tab" id="tab-simple" aria-controls="panel-simple"
+                    aria-selected="true" data-mode="simple" data-i18n="button_0">ساده</button>
+                <button type="button" class="tab" role="tab" id="tab-engineering" aria-controls="panel-engineering"
+                    aria-selected="false" data-mode="engineering" data-i18n="button_1">مهندسی</button>
+                <button type="button" class="tab" role="tab" id="tab-programming" aria-controls="panel-programming"
+                    aria-selected="false" data-mode="programming" data-i18n="button_2">برنامه‌نویسی</button>
+                <button type="button" class="tab" role="tab" id="tab-graph" aria-controls="panel-graph"
+                    aria-selected="false" data-mode="graph" data-i18n="button_3">نمودار</button>
+            </div>
+
+            <!-- Simple -->
+            <section id="panel-simple" role="tabpanel" aria-labelledby="tab-simple" data-panel="simple"
+                class="card card--lg stack">
+                <div class="calc-display">
+                    <button type="button" class="btn btn--ghost btn--sm calc-history-btn" data-action="history"
+                        aria-label="History">📜</button>
+                    <div class="calc-history" data-history dir="ltr"></div>
+                    <input class="calc-result" data-display type="text" value="0" readonly inputmode="none" dir="ltr"
+                        aria-label="Result">
+                </div>
+                <div class="keys" data-keys="padBasic"></div>
+            </section>
+
+            <!-- Scientific -->
+            <section id="panel-engineering" role="tabpanel" aria-labelledby="tab-engineering" data-panel="engineering"
+                class="card card--lg stack" hidden>
+                <div class="calc-display">
+                    <button type="button" class="btn btn--ghost btn--sm calc-history-btn" data-action="history"
+                        aria-label="History">📜</button>
+                    <div class="calc-history" data-history dir="ltr"></div>
+                    <input class="calc-result" data-display type="text" value="0" readonly inputmode="none" dir="ltr"
+                        aria-label="Result">
+                </div>
+
+                <div class="segmented" role="radiogroup" aria-label="Angle unit">
+                    <label class="segmented-item">
+                        <input type="radio" name="angle" value="deg" checked>
+                        <span data-i18n="label_0">درجه</span>
                     </label>
-<label data-i18n="label_1">
-<input name="angle" type="radio" value="rad"/> رادیان
+                    <label class="segmented-item">
+                        <input type="radio" name="angle" value="rad">
+                        <span data-i18n="label_1">رادیان</span>
                     </label>
-</div>
-<div class="buttons engineering-buttons">
-<button class="btn btn-function" data-i18n="button_24" onclick="clearDisplay('eng')">C</button>
-<button class="btn btn-function" data-i18n="button_25" onclick="deleteLast('eng')">⌫</button>
-<button class="btn btn-function" data-i18n="button_26" onclick="percentage('eng')">%</button>
-<button class="btn btn-operator" data-i18n="button_27" onclick="appendOperator('eng', '/')">÷</button>
-<button class="btn btn-function" data-i18n="button_28" onclick="engineeringFunc('eng', 'sin')">sin</button>
-<button class="btn" data-i18n="button_29" onclick="appendNumber('eng', '7')">7</button>
-<button class="btn" data-i18n="button_30" onclick="appendNumber('eng', '8')">8</button>
-<button class="btn" data-i18n="button_31" onclick="appendNumber('eng', '9')">9</button>
-<button class="btn btn-operator" data-i18n="button_32" onclick="appendOperator('eng', '*')">×</button>
-<button class="btn btn-function" data-i18n="button_33" onclick="engineeringFunc('eng', 'cos')">cos</button>
-<button class="btn" data-i18n="button_34" onclick="appendNumber('eng', '4')">4</button>
-<button class="btn" data-i18n="button_35" onclick="appendNumber('eng', '5')">5</button>
-<button class="btn" data-i18n="button_36" onclick="appendNumber('eng', '6')">6</button>
-<button class="btn btn-operator" data-i18n="button_37" onclick="appendOperator('eng', '-')">−</button>
-<button class="btn btn-function" data-i18n="button_38" onclick="engineeringFunc('eng', 'tan')">tan</button>
-<button class="btn" data-i18n="button_39" onclick="appendNumber('eng', '1')">1</button>
-<button class="btn" data-i18n="button_40" onclick="appendNumber('eng', '2')">2</button>
-<button class="btn" data-i18n="button_41" onclick="appendNumber('eng', '3')">3</button>
-<button class="btn btn-operator" data-i18n="button_42" onclick="appendOperator('eng', '+')">+</button>
-<button class="btn btn-function" data-i18n="button_43" onclick="engineeringFunc('eng', 'asin')">asin</button>
-<button class="btn" data-i18n="button_44" onclick="appendNumber('eng', '0')">0</button>
-<button class="btn" data-i18n="button_45" onclick="appendNumber('eng', '.')">.</button>
-<button class="btn btn-equals" data-i18n="button_46" onclick="calculate('eng')">=</button>
-<button class="btn btn-function" data-i18n="button_47" onclick="engineeringFunc('eng', 'sqrt')">√</button>
-<button class="btn btn-function" data-i18n="button_48" onclick="engineeringFunc('eng', 'acos')">acos</button>
-<button class="btn btn-function" data-i18n="button_49" onclick="engineeringFunc('eng', 'pow')">x^y</button>
-<button class="btn btn-function" data-i18n="button_50" onclick="engineeringFunc('eng', 'square')">x²</button>
-<button class="btn btn-function" data-i18n="button_51" onclick="engineeringFunc('eng', 'cube')">x³</button>
-<button class="btn btn-function" data-i18n="button_52" onclick="engineeringFunc('eng', 'exp')">e^x</button>
-<button class="btn btn-function" data-i18n="button_53" onclick="engineeringFunc('eng', 'atan')">atan</button>
-<button class="btn btn-function" data-i18n="button_54" onclick="engineeringFunc('eng', 'ln')">ln</button>
-<button class="btn btn-function" data-i18n="button_55" onclick="engineeringFunc('eng', 'log')">log</button>
-<button class="btn btn-function" data-i18n="button_56" onclick="engineeringFunc('eng', 'pi')">π</button>
-<button class="btn btn-function" data-i18n="button_57" onclick="engineeringFunc('eng', 'e')">e</button>
-<button class="btn btn-function" data-i18n="button_58" onclick="engineeringFunc('eng', 'factorial')">n!</button>
-<button class="btn btn-function" data-i18n="button_59" onclick="engineeringFunc('eng', 'abs')">|x|</button>
-<button class="btn btn-function" data-i18n="button_60" onclick="appendOperator('eng', '(')">(</button>
-<button class="btn btn-function" data-i18n="button_61" onclick="appendOperator('eng', ')')">)</button>
-<button class="btn btn-function" data-i18n="button_62" onclick="engineeringFunc('eng', 'inv')">1/x</button>
-<button class="btn btn-history" data-i18n="button_63" onclick="showHistory()">📜</button>
-</div>
-</div>
-<!-- حالت برنامه‌نویسی -->
-<div class="calculator-mode" id="programming-mode">
-<div class="display">
-<div class="base-display">
-<div class="base-result">
-<span>HEX:</span> <span id="hex-result">0</span>
-</div>
-<div class="base-result">
-<span>DEC:</span> <span id="dec-result">0</span>
-</div>
-<div class="base-result">
-<span>OCT:</span> <span id="oct-result">0</span>
-</div>
-<div class="base-result">
-<span>BIN:</span> <span id="bin-result">0</span>
-</div>
-</div>
-<input class="result" id="prog-result" readonly="" type="text" value="0"/>
-</div>
-<div class="base-selector">
-<label data-i18n="label_2">
-<input checked="" name="base" type="radio" value="16"/> HEX
+                </div>
+
+                <div class="keys keys--5" data-keys="scientific"></div>
+                <div class="keys" data-keys="padBasic"></div>
+            </section>
+
+            <!-- Programmer -->
+            <section id="panel-programming" role="tabpanel" aria-labelledby="tab-programming" data-panel="programming"
+                class="card card--lg stack" hidden>
+                <div class="calc-display">
+                    <button type="button" class="btn btn--ghost btn--sm calc-history-btn" data-action="history"
+                        aria-label="History">📜</button>
+                    <div class="calc-history" data-history dir="ltr"></div>
+                    <input class="calc-result" data-display type="text" value="0" readonly inputmode="none" dir="ltr"
+                        aria-label="Result">
+
+                    <div class="base-grid" dir="ltr">
+                        <div class="base-cell"><span class="base-name">HEX</span><span data-base-out="16">0</span></div>
+                        <div class="base-cell"><span class="base-name">DEC</span><span data-base-out="10">0</span></div>
+                        <div class="base-cell"><span class="base-name">OCT</span><span data-base-out="8">0</span></div>
+                        <div class="base-cell"><span class="base-name">BIN</span><span data-base-out="2">0</span></div>
+                    </div>
+                </div>
+
+                <div class="segmented" role="radiogroup" aria-label="Number base">
+                    <label class="segmented-item">
+                        <input type="radio" name="base" value="16" checked>
+                        <span data-i18n="label_2">HEX</span>
                     </label>
-<label data-i18n="label_3">
-<input name="base" type="radio" value="10"/> DEC
+                    <label class="segmented-item">
+                        <input type="radio" name="base" value="10">
+                        <span data-i18n="label_3">DEC</span>
                     </label>
-<label data-i18n="label_4">
-<input name="base" type="radio" value="8"/> OCT
+                    <label class="segmented-item">
+                        <input type="radio" name="base" value="8">
+                        <span data-i18n="label_4">OCT</span>
                     </label>
-<label data-i18n="label_5">
-<input name="base" type="radio" value="2"/> BIN
+                    <label class="segmented-item">
+                        <input type="radio" name="base" value="2">
+                        <span data-i18n="label_5">BIN</span>
                     </label>
-</div>
-<div class="buttons programming-buttons">
-<button class="btn btn-function" data-i18n="button_64" onclick="clearDisplay('prog')">C</button>
-<button class="btn btn-function" data-i18n="button_65" onclick="deleteLast('prog')">⌫</button>
-<button class="btn btn-function hex-only" data-i18n="button_66" onclick="appendNumber('prog', 'A')">A</button>
-<button class="btn btn-function hex-only" data-i18n="button_67" onclick="appendNumber('prog', 'B')">B</button>
-<button class="btn btn-function hex-only" data-i18n="button_68" onclick="appendNumber('prog', 'C')">C</button>
-<button class="btn btn-function hex-only" data-i18n="button_69" onclick="appendNumber('prog', 'D')">D</button>
-<button class="btn btn-function hex-only" data-i18n="button_70" onclick="appendNumber('prog', 'E')">E</button>
-<button class="btn btn-function hex-only" data-i18n="button_71" onclick="appendNumber('prog', 'F')">F</button>
-<button class="btn btn-operator" data-i18n="button_72" onclick="bitwiseOp('prog', 'AND')">AND</button>
-<button class="btn btn-operator" data-i18n="button_73" onclick="bitwiseOp('prog', 'OR')">OR</button>
-<button class="btn oct-disabled" data-i18n="button_74" onclick="appendNumber('prog', '7')">7</button>
-<button class="btn oct-disabled" data-i18n="button_75" onclick="appendNumber('prog', '8')">8</button>
-<button class="btn oct-disabled" data-i18n="button_76" onclick="appendNumber('prog', '9')">9</button>
-<button class="btn btn-operator" data-i18n="button_77" onclick="bitwiseOp('prog', 'XOR')">XOR</button>
-<button class="btn btn-operator" data-i18n="button_78" onclick="bitwiseOp('prog', 'NOT')">NOT</button>
-<button class="btn" data-i18n="button_79" onclick="appendNumber('prog', '4')">4</button>
-<button class="btn" data-i18n="button_80" onclick="appendNumber('prog', '5')">5</button>
-<button class="btn" data-i18n="button_81" onclick="appendNumber('prog', '6')">6</button>
-<button class="btn btn-operator" data-i18n="button_82" onclick="bitwiseOp('prog', 'LSH')">LSH</button>
-<button class="btn btn-operator" data-i18n="button_83" onclick="bitwiseOp('prog', 'RSH')">RSH</button>
-<button class="btn" data-i18n="button_84" onclick="appendNumber('prog', '1')">1</button>
-<button class="btn bin-disabled" data-i18n="button_85" onclick="appendNumber('prog', '2')">2</button>
-<button class="btn bin-disabled" data-i18n="button_86" onclick="appendNumber('prog', '3')">3</button>
-<button class="btn btn-operator" data-i18n="button_87" onclick="appendOperator('prog', '+')">+</button>
-<button class="btn btn-operator" data-i18n="button_88" onclick="appendOperator('prog', '-')">−</button>
-<button class="btn" data-i18n="button_89" onclick="appendNumber('prog', '0')">0</button>
-<button class="btn btn-equals" data-i18n="button_90" onclick="calculate('prog')">=</button>
-<button class="btn btn-operator" data-i18n="button_91" onclick="appendOperator('prog', '*')">×</button>
-<button class="btn btn-operator" data-i18n="button_92" onclick="appendOperator('prog', '/')">÷</button>
-<button class="btn btn-history" data-i18n="button_93" onclick="showHistory()">📜</button>
-</div>
-</div>
-<!-- حالت نمودار -->
-<div class="calculator-mode" id="graph-mode">
-<div class="graph-container">
-<div class="graph-controls">
-<h3 data-i18n="heading_1">رسم نمودار تابع</h3>
-<div class="control-group">
-<label data-i18n="label_6">تابع (از x استفاده کنید):</label>
-<input id="graph-function" placeholder="مثال: x^2 یا sin(x) یا 2*x+3" type="text"/>
-</div>
-<div class="control-group">
-<label data-i18n="label_7">محدوده X از:</label>
-<input id="x-min" type="number" value="-10"/>
-<label data-i18n="label_8">تا:</label>
-<input id="x-max" type="number" value="10"/>
-</div>
-<div class="control-group">
-<label data-i18n="label_9">محدوده Y از:</label>
-<input id="y-min" type="number" value="-10"/>
-<label data-i18n="label_10">تا:</label>
-<input id="y-max" type="number" value="10"/>
-</div>
-<div class="control-group">
-<button class="btn btn-equals" data-i18n="button_94" onclick="drawGraph()">رسم نمودار</button>
-<button class="btn btn-function" data-i18n="button_95" onclick="clearGraph()">پاک کردن</button>
-</div>
-<div class="function-examples">
-<h4>مثال‌های تابع:</h4>
-<ul>
-<li onclick="setGraphFunction('x^2')">x^2 (سهمی)</li>
-<li onclick="setGraphFunction('sin(x)')">sin(x) (سینوسی)</li>
-<li onclick="setGraphFunction('cos(x)')">cos(x) (کسینوسی)</li>
-<li onclick="setGraphFunction('tan(x)')">tan(x) (تانژانتی)</li>
-<li onclick="setGraphFunction('exp(x)')">exp(x) (نمایی)</li>
-<li onclick="setGraphFunction('ln(x)')">ln(x) (لگاریتمی)</li>
-<li onclick="setGraphFunction('sqrt(x)')">sqrt(x) (رادیکالی)</li>
-<li onclick="setGraphFunction('abs(x)')">abs(x) (قدر مطلق)</li>
-</ul>
-</div>
-</div>
-<div class="graph-canvas-container">
-<canvas id="graph-canvas"></canvas>
-</div>
-</div>
-</div>
-</main>
-<!-- تاریخچه محاسبات -->
-<div class="history-modal" id="history-modal">
-<div class="history-content">
-<div class="history-header">
-<h2 data-i18n="heading_2">تاریخچه محاسبات</h2>
-<button class="close-btn" data-i18n="button_96" onclick="closeHistory()">×</button>
-</div>
-<div class="history-list" id="history-list"></div>
-<div class="history-footer">
-<button class="btn btn-function" data-i18n="button_97" onclick="clearHistory()">پاک کردن تاریخچه</button>
-</div>
-</div>
-</div>
-</div>
-<script src="assets/js/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+                </div>
+
+                <div class="keys keys--6" data-keys="hexRow"></div>
+                <div class="keys keys--6" data-keys="bitwise"></div>
+                <div class="keys" data-keys="padProgrammer"></div>
+            </section>
+
+            <!-- Graph -->
+            <section id="panel-graph" role="tabpanel" aria-labelledby="tab-graph" data-panel="graph"
+                class="card card--lg" hidden>
+                <div class="graph-layout">
+                    <div class="stack">
+                        <h3 class="card-title" data-i18n="heading_1">رسم نمودار تابع</h3>
+
+                        <div>
+                            <label class="label" for="graph-function" data-i18n="label_6">تابع (از x استفاده
+                                کنید):</label>
+                            <input id="graph-function" class="field mono" type="text" dir="ltr" autocomplete="off"
+                                spellcheck="false" placeholder="x^2 · sin(x) · 2*x+3">
+                        </div>
+
+                        <div class="range-grid">
+                            <div>
+                                <label class="label" for="x-min">X min</label>
+                                <input id="x-min" class="field" type="number" value="-10" step="any" inputmode="decimal"
+                                    dir="ltr">
+                            </div>
+                            <div>
+                                <label class="label" for="x-max">X max</label>
+                                <input id="x-max" class="field" type="number" value="10" step="any" inputmode="decimal"
+                                    dir="ltr">
+                            </div>
+                            <div>
+                                <label class="label" for="y-min">Y min</label>
+                                <input id="y-min" class="field" type="number" value="-10" step="any" inputmode="decimal"
+                                    dir="ltr">
+                            </div>
+                            <div>
+                                <label class="label" for="y-max">Y max</label>
+                                <input id="y-max" class="field" type="number" value="10" step="any" inputmode="decimal"
+                                    dir="ltr">
+                            </div>
+                        </div>
+
+                        <div id="graph-error" class="alert alert--danger" role="alert" hidden></div>
+
+                        <div class="row">
+                            <button type="button" class="btn btn--primary" data-action="plot" data-i18n="button_94">رسم
+                                نمودار</button>
+                            <button type="button" class="btn btn--secondary" data-action="clear-graph"
+                                data-i18n="button_95">پاک کردن</button>
+                        </div>
+
+                        <div>
+                            <hr class="divider">
+                            <h4 class="label" data-examples-title>مثال‌های تابع</h4>
+                            <div id="graph-examples" class="row"></div>
+                        </div>
+                    </div>
+
+                    <canvas id="graph-canvas" class="graph-canvas"></canvas>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- History -->
+    <dialog id="history-dialog" class="modal" aria-labelledby="history-title">
+        <div class="modal-header">
+            <h2 id="history-title" class="modal-title" data-i18n="heading_2">تاریخچه محاسبات</h2>
+            <button type="button" class="btn btn--ghost btn--sm" data-action="close-history" aria-label="Close"
+                data-i18n="button_96">×</button>
+        </div>
+        <ul id="history-list" class="modal-body history-list"></ul>
+        <div class="modal-footer">
+            <button type="button" class="btn btn--danger btn--sm" data-action="clear-history" data-i18n="button_97">پاک
+                کردن تاریخچه</button>
+        </div>
+    </dialog>
 </body>
+
 </html>

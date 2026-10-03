@@ -5,7 +5,15 @@
     "heading_1": "پیش‌شماره‌های تلفن همراه",
     "button_0": "استان‌ها",
     "button_1": "پیش‌شماره موبایل",
-    "text_subtitle_0": "مشاهده کدهای پلاک خودرو و پیش‌شماره تلفن ثابت استان‌ها"
+    "text_subtitle_0": "مشاهده کدهای پلاک خودرو و پیش‌شماره تلفن ثابت استان‌ها",
+    "search_placeholder": "جستجوی استان، شهر، کد پلاک یا پیش‌شماره…",
+    "search_label": "جستجو",
+    "clear_label": "پاک کردن جستجو",
+    "no_results": "موردی پیدا نشد",
+    "label_plate": "کد پلاک",
+    "label_phone": "پیش‌شماره",
+    "label_cities": "شهرهای مهم",
+    "footer": "جعبه ابزار"
   },
   "en": {
     "title": "Province License Plate Codes and Area Codes",
@@ -13,6 +21,14 @@
     "heading_1": "Mobile Phone Prefixes",
     "button_0": "Provinces",
     "button_1": "Mobile Prefix",
-    "text_subtitle_0": "View vehicle license plate codes and landline area codes of provinces"
+    "text_subtitle_0": "View vehicle license plate codes and landline area codes of provinces",
+    "search_placeholder": "Search province, city, plate code or area code…",
+    "search_label": "Search",
+    "clear_label": "Clear search",
+    "no_results": "Nothing found",
+    "label_plate": "Plate code",
+    "label_phone": "Area code",
+    "label_cities": "Major cities",
+    "footer": "Toolbox"
   }
 }

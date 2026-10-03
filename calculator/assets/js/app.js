@@ -1,770 +1,1251 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
+(() => {
+  "use strict";
+
+  const STRINGS = Object.freeze({
+    fa: {
+      error: "خطا",
+      emptyHistory: "تاریخچه‌ای وجود ندارد",
+      confirmClear: "آیا مطمئن هستید که می‌خواهید تاریخچه را پاک کنید؟",
+      graphEmpty: "لطفا تابع را وارد کنید",
+      graphRange: "محدوده‌های X و Y معتبر نیستند",
+      graphSyntax: "تابع نامعتبر است",
+      examples: "مثال‌های تابع",
+    },
+    en: {
+      error: "Error",
+      emptyHistory: "No history yet",
+      confirmClear: "Are you sure you want to clear the history?",
+      graphEmpty: "Please enter a function",
+      graphRange: "The X and Y ranges are not valid",
+      graphSyntax: "The function is not valid",
+      examples: "Function examples",
+    },
+  });
+
+  const GRAPH_EXAMPLES = Object.freeze([
+    { fn: "x^2", fa: "سهمی", en: "Parabola" },
+    { fn: "sin(x)", fa: "سینوسی", en: "Sine" },
+    { fn: "cos(x)", fa: "کسینوسی", en: "Cosine" },
+    { fn: "tan(x)", fa: "تانژانتی", en: "Tangent" },
+    { fn: "exp(x)", fa: "نمایی", en: "Exponential" },
+    { fn: "ln(x)", fa: "لگاریتمی", en: "Logarithm" },
+    { fn: "sqrt(x)", fa: "رادیکالی", en: "Square root" },
+    { fn: "abs(x)", fa: "قدر مطلق", en: "Absolute value" },
+  ]);
+
+  const toRadians = (value, degrees) =>
+    degrees ? (value * Math.PI) / 180 : value;
+  const fromRadians = (value, degrees) =>
+    degrees ? (value * 180) / Math.PI : value;
+
+  const factorial = (value) => {
+    const n = Math.floor(value);
+    if (n < 0 || n > 170) return NaN;
+    let result = 1;
+    for (let i = 2; i <= n; i++) result *= i;
+    return result;
+  };
+
+  const MATH_FUNCTIONS = Object.freeze({
+    sin: (v, d) => Math.sin(toRadians(v, d)),
+    cos: (v, d) => Math.cos(toRadians(v, d)),
+    tan: (v, d) => Math.tan(toRadians(v, d)),
+    asin: (v, d) => fromRadians(Math.asin(v), d),
+    acos: (v, d) => fromRadians(Math.acos(v), d),
+    atan: (v, d) => fromRadians(Math.atan(v), d),
+    sqrt: (v) => Math.sqrt(v),
+    ln: (v) => Math.log(v),
+    log: (v) => Math.log10(v),
+    exp: (v) => Math.exp(v),
+    abs: (v) => Math.abs(v),
+  });
+
+  const KEY_FUNCTIONS = Object.freeze({
+    ...MATH_FUNCTIONS,
+    square: (v) => v * v,
+    cube: (v) => v ** 3,
+    factorial,
+    inv: (v) => 1 / v,
+  });
+
+  const CONSTANTS = Object.freeze({ pi: Math.PI, e: Math.E });
+
+  /* ---------- Expression parsing (no eval) ---------- */
+
+  class ExpressionParser {
+    #tokens;
+    #position = 0;
+    #degrees;
+
+    constructor(tokens, degrees) {
+      this.#tokens = tokens;
+      this.#degrees = degrees;
     }
 
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
+    parse() {
+      const node = this.#expression();
+      if (this.#position < this.#tokens.length) {
+        throw new SyntaxError(`Unexpected token ${this.#peek()}`);
+      }
+      return node;
     }
 
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
+    #peek() {
+      return this.#tokens[this.#position];
     }
 
-    getTheme() {
-        return this.currentTheme;
-    }
-}
-
-const themeManager = new ThemeManager();
-
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
+    #next() {
+      return this.#tokens[this.#position++];
     }
 
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
+    #expect(token) {
+      if (this.#next() !== token) throw new SyntaxError(`Expected ${token}`);
+    }
+
+    static #startsOperand(token) {
+      return token !== undefined && (token === "(" || /^[\d.a-z_]/.test(token));
+    }
+
+    #expression() {
+      let left = this.#term();
+      while (this.#peek() === "+" || this.#peek() === "-") {
+        const operator = this.#next();
+        const l = left;
+        const r = this.#term();
+        left = operator === "+" ? (s) => l(s) + r(s) : (s) => l(s) - r(s);
+      }
+      return left;
+    }
+
+    #term() {
+      let left = this.#unary();
+      for (;;) {
+        const token = this.#peek();
+        const isExplicit = token === "*" || token === "/";
+        if (!isExplicit && !ExpressionParser.#startsOperand(token)) return left;
+
+        if (isExplicit) this.#next();
+        const l = left;
+        const r = this.#unary();
+        left = token === "/" ? (s) => l(s) / r(s) : (s) => l(s) * r(s);
+      }
+    }
+
+    #unary() {
+      const token = this.#peek();
+      if (token === "-") {
+        this.#next();
+        const operand = this.#unary();
+        return (s) => -operand(s);
+      }
+      if (token === "+") {
+        this.#next();
+        return this.#unary();
+      }
+      return this.#power();
+    }
+
+    #power() {
+      const base = this.#primary();
+      if (this.#peek() !== "^") return base;
+
+      this.#next();
+      const exponent = this.#unary();
+      return (s) => Math.pow(base(s), exponent(s));
+    }
+
+    #primary() {
+      const token = this.#next();
+      if (token === undefined)
+        throw new SyntaxError("Unexpected end of expression");
+
+      if (/^[\d.]/.test(token)) {
+        const value = Number(token);
+        return () => value;
+      }
+      if (token === "(") {
+        const inner = this.#expression();
+        this.#expect(")");
+        return inner;
+      }
+      if (/^[a-z_]/.test(token)) return this.#identifier(token);
+
+      throw new SyntaxError(`Unexpected token ${token}`);
+    }
+
+    #identifier(name) {
+      if (Object.hasOwn(MATH_FUNCTIONS, name)) {
+        this.#expect("(");
+        const argument = this.#expression();
+        this.#expect(")");
+        const fn = MATH_FUNCTIONS[name];
+        const degrees = this.#degrees;
+        return (s) => fn(argument(s), degrees);
+      }
+      if (Object.hasOwn(CONSTANTS, name)) {
+        const value = CONSTANTS[name];
+        return () => value;
+      }
+      if (name === "x") return (s) => s.x;
+
+      throw new SyntaxError(`Unknown identifier ${name}`);
+    }
+  }
+
+  class ExpressionEvaluator {
+    static compile(source, { degrees = false } = {}) {
+      return new ExpressionParser(
+        ExpressionEvaluator.#tokenize(source),
+        degrees,
+      ).parse();
+    }
+
+    static evaluate(source, options) {
+      return ExpressionEvaluator.compile(source, options)({ x: 0 });
+    }
+
+    static #tokenize(source) {
+      const normalized = source
+        .replace(/×/g, "*")
+        .replace(/÷/g, "/")
+        .replace(/−/g, "-")
+        .replace(/π/g, "pi")
+        .replace(/\s+/g, "")
+        .toLowerCase();
+
+      const tokens =
+        normalized.match(
+          /(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?|[a-z_]\w*|[-+*/^()]/g,
+        ) ?? [];
+      if (tokens.join("") !== normalized)
+        throw new SyntaxError("Unexpected character");
+      return tokens;
+    }
+  }
+
+  class ProgrammerEvaluator {
+    static #PRECEDENCE = Object.freeze({
+      "|": 1,
+      "^": 2,
+      "&": 3,
+      "<<": 4,
+      ">>": 4,
+      "+": 5,
+      "-": 5,
+      "*": 6,
+      "/": 6,
+    });
+
+    static #OPERATIONS = Object.freeze({
+      "|": (a, b) => a | b,
+      "^": (a, b) => a ^ b,
+      "&": (a, b) => a & b,
+      "<<": (a, b) => a << b,
+      ">>": (a, b) => a >> b,
+      "+": (a, b) => a + b,
+      "-": (a, b) => a - b,
+      "*": (a, b) => a * b,
+      "/": (a, b) => {
+        if (b === 0n) throw new RangeError("Division by zero");
+        return a / b;
+      },
+    });
+
+    static isValidDigit(char, base) {
+      return /^[0-9A-F]$/.test(char) && Number.parseInt(char, 36) < base;
+    }
+
+    static evaluate(expression, base) {
+      const normalized = expression
+        .replace(/×/g, "*")
+        .replace(/÷/g, "/")
+        .replace(/−/g, "-")
+        .replace(/\s+/g, "")
+        .toUpperCase();
+      const tokens = normalized.match(/[0-9A-F]+|<<|>>|[-+*/&|^]/g) ?? [];
+      if (tokens.join("") !== normalized)
+        throw new SyntaxError("Unexpected character");
+
+      let position = 0;
+
+      const operand = () => {
+        const token = tokens[position++];
+        if (token === undefined)
+          throw new SyntaxError("Unexpected end of expression");
+        if (token === "-") return -operand();
+        return ProgrammerEvaluator.#parseDigits(token, base);
+      };
+
+      const parse = (minPrecedence) => {
+        let left = operand();
+        for (;;) {
+          const operator = tokens[position];
+          const precedence = ProgrammerEvaluator.#PRECEDENCE[operator];
+          if (precedence === undefined || precedence < minPrecedence)
+            return left;
+
+          position++;
+          const right = parse(precedence + 1);
+          left = ProgrammerEvaluator.#OPERATIONS[operator](left, right);
         }
+      };
+
+      const value = parse(1);
+      if (position < tokens.length) throw new SyntaxError("Unexpected token");
+      return value;
+    }
+
+    static #parseDigits(token, base) {
+      let result = 0n;
+      for (const char of token) {
+        if (!ProgrammerEvaluator.isValidDigit(char, base))
+          throw new SyntaxError(`Invalid digit ${char}`);
+        result = result * BigInt(base) + BigInt(Number.parseInt(char, 36));
+      }
+      return result;
+    }
+  }
+
+  /* ---------- Services ---------- */
+
+  class I18n {
+    #translations = {};
+    #lang = localStorage.getItem("lang") || "fa";
+
+    get lang() {
+      return this.#lang;
+    }
+
+    async init() {
+      try {
+        const response = await fetch("assets/translations.json");
+        this.#translations = await response.json();
+      } catch (error) {
+        console.error("Failed to load translations:", error);
+      }
+      this.apply();
     }
 
     t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
-        }
-        
-        return value;
+      return this.#translations[this.#lang]?.[key] ?? null;
     }
 
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
-        });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
-        }
+    s(key) {
+      return STRINGS[this.#lang]?.[key] ?? STRINGS.fa[key];
     }
 
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
+    apply() {
+      const html = document.documentElement;
+      html.lang = this.#lang;
+      html.dir = this.#lang === "fa" ? "rtl" : "ltr";
+
+      for (const element of document.querySelectorAll("[data-i18n]")) {
+        const text = this.t(element.dataset.i18n);
+        if (text !== null) element.textContent = text;
+      }
+
+      const titleKey = document.querySelector("title")?.dataset.i18n;
+      const title = titleKey ? this.t(titleKey) : null;
+      if (title !== null) document.title = title;
+
+      document
+        .querySelector("[data-examples-title]")
+        ?.replaceChildren(this.s("examples"));
     }
-}
+  }
 
-const i18n = new I18n();
+  class HistoryStore {
+    static #KEY = "calculatorHistory";
+    static #MAX_ITEMS = 50;
 
-
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-// State management
-let currentMode = 'simple';
-let currentExpression = {
-    simple: '0',
-    eng: '0',
-    prog: '0'
-};
-let currentBase = 16;
-let angleMode = 'deg';
-let waitingForOperand = {
-    simple: false,
-    eng: false,
-    prog: false
-};
-
-// Initialize calculator
-document.addEventListener('DOMContentLoaded', function() {
-    initializeModeButtons();
-    initializeBaseSelector();
-    initializeAngleSelector();
-    loadHistory();
-    updateProgrammingDisplay();
-});
-
-// Mode switching
-function initializeModeButtons() {
-    const modeButtons = document.querySelectorAll('.mode-btn');
-    modeButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const mode = this.dataset.mode;
-            switchMode(mode);
-        });
-    });
-}
-
-function switchMode(mode) {
-    currentMode = mode;
-    
-    // Update active mode button
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.mode === mode) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Update active calculator mode
-    document.querySelectorAll('.calculator-mode').forEach(calcMode => {
-        calcMode.classList.remove('active');
-    });
-    document.getElementById(`${mode}-mode`).classList.add('active');
-}
-
-// Number input
-function appendNumber(mode, num) {
-    if (mode === 'prog') {
-        // Check if number is valid for current base
-        if (!isValidForBase(num, currentBase)) return;
+    list() {
+      try {
+        return JSON.parse(localStorage.getItem(HistoryStore.#KEY)) ?? [];
+      } catch {
+        return [];
+      }
     }
-    
-    if (waitingForOperand[mode]) {
-        currentExpression[mode] = num;
-        waitingForOperand[mode] = false;
-    } else {
-        if (currentExpression[mode] === '0') {
-            currentExpression[mode] = num;
-        } else {
-            currentExpression[mode] += num;
-        }
+
+    add(entry) {
+      const items = [entry, ...this.list()].slice(0, HistoryStore.#MAX_ITEMS);
+      localStorage.setItem(HistoryStore.#KEY, JSON.stringify(items));
     }
-    
-    updateDisplay(mode);
-    if (mode === 'prog') updateProgrammingDisplay();
-}
 
-// Operator input
-function appendOperator(mode, operator) {
-    const lastChar = currentExpression[mode].slice(-1);
-    
-    // Prevent multiple operators
-    if (['+', '-', '*', '/', '('].includes(lastChar) && operator !== '(') {
-        currentExpression[mode] = currentExpression[mode].slice(0, -1) + operator;
-    } else {
-        currentExpression[mode] += operator;
+    clear() {
+      localStorage.removeItem(HistoryStore.#KEY);
     }
-    
-    updateDisplay(mode);
-}
+  }
 
-// Update display
-function updateDisplay(mode) {
-    const resultElement = document.getElementById(`${mode}-result`);
-    if (resultElement) {
-        resultElement.value = currentExpression[mode];
+  class HistoryDialog {
+    #dialog;
+    #list;
+    #store;
+    #i18n;
+    #onSelect;
+
+    constructor({ dialog, list, store, i18n, onSelect }) {
+      this.#dialog = dialog;
+      this.#list = list;
+      this.#store = store;
+      this.#i18n = i18n;
+      this.#onSelect = onSelect;
+
+      // Clicks on the backdrop target the dialog element itself
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) this.close();
+      });
     }
-}
 
-// Clear display
-function clearDisplay(mode) {
-    currentExpression[mode] = '0';
-    waitingForOperand[mode] = false;
-    updateDisplay(mode);
-    if (mode === 'prog') updateProgrammingDisplay();
-}
-
-// Delete last character
-function deleteLast(mode) {
-    if (currentExpression[mode].length > 1) {
-        currentExpression[mode] = currentExpression[mode].slice(0, -1);
-    } else {
-        currentExpression[mode] = '0';
+    get isOpen() {
+      return this.#dialog.open;
     }
-    updateDisplay(mode);
-    if (mode === 'prog') updateProgrammingDisplay();
-}
 
-// Percentage
-function percentage(mode) {
-    try {
-        const value = eval(currentExpression[mode]);
-        currentExpression[mode] = (value / 100).toString();
-        updateDisplay(mode);
-    } catch (error) {
-        showError(mode);
+    open() {
+      this.#render();
+      if (!this.#dialog.open) this.#dialog.showModal();
     }
-}
 
-// Calculate
-function calculate(mode) {
-    try {
-        let expression = currentExpression[mode];
-        let result;
-        
-        if (mode === 'prog') {
-            // Convert from current base to decimal, calculate, convert back
-            const decimalValue = parseInt(expression, currentBase);
-            result = decimalValue;
-            currentExpression[mode] = result.toString(currentBase).toUpperCase();
-            updateProgrammingDisplay();
-        } else {
-            // Replace × and ÷ with * and /
-            expression = expression.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
-            
-            // Handle mathematical functions
-            expression = expression.replace(/sin\(/g, 'Math.sin(');
-            expression = expression.replace(/cos\(/g, 'Math.cos(');
-            expression = expression.replace(/tan\(/g, 'Math.tan(');
-            expression = expression.replace(/sqrt\(/g, 'Math.sqrt(');
-            expression = expression.replace(/ln\(/g, 'Math.log(');
-            expression = expression.replace(/log\(/g, 'Math.log10(');
-            expression = expression.replace(/exp\(/g, 'Math.exp(');
-            expression = expression.replace(/abs\(/g, 'Math.abs(');
-            
-            result = eval(expression);
-            
-            // Round to avoid floating point errors
-            result = Math.round(result * 1e10) / 1e10;
-            currentExpression[mode] = result.toString();
-        }
-        
-        // Save to history
-        saveToHistory(currentExpression[mode], result);
-        
-        updateDisplay(mode);
-        waitingForOperand[mode] = true;
-    } catch (error) {
-        showError(mode);
+    close() {
+      this.#dialog.close();
     }
-}
 
-// Show error
-function showError(mode) {
-    currentExpression[mode] = 'خطا';
-    updateDisplay(mode);
-    setTimeout(() => {
-        currentExpression[mode] = '0';
-        updateDisplay(mode);
-    }, 1500);
-}
-
-// Engineering functions
-function engineeringFunc(mode, func) {
-    try {
-        let value = parseFloat(currentExpression[mode]);
-        let result;
-        
-        switch (func) {
-            case 'sin':
-                result = angleMode === 'deg' ? Math.sin(value * Math.PI / 180) : Math.sin(value);
-                break;
-            case 'cos':
-                result = angleMode === 'deg' ? Math.cos(value * Math.PI / 180) : Math.cos(value);
-                break;
-            case 'tan':
-                result = angleMode === 'deg' ? Math.tan(value * Math.PI / 180) : Math.tan(value);
-                break;
-            case 'asin':
-                result = Math.asin(value);
-                result = angleMode === 'deg' ? result * 180 / Math.PI : result;
-                break;
-            case 'acos':
-                result = Math.acos(value);
-                result = angleMode === 'deg' ? result * 180 / Math.PI : result;
-                break;
-            case 'atan':
-                result = Math.atan(value);
-                result = angleMode === 'deg' ? result * 180 / Math.PI : result;
-                break;
-            case 'sqrt':
-                result = Math.sqrt(value);
-                break;
-            case 'square':
-                result = value * value;
-                break;
-            case 'cube':
-                result = value * value * value;
-                break;
-            case 'pow':
-                currentExpression[mode] += '^';
-                updateDisplay(mode);
-                return;
-            case 'exp':
-                result = Math.exp(value);
-                break;
-            case 'ln':
-                result = Math.log(value);
-                break;
-            case 'log':
-                result = Math.log10(value);
-                break;
-            case 'pi':
-                currentExpression[mode] = Math.PI.toString();
-                updateDisplay(mode);
-                return;
-            case 'e':
-                currentExpression[mode] = Math.E.toString();
-                updateDisplay(mode);
-                return;
-            case 'factorial':
-                result = factorial(Math.floor(value));
-                break;
-            case 'abs':
-                result = Math.abs(value);
-                break;
-            case 'inv':
-                result = 1 / value;
-                break;
-            default:
-                return;
-        }
-        
-        result = Math.round(result * 1e10) / 1e10;
-        currentExpression[mode] = result.toString();
-        updateDisplay(mode);
-        waitingForOperand[mode] = true;
-    } catch (error) {
-        showError(mode);
+    clear() {
+      if (!confirm(this.#i18n.s("confirmClear"))) return;
+      this.#store.clear();
+      this.#render();
     }
-}
 
-// Factorial function
-function factorial(n) {
-    if (n < 0) return NaN;
-    if (n === 0 || n === 1) return 1;
-    let result = 1;
-    for (let i = 2; i <= n; i++) {
-        result *= i;
-    }
-    return result;
-}
-
-// Angle mode selector
-function initializeAngleSelector() {
-    const angleRadios = document.querySelectorAll('input[name="angle"]');
-    angleRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            angleMode = this.value;
-        });
-    });
-}
-
-// Programming mode functions
-function initializeBaseSelector() {
-    const baseRadios = document.querySelectorAll('input[name="base"]');
-    baseRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            const newBase = parseInt(this.value);
-            convertBase(currentBase, newBase);
-            currentBase = newBase;
-            updateButtonStates();
-            updateProgrammingDisplay();
-        });
-    });
-}
-
-function isValidForBase(char, base) {
-    if (base === 2) return ['0', '1'].includes(char);
-    if (base === 8) return '01234567'.includes(char);
-    if (base === 10) return '0123456789'.includes(char);
-    if (base === 16) return '0123456789ABCDEF'.includes(char);
-    return false;
-}
-
-function convertBase(fromBase, toBase) {
-    try {
-        const decimalValue = parseInt(currentExpression.prog, fromBase);
-        if (isNaN(decimalValue)) {
-            currentExpression.prog = '0';
-        } else {
-            currentExpression.prog = decimalValue.toString(toBase).toUpperCase();
-        }
-        updateDisplay('prog');
-    } catch (error) {
-        currentExpression.prog = '0';
-        updateDisplay('prog');
-    }
-}
-
-function updateButtonStates() {
-    const hexButtons = document.querySelectorAll('.hex-only');
-    const octButtons = document.querySelectorAll('.oct-disabled');
-    const binButtons = document.querySelectorAll('.bin-disabled');
-    
-    // Enable/disable hex buttons (A-F)
-    hexButtons.forEach(btn => {
-        if (currentBase === 16) {
-            btn.classList.remove('hex-only');
-        } else {
-            btn.classList.add('hex-only');
-        }
-    });
-    
-    // Enable/disable octal buttons (8-9)
-    octButtons.forEach(btn => {
-        if (currentBase === 2) {
-            btn.classList.add('oct-disabled');
-        } else {
-            btn.classList.remove('oct-disabled');
-        }
-    });
-    
-    // Enable/disable binary buttons (2-9, A-F)
-    binButtons.forEach(btn => {
-        if (currentBase === 2) {
-            btn.classList.add('bin-disabled');
-        } else {
-            btn.classList.remove('bin-disabled');
-        }
-    });
-}
-
-function updateProgrammingDisplay() {
-    try {
-        const decValue = parseInt(currentExpression.prog, currentBase);
-        if (isNaN(decValue)) {
-            document.getElementById('hex-result').textContent = '0';
-            document.getElementById('dec-result').textContent = '0';
-            document.getElementById('oct-result').textContent = '0';
-            document.getElementById('bin-result').textContent = '0';
-            return;
-        }
-        
-        document.getElementById('hex-result').textContent = decValue.toString(16).toUpperCase();
-        document.getElementById('dec-result').textContent = decValue.toString(10);
-        document.getElementById('oct-result').textContent = decValue.toString(8);
-        document.getElementById('bin-result').textContent = decValue.toString(2);
-    } catch (error) {
-        document.getElementById('hex-result').textContent = '0';
-        document.getElementById('dec-result').textContent = '0';
-        document.getElementById('oct-result').textContent = '0';
-        document.getElementById('bin-result').textContent = '0';
-    }
-}
-
-function bitwiseOp(mode, operation) {
-    try {
-        const value = parseInt(currentExpression[mode], currentBase);
-        let result;
-        
-        switch (operation) {
-            case 'AND':
-                currentExpression[mode] += '&';
-                updateDisplay(mode);
-                return;
-            case 'OR':
-                currentExpression[mode] += '|';
-                updateDisplay(mode);
-                return;
-            case 'XOR':
-                currentExpression[mode] += '^';
-                updateDisplay(mode);
-                return;
-            case 'NOT':
-                result = ~value;
-                break;
-            case 'LSH':
-                currentExpression[mode] += '<<';
-                updateDisplay(mode);
-                return;
-            case 'RSH':
-                currentExpression[mode] += '>>';
-                updateDisplay(mode);
-                return;
-        }
-        
-        currentExpression[mode] = result.toString(currentBase).toUpperCase();
-        updateDisplay(mode);
-        updateProgrammingDisplay();
-    } catch (error) {
-        showError(mode);
-    }
-}
-
-// Graph functions
-function drawGraph() {
-    const canvas = document.getElementById('graph-canvas');
-    const ctx = canvas.getContext('2d');
-    const functionInput = document.getElementById('graph-function').value;
-    const xMin = parseFloat(document.getElementById('x-min').value);
-    const xMax = parseFloat(document.getElementById('x-max').value);
-    const yMin = parseFloat(document.getElementById('y-min').value);
-    const yMax = parseFloat(document.getElementById('y-max').value);
-    
-    if (!functionInput) {
-        alert('لطفا تابع را وارد کنید');
+    #render() {
+      const items = this.#store.list();
+      if (items.length === 0) {
+        const empty = document.createElement("li");
+        empty.className = "py-10 text-center text-muted";
+        empty.textContent = this.#i18n.s("emptyHistory");
+        this.#list.replaceChildren(empty);
         return;
+      }
+      this.#list.replaceChildren(
+        ...items.map((item) => this.#createItem(item)),
+      );
     }
-    
-    // Set canvas size
-    canvas.width = 500;
-    canvas.height = 500;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw grid and axes
-    drawGridAndAxes(ctx, canvas.width, canvas.height, xMin, xMax, yMin, yMax);
-    
-    // Draw function
-    try {
-        drawFunction(ctx, canvas.width, canvas.height, functionInput, xMin, xMax, yMin, yMax);
-    } catch (error) {
-        alert('خطا در رسم تابع: ' + error.message);
-    }
-}
 
-function drawGridAndAxes(ctx, width, height, xMin, xMax, yMin, yMax) {
-    ctx.strokeStyle = '#e5e5e5';
-    ctx.lineWidth = 1;
-    
-    // Draw grid
-    const xStep = (xMax - xMin) / 10;
-    const yStep = (yMax - yMin) / 10;
-    
-    for (let i = 0; i <= 10; i++) {
-        const x = (i / 10) * width;
-        const y = (i / 10) * height;
-        
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-        ctx.stroke();
-        
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
-    }
-    
-    // Draw axes
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
-    
-    const xAxisY = height * (yMax / (yMax - yMin));
-    const yAxisX = width * (-xMin / (xMax - xMin));
-    
-    // X-axis
-    if (xAxisY >= 0 && xAxisY <= height) {
-        ctx.beginPath();
-        ctx.moveTo(0, xAxisY);
-        ctx.lineTo(width, xAxisY);
-        ctx.stroke();
-    }
-    
-    // Y-axis
-    if (yAxisX >= 0 && yAxisX <= width) {
-        ctx.beginPath();
-        ctx.moveTo(yAxisX, 0);
-        ctx.lineTo(yAxisX, height);
-        ctx.stroke();
-    }
-}
+    #createItem(item) {
+      const li = document.createElement("li");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className =
+        "w-full rounded-xl border border-line bg-surface-2 p-3 text-start transition hover:border-accent";
 
-function drawFunction(ctx, width, height, functionStr, xMin, xMax, yMin, yMax) {
-    ctx.strokeStyle = '#6366f1';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    
-    let firstPoint = true;
-    const steps = 1000;
-    
-    for (let i = 0; i <= steps; i++) {
+      const expression = document.createElement("div");
+      expression.className = "text-left font-mono text-sm text-muted";
+      expression.dir = "ltr";
+      expression.textContent = item.expression;
+
+      const result = document.createElement("div");
+      result.className = "text-left font-mono text-lg font-semibold";
+      result.dir = "ltr";
+      result.textContent = `= ${item.result}`;
+
+      const time = document.createElement("div");
+      time.className = "mt-1 text-xs text-muted";
+      time.textContent = item.timestamp;
+
+      button.append(expression, result, time);
+      button.addEventListener("click", () => {
+        this.#onSelect(item.result);
+        this.close();
+      });
+      li.append(button);
+      return li;
+    }
+  }
+
+  class GraphPlotter {
+    #canvas;
+    #input;
+    #ranges;
+    #errorBox;
+    #i18n;
+    #last = null;
+
+    constructor(i18n) {
+      this.#i18n = i18n;
+      this.#canvas = document.getElementById("graph-canvas");
+      this.#input = document.getElementById("graph-function");
+      this.#errorBox = document.getElementById("graph-error");
+      this.#ranges = ["x-min", "x-max", "y-min", "y-max"].map((id) =>
+        document.getElementById(id),
+      );
+
+      this.#renderExamples();
+      new MutationObserver(() => this.refresh()).observe(
+        document.documentElement,
+        { attributes: true, attributeFilter: ["data-theme"] },
+      );
+      new ResizeObserver(() => this.refresh()).observe(this.#canvas);
+    }
+
+    setFunction(fn) {
+      this.#input.value = fn;
+      this.draw();
+    }
+
+    draw() {
+      this.#hideError();
+
+      const source = this.#input.value.trim();
+      if (!source) return this.#showError("graphEmpty");
+
+      const [xMin, xMax, yMin, yMax] = this.#ranges.map((input) =>
+        Number.parseFloat(input.value),
+      );
+      if (
+        ![xMin, xMax, yMin, yMax].every(Number.isFinite) ||
+        xMin >= xMax ||
+        yMin >= yMax
+      ) {
+        return this.#showError("graphRange");
+      }
+
+      try {
+        this.#last = {
+          evaluate: ExpressionEvaluator.compile(source),
+          xMin,
+          xMax,
+          yMin,
+          yMax,
+        };
+      } catch {
+        return this.#showError("graphSyntax");
+      }
+      this.refresh();
+    }
+
+    clear() {
+      this.#last = null;
+      this.#hideError();
+      this.#prepareContext();
+    }
+
+    refresh() {
+      const context = this.#prepareContext();
+      if (!context || !this.#last) return;
+
+      const { colors, size } = context;
+      this.#drawGrid(context.ctx, size, colors);
+      this.#drawCurve(context.ctx, size, colors);
+    }
+
+    #prepareContext() {
+      const size = Math.round(this.#canvas.clientWidth);
+      if (size === 0) return null;
+
+      const ratio = window.devicePixelRatio || 1;
+      const pixels = Math.round(size * ratio);
+      if (this.#canvas.width !== pixels) {
+        this.#canvas.width = pixels;
+        this.#canvas.height = pixels;
+      }
+
+      const ctx = this.#canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.clearRect(0, 0, size, size);
+      return { ctx, size, colors: this.#readColors() };
+    }
+
+    #readColors() {
+      const styles = getComputedStyle(document.documentElement);
+      const read = (name) => styles.getPropertyValue(name).trim();
+      return {
+        line: read("--line"),
+        fg: read("--fg"),
+        muted: read("--muted"),
+        accent: read("--accent"),
+      };
+    }
+
+    #drawGrid(ctx, size, colors) {
+      const { xMin, xMax, yMin, yMax } = this.#last;
+
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = colors.line;
+      ctx.beginPath();
+      for (let i = 0; i <= 10; i++) {
+        const offset = (i / 10) * size;
+        ctx.moveTo(offset, 0);
+        ctx.lineTo(offset, size);
+        ctx.moveTo(0, offset);
+        ctx.lineTo(size, offset);
+      }
+      ctx.stroke();
+
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = colors.fg;
+      ctx.beginPath();
+      const axisY = size * (yMax / (yMax - yMin));
+      const axisX = size * (-xMin / (xMax - xMin));
+      if (axisY >= 0 && axisY <= size) {
+        ctx.moveTo(0, axisY);
+        ctx.lineTo(size, axisY);
+      }
+      if (axisX >= 0 && axisX <= size) {
+        ctx.moveTo(axisX, 0);
+        ctx.lineTo(axisX, size);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = colors.muted;
+      ctx.font = "11px Vazirmatn, sans-serif";
+      ctx.textBaseline = "bottom";
+      ctx.textAlign = "left";
+      ctx.fillText(String(xMin), 4, size - 4);
+      ctx.textAlign = "right";
+      ctx.fillText(String(xMax), size - 4, size - 4);
+      ctx.textBaseline = "top";
+      ctx.fillText(String(yMax), size - 4, 4);
+    }
+
+    #drawCurve(ctx, size, colors) {
+      const { evaluate, xMin, xMax, yMin, yMax } = this.#last;
+      const steps = size * 2;
+
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = colors.accent;
+      ctx.beginPath();
+
+      let isDrawing = false;
+      let previousY = 0;
+
+      for (let i = 0; i <= steps; i++) {
         const x = xMin + (i / steps) * (xMax - xMin);
         let y;
-        
         try {
-            y = evaluateFunction(functionStr, x);
-            
-            if (isNaN(y) || !isFinite(y)) continue;
-            
-            // Convert to canvas coordinates
-            const canvasX = ((x - xMin) / (xMax - xMin)) * width;
-            const canvasY = height - ((y - yMin) / (yMax - yMin)) * height;
-            
-            if (canvasY < 0 || canvasY > height) {
-                firstPoint = true;
-                continue;
-            }
-            
-            if (firstPoint) {
-                ctx.moveTo(canvasX, canvasY);
-                firstPoint = false;
-            } else {
-                ctx.lineTo(canvasX, canvasY);
-            }
-        } catch (error) {
-            firstPoint = true;
+          y = evaluate({ x });
+        } catch {
+          isDrawing = false;
+          continue;
         }
+
+        const canvasX = (i / steps) * size;
+        const canvasY = size - ((y - yMin) / (yMax - yMin)) * size;
+
+        if (!Number.isFinite(y) || canvasY < -size || canvasY > size * 2) {
+          isDrawing = false;
+          continue;
+        }
+
+        // A huge jump between neighbours is an asymptote (e.g. tan), do not connect it
+        if (isDrawing && Math.abs(canvasY - previousY) < size * 0.9) {
+          ctx.lineTo(canvasX, canvasY);
+        } else {
+          ctx.moveTo(canvasX, canvasY);
+        }
+        isDrawing = true;
+        previousY = canvasY;
+      }
+      ctx.stroke();
     }
-    
-    ctx.stroke();
-}
 
-function evaluateFunction(functionStr, x) {
-    // Replace function names with Math equivalents
-    let expression = functionStr
-        .replace(/sin/g, 'Math.sin')
-        .replace(/cos/g, 'Math.cos')
-        .replace(/tan/g, 'Math.tan')
-        .replace(/sqrt/g, 'Math.sqrt')
-        .replace(/ln/g, 'Math.log')
-        .replace(/log/g, 'Math.log10')
-        .replace(/exp/g, 'Math.exp')
-        .replace(/abs/g, 'Math.abs')
-        .replace(/\^/g, '**');
-    
-    // Replace x with the actual value
-    expression = expression.replace(/x/g, `(${x})`);
-    
-    return eval(expression);
-}
-
-function clearGraph() {
-    const canvas = document.getElementById('graph-canvas');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function setGraphFunction(func) {
-    document.getElementById('graph-function').value = func;
-}
-
-// History functions
-function saveToHistory(expression, result) {
-    const history = getHistory();
-    const timestamp = new Date().toLocaleString('fa-IR');
-    
-    history.unshift({
-        expression: expression,
-        result: result,
-        timestamp: timestamp
-    });
-    
-    // Keep only last 50 calculations
-    if (history.length > 50) {
-        history.pop();
+    #renderExamples() {
+      const container = document.getElementById("graph-examples");
+      const lang = this.#i18n.lang;
+      container.replaceChildren(
+        ...GRAPH_EXAMPLES.map((example) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "btn btn-secondary btn-sm font-mono";
+          button.dataset.action = "example";
+          button.dataset.value = example.fn;
+          button.textContent = `${example.fn} · ${example[lang]}`;
+          return button;
+        }),
+      );
     }
-    
-    localStorage.setItem('calculatorHistory', JSON.stringify(history));
-}
 
-function getHistory() {
-    const history = localStorage.getItem('calculatorHistory');
-    return history ? JSON.parse(history) : [];
-}
+    #showError(key) {
+      this.#errorBox.textContent = this.#i18n.s(key);
+      this.#errorBox.hidden = false;
+    }
 
-function loadHistory() {
-    // History is loaded when modal is opened
-}
+    #hideError() {
+      this.#errorBox.hidden = true;
+    }
+  }
 
-function showHistory() {
-    const modal = document.getElementById('history-modal');
-    const historyList = document.getElementById('history-list');
-    const history = getHistory();
-    
-    historyList.innerHTML = '';
-    
-    if (history.length === 0) {
-        historyList.innerHTML = '<div class="empty-history">تاریخچه‌ای وجود ندارد</div>';
-    } else {
-        history.forEach((item, index) => {
-            const historyItem = document.createElement('div');
-            historyItem.className = 'history-item';
-            historyItem.innerHTML = `
-                <div class="expression">${item.expression}</div>
-                <div class="result-value">= ${item.result}</div>
-                <div class="timestamp">${item.timestamp}</div>
-            `;
-            historyItem.onclick = () => {
-                currentExpression[currentMode] = item.result.toString();
-                updateDisplay(currentMode);
-                closeHistory();
-            };
-            historyList.appendChild(historyItem);
+  /* ---------- Keypad layouts ---------- */
+
+  const KEY_STYLES = Object.freeze({
+    digit: "btn btn-secondary h-12 text-lg sm:h-14",
+    utility: "btn btn-secondary h-12 text-lg text-accent-text sm:h-14",
+    operator: "btn btn-primary h-12 text-lg sm:h-14",
+    compact: "btn btn-primary h-12 text-xs sm:h-14 sm:text-sm",
+    function:
+      "btn h-12 border-line bg-accent-soft text-sm text-accent-text hover:border-accent sm:h-14",
+    equals:
+      "btn h-12 bg-success text-lg text-page hover:brightness-110 sm:h-14",
+  });
+
+  const key = (label, action, kind, value = label, className = "") =>
+    Object.freeze({ label, action, kind, value, className });
+  const digit = (char, className = "") =>
+    key(char, "digit", "digit", char, className);
+  const operator = (symbol) => key(symbol, "operator", "operator");
+  const utility = (label, action) => key(label, action, "utility");
+  const fn = (label, name) => key(label, "function", "function", name);
+
+  const KEY_LAYOUTS = Object.freeze({
+    padBasic: [
+      utility("C", "clear"),
+      utility("⌫", "back"),
+      utility("%", "percent"),
+      operator("÷"),
+      digit("7"),
+      digit("8"),
+      digit("9"),
+      operator("×"),
+      digit("4"),
+      digit("5"),
+      digit("6"),
+      operator("−"),
+      digit("1"),
+      digit("2"),
+      digit("3"),
+      operator("+"),
+      digit("0", "col-span-2"),
+      digit("."),
+      key("=", "equals", "equals"),
+    ],
+    scientific: [
+      fn("sin", "sin"),
+      fn("cos", "cos"),
+      fn("tan", "tan"),
+      fn("asin", "asin"),
+      fn("acos", "acos"),
+      fn("atan", "atan"),
+      fn("ln", "ln"),
+      fn("log", "log"),
+      key("π", "constant", "function", "pi"),
+      key("e", "constant", "function", "e"),
+      fn("√", "sqrt"),
+      fn("x²", "square"),
+      fn("x³", "cube"),
+      fn("eˣ", "exp"),
+      key("xʸ", "operator", "function", "^"),
+      fn("n!", "factorial"),
+      fn("|x|", "abs"),
+      fn("1/x", "inv"),
+      key("(", "operator", "function"),
+      key(")", "operator", "function"),
+    ],
+    hexRow: ["A", "B", "C", "D", "E", "F"].map((char) =>
+      key(char, "digit", "function"),
+    ),
+    bitwise: ["AND", "OR", "XOR", "NOT", "LSH", "RSH"].map((name) =>
+      key(name, "bitwise", "compact"),
+    ),
+    padProgrammer: [
+      utility("C", "clear"),
+      utility("⌫", "back"),
+      operator("÷"),
+      operator("×"),
+      digit("7"),
+      digit("8"),
+      digit("9"),
+      operator("−"),
+      digit("4"),
+      digit("5"),
+      digit("6"),
+      operator("+"),
+      digit("1"),
+      digit("2"),
+      digit("3"),
+      key("=", "equals", "equals", "=", "row-span-2"),
+      digit("0", "col-span-3"),
+    ],
+  });
+
+  const BITWISE_SYMBOLS = Object.freeze({
+    AND: "&",
+    OR: "|",
+    XOR: "^",
+    LSH: "<<",
+    RSH: ">>",
+  });
+  const KEYBOARD_OPERATORS = Object.freeze({
+    "+": "+",
+    "-": "−",
+    "*": "×",
+    "/": "÷",
+    "(": "(",
+    ")": ")",
+    "^": "^",
+  });
+  const PROGRAMMER_KEYBOARD_OPERATORS = Object.freeze({ "&": "&", "|": "|" });
+  const TRAILING_OPERATORS = /[+\u2212\u00D7\u00F7^&|<>*\/-]+$/;
+
+  /* ---------- Application ---------- */
+
+  class CalculatorApp {
+    static #CALCULATOR_MODES = Object.freeze([
+      "simple",
+      "engineering",
+      "programming",
+    ]);
+
+    #i18n = new I18n();
+    #history = new HistoryStore();
+    #historyDialog;
+    #plotter;
+    #panels = new Map();
+    #sessions = new Map(
+      CalculatorApp.#CALCULATOR_MODES.map((mode) => [
+        mode,
+        { expression: "0", waiting: false, historyLine: "" },
+      ]),
+    );
+    #mode = "simple";
+    #base = 16;
+    #degrees = true;
+    #errorTimer = 0;
+
+    init() {
+      this.#cachePanels();
+      this.#renderKeypads();
+      this.#plotter = new GraphPlotter(this.#i18n);
+      this.#historyDialog = new HistoryDialog({
+        dialog: document.getElementById("history-dialog"),
+        list: document.getElementById("history-list"),
+        store: this.#history,
+        i18n: this.#i18n,
+        onSelect: (result) => this.#useHistoryResult(result),
+      });
+      this.#bindEvents();
+      this.#updateProgrammerKeys();
+      this.#switchMode("simple");
+      this.#i18n.init();
+    }
+
+    get #session() {
+      return this.#sessions.get(this.#mode);
+    }
+
+    #cachePanels() {
+      for (const mode of CalculatorApp.#CALCULATOR_MODES) {
+        const root = document.querySelector(`[data-panel="${mode}"]`);
+        this.#panels.set(mode, {
+          root,
+          display: root.querySelector("[data-display]"),
+          historyLine: root.querySelector("[data-history]"),
+          baseOutputs: [...root.querySelectorAll("[data-base-out]")],
         });
+      }
     }
-    
-    modal.classList.add('active');
-}
 
-function closeHistory() {
-    const modal = document.getElementById('history-modal');
-    modal.classList.remove('active');
-}
-
-function clearHistory() {
-    if (confirm('آیا مطمئن هستید که می‌خواهید تاریخچه را پاک کنید؟')) {
-        localStorage.removeItem('calculatorHistory');
-        showHistory();
+    #renderKeypads() {
+      for (const container of document.querySelectorAll("[data-keys]")) {
+        const layout = KEY_LAYOUTS[container.dataset.keys];
+        container.replaceChildren(
+          ...layout.map((definition) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className =
+              `${KEY_STYLES[definition.kind]} ${definition.className}`.trim();
+            button.textContent = definition.label;
+            button.dataset.action = definition.action;
+            button.dataset.value = definition.value;
+            return button;
+          }),
+        );
+      }
     }
-}
 
-// Close modal when clicking outside
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('history-modal');
-    if (event.target === modal) {
-        closeHistory();
+    #bindEvents() {
+      document.addEventListener("click", (event) => {
+        const tab = event.target.closest('[role="tab"][data-mode]');
+        if (tab) return this.#switchMode(tab.dataset.mode);
+
+        const button = event.target.closest("button[data-action]");
+        if (button && !button.disabled)
+          this.#dispatch(button.dataset.action, button.dataset.value);
+      });
+
+      document.addEventListener("change", (event) => {
+        if (event.target.name === "angle")
+          this.#degrees = event.target.value === "deg";
+        if (event.target.name === "base")
+          this.#changeBase(Number.parseInt(event.target.value, 10));
+      });
+
+      document.addEventListener("keydown", (event) => this.#onKeydown(event));
+      window.addEventListener("languageChanged", () =>
+        window.location.reload(),
+      );
     }
-});
 
-// Keyboard support
-document.addEventListener('keydown', function(event) {
-    if (currentMode === 'graph') return;
-    
-    const key = event.key;
-    
-    if (/[0-9]/.test(key)) {
-        appendNumber(currentMode, key);
-    } else if (key === '.') {
-        appendNumber(currentMode, '.');
-    } else if (['+', '-', '*', '/'].includes(key)) {
-        appendOperator(currentMode, key);
-    } else if (key === 'Enter') {
+    #switchMode(mode) {
+      this.#mode = mode;
+
+      for (const tab of document.querySelectorAll('[role="tab"][data-mode]')) {
+        tab.setAttribute("aria-selected", String(tab.dataset.mode === mode));
+      }
+      for (const panel of document.querySelectorAll("[data-panel]")) {
+        panel.hidden = panel.dataset.panel !== mode;
+      }
+
+      if (mode === "graph") this.#plotter.refresh();
+      else this.#renderDisplay();
+    }
+
+    #dispatch(action, value) {
+      switch (action) {
+        case "plot":
+          return this.#plotter.draw();
+        case "clear-graph":
+          return this.#plotter.clear();
+        case "example":
+          return this.#plotter.setFunction(value);
+        case "history":
+          return this.#historyDialog.open();
+        case "close-history":
+          return this.#historyDialog.close();
+        case "clear-history":
+          return this.#historyDialog.clear();
+        default:
+          return this.#runCalculatorAction(action, value);
+      }
+    }
+
+    #runCalculatorAction(action, value) {
+      if (!this.#session) return;
+      clearTimeout(this.#errorTimer);
+
+      try {
+        switch (action) {
+          case "digit":
+            this.#appendDigit(value);
+            break;
+          case "operator":
+            this.#appendOperator(value);
+            break;
+          case "constant":
+            this.#appendConstant(value);
+            break;
+          case "function":
+            this.#applyFunction(value);
+            break;
+          case "bitwise":
+            this.#applyBitwise(value);
+            break;
+          case "clear":
+            this.#clear();
+            break;
+          case "back":
+            this.#deleteLast();
+            break;
+          case "percent":
+            this.#percentage();
+            break;
+          case "equals":
+            this.#calculate();
+            break;
+          default:
+            return;
+        }
+        this.#renderDisplay();
+      } catch (error) {
+        console.debug("Calculator error:", error);
+        this.#showError();
+      }
+    }
+
+    /* ----- input ----- */
+
+    #appendDigit(char) {
+      const session = this.#session;
+
+      if (this.#mode === "programming") {
+        if (!ProgrammerEvaluator.isValidDigit(char, this.#base)) return;
+      } else if (
+        char === "." &&
+        /[\d.]*$/.exec(session.expression)[0].includes(".") &&
+        !session.waiting
+      ) {
+        return;
+      }
+
+      if (session.waiting) {
+        session.expression = char === "." ? "0." : char;
+        session.waiting = false;
+      } else if (session.expression === "0" && char !== ".") {
+        session.expression = char;
+      } else {
+        session.expression += char;
+      }
+    }
+
+    #appendOperator(symbol) {
+      const session = this.#session;
+      session.waiting = false;
+
+      if (symbol === "(") {
+        session.expression =
+          session.expression === "0" ? "(" : `${session.expression}(`;
+      } else if (symbol === ")") {
+        session.expression += ")";
+      } else {
+        session.expression =
+          session.expression.replace(TRAILING_OPERATORS, "") + symbol;
+      }
+    }
+
+    #appendConstant(name) {
+      const session = this.#session;
+      const symbol = name === "pi" ? "π" : "e";
+
+      session.expression =
+        session.expression === "0" || session.waiting
+          ? symbol
+          : session.expression + symbol;
+      session.waiting = false;
+    }
+
+    #clear() {
+      Object.assign(this.#session, {
+        expression: "0",
+        waiting: false,
+        historyLine: "",
+      });
+    }
+
+    #deleteLast() {
+      const session = this.#session;
+      session.expression =
+        session.expression.length > 1 ? session.expression.slice(0, -1) : "0";
+      session.waiting = false;
+    }
+
+    /* ----- evaluation ----- */
+
+    #evaluateStandard(expression) {
+      const value = ExpressionEvaluator.evaluate(expression, {
+        degrees: this.#degrees,
+      });
+      if (!Number.isFinite(value))
+        throw new RangeError("Result is not a finite number");
+      return value;
+    }
+
+    #evaluateProgrammer(expression) {
+      return ProgrammerEvaluator.evaluate(
+        expression.replace(TRAILING_OPERATORS, ""),
+        this.#base,
+      );
+    }
+
+    static #format(value) {
+      return String(Number(value.toPrecision(12)));
+    }
+
+    #formatBig(value, base = this.#base) {
+      return value.toString(base).toUpperCase();
+    }
+
+    #commit(historyExpression, resultText) {
+      const session = this.#session;
+
+      this.#history.add({
+        expression: historyExpression,
+        result: resultText,
+        timestamp: new Date().toLocaleString(
+          this.#i18n.lang === "fa" ? "fa-IR" : "en-US",
+        ),
+      });
+
+      session.historyLine = `${historyExpression} =`;
+      session.expression = resultText;
+      session.waiting = true;
+    }
+
+    #calculate() {
+      const { expression } = this.#session;
+
+      if (this.#mode === "programming") {
+        this.#commit(
+          expression,
+          this.#formatBig(this.#evaluateProgrammer(expression)),
+        );
+      } else {
+        this.#commit(
+          expression,
+          CalculatorApp.#format(this.#evaluateStandard(expression)),
+        );
+      }
+    }
+
+    #percentage() {
+      if (this.#mode === "programming") return;
+      const { expression } = this.#session;
+      this.#commit(
+        `${expression}%`,
+        CalculatorApp.#format(this.#evaluateStandard(expression) / 100),
+      );
+    }
+
+    #applyFunction(name) {
+      if (this.#mode === "programming") return;
+
+      const { expression } = this.#session;
+      const result = KEY_FUNCTIONS[name](
+        this.#evaluateStandard(expression),
+        this.#degrees,
+      );
+      if (!Number.isFinite(result))
+        throw new RangeError("Result is not a finite number");
+
+      this.#commit(`${name}(${expression})`, CalculatorApp.#format(result));
+    }
+
+    #applyBitwise(name) {
+      const session = this.#session;
+
+      if (name === "NOT") {
+        const value = this.#evaluateProgrammer(session.expression);
+        this.#commit(`NOT ${session.expression}`, this.#formatBig(~value));
+        return;
+      }
+      this.#appendOperator(BITWISE_SYMBOLS[name]);
+    }
+
+    #useHistoryResult(result) {
+      if (!this.#session) return;
+      Object.assign(this.#session, {
+        expression: String(result),
+        waiting: true,
+        historyLine: "",
+      });
+      this.#renderDisplay();
+    }
+
+    /* ----- programmer mode ----- */
+
+    #changeBase(newBase) {
+      const session = this.#sessions.get("programming");
+
+      try {
+        const value = ProgrammerEvaluator.evaluate(
+          session.expression.replace(TRAILING_OPERATORS, ""),
+          this.#base,
+        );
+        session.expression = this.#formatBig(value, newBase);
+      } catch {
+        session.expression = "0";
+      }
+
+      this.#base = newBase;
+      session.waiting = false;
+      this.#updateProgrammerKeys();
+      this.#renderDisplay("programming");
+    }
+
+    #updateProgrammerKeys() {
+      const root = this.#panels.get("programming").root;
+      for (const button of root.querySelectorAll(
+        'button[data-action="digit"]',
+      )) {
+        button.disabled = !ProgrammerEvaluator.isValidDigit(
+          button.dataset.value,
+          this.#base,
+        );
+      }
+    }
+
+    /* ----- rendering ----- */
+
+    #renderDisplay(mode = this.#mode) {
+      const panel = this.#panels.get(mode);
+      const session = this.#sessions.get(mode);
+      if (!panel) return;
+
+      panel.display.value = session.expression;
+      panel.display.scrollLeft = panel.display.scrollWidth;
+      panel.historyLine.textContent = session.historyLine;
+
+      if (mode === "programming")
+        this.#renderBaseOutputs(panel, session.expression);
+    }
+
+    #renderBaseOutputs(panel, expression) {
+      let value = null;
+      try {
+        value = this.#evaluateProgrammer(expression);
+      } catch {
+        // Incomplete expression: show placeholders
+      }
+
+      for (const output of panel.baseOutputs) {
+        output.textContent =
+          value === null
+            ? "—"
+            : this.#formatBig(value, Number(output.dataset.baseOut));
+      }
+    }
+
+    #showError() {
+      const session = this.#session;
+      const panel = this.#panels.get(this.#mode);
+
+      Object.assign(session, {
+        expression: "0",
+        waiting: false,
+        historyLine: "",
+      });
+      panel.display.value = this.#i18n.s("error");
+      this.#errorTimer = setTimeout(() => this.#renderDisplay(), 1500);
+    }
+
+    /* ----- keyboard ----- */
+
+    #onKeydown(event) {
+      if (
+        event.defaultPrevented ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey
+      )
+        return;
+      if (!this.#session || this.#historyDialog.isOpen) return;
+      if (event.target.closest?.("input:not([readonly]), textarea, select"))
+        return;
+
+      const { key: pressed } = event;
+      const onButton = Boolean(event.target.closest?.("button"));
+
+      if (/^[0-9.]$/.test(pressed)) {
+        this.#runCalculatorAction("digit", pressed);
+      } else if (this.#mode === "programming" && /^[a-f]$/i.test(pressed)) {
+        this.#runCalculatorAction("digit", pressed.toUpperCase());
+      } else if (KEYBOARD_OPERATORS[pressed]) {
+        this.#runCalculatorAction("operator", KEYBOARD_OPERATORS[pressed]);
+      } else if (
+        this.#mode === "programming" &&
+        PROGRAMMER_KEYBOARD_OPERATORS[pressed]
+      ) {
+        this.#runCalculatorAction(
+          "operator",
+          PROGRAMMER_KEYBOARD_OPERATORS[pressed],
+        );
+      } else if (pressed === "Enter" && !onButton) {
         event.preventDefault();
-        calculate(currentMode);
-    } else if (key === 'Escape') {
-        clearDisplay(currentMode);
-    } else if (key === 'Backspace') {
+        this.#runCalculatorAction("equals");
+      } else if (pressed === "Escape") {
+        this.#runCalculatorAction("clear");
+      } else if (pressed === "Backspace") {
         event.preventDefault();
-        deleteLast(currentMode);
+        this.#runCalculatorAction("back");
+      }
     }
-});
+  }
 
+  new CalculatorApp().init();
+})();

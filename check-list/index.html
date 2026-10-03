@@ -1,77 +1,130 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">چک لیست</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/css/styles.css" rel="stylesheet">
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
-</link></head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">چک لیست</title>
+    <meta name="description" content="چک لیست با دسته‌بندی؛ برای هر دسته آیتم اضافه، ویرایش، ریست، ذخیره و وارد کنید">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+    <script src="assets/js/app.js" defer></script>
+    <script src="../assets/tool-wrapper.js" defer></script>
+</head>
+
 <body>
-<div class="app-shell">
-<header class="hero">
-<p class="eyebrow" data-i18n="text_eyebrow_0">ابزاری برای پیگیری کارهای روزانه</p>
-<h1 data-i18n="heading_0">چک لیست با دسته بندی</h1>
-<p class="lede" data-i18n="text_lede_1">برای هر دسته بندی، آیتم ها را اضافه، ویرایش و ریست کنید و در صورت نیاز فهرست کامل را جا‌به‌جا کنید.</p>
-</header>
-<main>
-<section aria-label="مدیریت دسته بندی ها" class="panel list-manager">
-<div class="panel-header">
-<h2 data-i18n="heading_1">دسته بندی ها</h2>
-</div>
-<div class="list-tabs" id="listTabs"></div>
-<form class="inline-form" id="newListForm">
-<input id="listTitleInput" placeholder="نام دسته جدید" required="" type="text"/>
-<button data-i18n="button_0" type="submit">افزودن دسته</button>
-</form>
-</section>
-<section aria-label="مدیریت آیتم ها" class="panel item-manager">
-<div class="panel-header">
-<div>
-<p class="subhead" data-i18n="text_subhead_2">در حال نمایش:</p>
-<h2 data-i18n="heading_2" id="activeListTitle">یک دسته را انتخاب کنید</h2>
-</div>
-<div class="panel-actions">
-<button data-i18n="button_1" id="resetListButton" type="button">پاک کردن آیتم‌ها</button>
-<button class="ghost" data-i18n="button_2" id="revertCompletedButton" type="button">بازگرداندن انجام‌شده‌ها</button>
-</div>
-</div>
-<form class="inline-form" id="newItemForm">
-<input id="newItemInput" placeholder="عنوان آیتم" required="" type="text"/>
-<button data-i18n="button_3" type="submit">افزودن آیتم</button>
-</form>
-<ul aria-live="polite" class="item-list" id="itemsList"></ul>
-<p class="empty-state" data-i18n="text_empty_state_3" id="emptyState">در این دسته هنوز آیتمی ثبت نشده است.</p>
-</section>
-<section aria-label="صدور و واردسازی لیست" class="panel export-panel">
-<div class="panel-header">
-<div>
-<h2 data-i18n="heading_3">صدور و واردسازی</h2>
-<p class="subhead" data-i18n="text_subhead_4">لیست فعلی را دانلود کنید یا فایل ذخیره شده را بارگذاری کنید.</p>
-</div>
-</div>
-<div class="export-import-row">
-<div class="export-controls">
-<button data-i18n="button_4" id="downloadListButton" type="button">ذخیره لیست فعلی</button>
-<p class="muted" data-i18n="text_muted_5">فایل JSON دسته فعال بلافاصله دانلود می‌شود.</p>
-</div>
-<div class="import-controls">
-<p class="muted" data-i18n="text_muted_6">فایل صادر شده را برای واردسازی انتخاب کنید.</p>
-<div class="file-row">
-<input accept="application/json" id="listFileInput" type="file"/>
-<button data-i18n="button_5" id="uploadFileButton" type="button">وارد کردن فایل</button>
-</div>
-</div>
-</div>
-</section>
-</main>
-</div>
-<div aria-live="assertive" class="toast" id="toast" role="status"></div>
-<script defer="" src="assets/js/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="page page--narrow">
+        <header class="page-header">
+            <p class="eyebrow" data-i18n="text_eyebrow_0">ابزاری برای پیگیری کارهای روزانه</p>
+            <h2 class="page-title" data-i18n="heading_0">چک لیست با دسته بندی</h2>
+            <p class="page-lead" data-i18n="text_lede_1">برای هر دسته بندی، آیتم ها را اضافه، ویرایش و ریست کنید و در
+                صورت نیاز فهرست کامل را جا‌به‌جا کنید.</p>
+        </header>
+
+        <div class="stack">
+            <!-- Categories -->
+            <section class="card stack" aria-labelledby="categoriesTitle">
+                <h3 class="card-title" id="categoriesTitle" data-i18n="heading_1">دسته بندی ها</h3>
+                <div class="tabs" id="listTabs" role="tablist"></div>
+                <form class="input-row" id="newListForm">
+                    <input id="listTitleInput" class="field" type="text" maxlength="60" required autocomplete="off"
+                        enterkeyhint="done" placeholder="نام دسته جدید" data-i18n-placeholder="placeholder_list">
+                    <button class="btn btn--primary" type="submit" data-i18n="button_0">افزودن دسته</button>
+                </form>
+            </section>
+
+            <!-- Items -->
+            <section class="card stack" aria-labelledby="activeListTitle">
+                <div class="items-header">
+                    <div class="items-heading">
+                        <p class="eyebrow" data-i18n="text_subhead_2">در حال نمایش:</p>
+                        <h3 class="card-title" id="activeListTitle"></h3>
+                    </div>
+                    <span class="badge" id="progressText" hidden></span>
+                </div>
+
+                <div class="progress" id="progress" role="progressbar" aria-valuemin="0" aria-valuenow="0"
+                    aria-valuemax="0" hidden>
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+
+                <form class="input-row" id="newItemForm">
+                    <input id="newItemInput" class="field" type="text" maxlength="200" required autocomplete="off"
+                        enterkeyhint="done" placeholder="عنوان آیتم" data-i18n-placeholder="placeholder_item">
+                    <button class="btn btn--primary" type="submit" data-i18n="button_3">افزودن آیتم</button>
+                </form>
+
+                <ul class="todo-list" id="itemsList" aria-live="polite"></ul>
+                <p class="empty" id="emptyState" data-i18n="text_empty_state_3" hidden>در این دسته هنوز آیتمی ثبت نشده
+                    است.</p>
+
+                <div class="row">
+                    <button class="btn btn--secondary btn--sm" id="revertCompletedButton" type="button"
+                        data-i18n="button_2">بازگرداندن انجام‌شده‌ها</button>
+                    <button class="btn btn--danger btn--sm" id="resetListButton" type="button" data-i18n="button_1">پاک
+                        کردن آیتم‌ها</button>
+                    <button class="btn btn--ghost btn--sm" id="deleteListButton" type="button" data-i18n="button_6">حذف
+                        دسته</button>
+                </div>
+            </section>
+
+            <!-- Export / import -->
+            <section class="card stack" aria-labelledby="exportTitle">
+                <div>
+                    <h3 class="card-title" id="exportTitle" data-i18n="heading_3">صدور و واردسازی</h3>
+                    <p class="muted" data-i18n="text_subhead_4">لیست فعلی را دانلود کنید یا فایل ذخیره شده را بارگذاری
+                        کنید.</p>
+                </div>
+
+                <div class="export-grid">
+                    <div class="stack">
+                        <button class="btn btn--secondary" id="downloadListButton" type="button"
+                            data-i18n="button_4">ذخیره لیست فعلی</button>
+                        <p class="hint" data-i18n="text_muted_5">فایل JSON دسته فعال بلافاصله دانلود می‌شود.</p>
+                    </div>
+                    <div class="stack">
+                        <input id="listFileInput" class="field" type="file" accept="application/json"
+                            aria-describedby="importHint">
+                        <button class="btn btn--secondary" id="uploadFileButton" type="button" data-i18n="button_5">وارد
+                            کردن فایل</button>
+                        <p class="hint" id="importHint" data-i18n="text_muted_6">فایل صادر شده را برای واردسازی انتخاب
+                            کنید.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <!-- Edit / confirm -->
+    <dialog class="modal" id="dialog" aria-labelledby="dialogTitle">
+        <form method="dialog" class="modal-form">
+            <div class="modal-header">
+                <h2 class="modal-title" id="dialogTitle"></h2>
+            </div>
+            <div class="modal-body stack">
+                <p id="dialogMessage" hidden></p>
+                <input id="dialogInput" class="field" type="text" maxlength="200" autocomplete="off" hidden>
+            </div>
+            <div class="modal-footer modal-footer--split">
+                <button type="button" class="btn btn--ghost" id="dialogCancel" data-i18n="dialog_cancel">انصراف</button>
+                <button type="submit" class="btn btn--primary" id="dialogConfirm" value="ok"></button>
+            </div>
+        </form>
+    </dialog>
 </body>
+
 </html>

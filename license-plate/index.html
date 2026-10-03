@@ -1,38 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html dir="rtl" lang="fa">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">کدهای پلاک و پیش‌شماره استان‌ها</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">کدهای پلاک و پیش‌شماره استان‌ها</title>
+    <meta name="description"
+        content="کدهای پلاک خودرو، پیش‌شماره تلفن ثابت و پیش‌شماره اپراتورهای موبایل استان‌های ایران">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+    <script src="assets/script.js" defer></script>
+    <script src="../assets/tool-wrapper.js" defer></script>
 </head>
+
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">کدهای پلاک و پیش‌شماره استان‌های ایران</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">مشاهده کدهای پلاک خودرو و پیش‌شماره تلفن ثابت استان‌ها</p>
-</header>
-<div class="tabs">
-<button class="tab-btn active" data-i18n="button_0" data-tab="provinces">استان‌ها</button>
-<button class="tab-btn" data-i18n="button_1" data-tab="mobile">پیش‌شماره موبایل</button>
-</div>
-<div class="tab-content active" id="provinces-tab">
-<div class="provinces-list" id="provincesList"></div>
-</div>
-<div class="tab-content" id="mobile-tab">
-<div class="mobile-codes-container">
-<h2 data-i18n="heading_1">پیش‌شماره‌های تلفن همراه</h2>
-<div class="mobile-codes-list" id="mobileCodesList"></div>
-</div>
-</div>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
-</div>
-<script src="assets/script.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="page">
+        <header class="page-header">
+            <h2 class="page-title" data-i18n="heading_0">کدهای پلاک و پیش‌شماره استان‌های ایران</h2>
+            <p class="page-lead" data-i18n="text_subtitle_0">مشاهده کدهای پلاک خودرو و پیش‌شماره تلفن ثابت استان‌ها</p>
+        </header>
+
+        <div class="stack">
+            <div class="search">
+                <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3.5-3.5" />
+                </svg>
+                <input id="searchInput" class="field" type="search" autocomplete="off" enterkeyhint="search"
+                    placeholder="جستجوی استان، شهر، کد پلاک یا پیش‌شماره…" data-i18n-placeholder="search_placeholder"
+                    aria-label="جستجو" data-i18n-label="search_label">
+                <button id="clearBtn" class="search-clear" type="button" aria-label="پاک کردن جستجو"
+                    data-i18n-label="clear_label" hidden>×</button>
+            </div>
+
+            <div class="tabs" role="tablist">
+                <button class="tab" role="tab" id="tab-provinces" aria-controls="panel-provinces" aria-selected="true"
+                    data-tab="provinces" data-i18n="button_0">استان‌ها</button>
+                <button class="tab" role="tab" id="tab-mobile" aria-controls="panel-mobile" aria-selected="false"
+                    tabindex="-1" data-tab="mobile" data-i18n="button_1">پیش‌شماره موبایل</button>
+            </div>
+
+            <section id="panel-provinces" role="tabpanel" aria-labelledby="tab-provinces" data-panel="provinces">
+                <div class="grid-cards" id="provincesList"></div>
+            </section>
+
+            <section id="panel-mobile" role="tabpanel" aria-labelledby="tab-mobile" data-panel="mobile" hidden>
+                <h3 class="section-title" data-i18n="heading_1">پیش‌شماره‌های تلفن همراه</h3>
+                <div class="grid-cards grid-cards--sm" id="mobileCodesList"></div>
+            </section>
+
+            <p id="noResults" class="empty" role="status" data-i18n="no_results" hidden>موردی پیدا نشد</p>
+        </div>
+
+        <footer class="page-footer">
+            <p data-i18n="footer">جعبه ابزار</p>
+        </footer>
+    </main>
 </body>
+
 </html>
