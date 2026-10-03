@@ -1,7 +1,6 @@
-﻿/* Tool wrapper: header bar + contact dialog injected into every tool page */
-
-:root {
-  --tw-height: 52px;
+﻿:root {
+    --tw-height: 52px;
+    --tw-offset: calc(var(--tw-height) + env(safe-area-inset-top));
 }
 
 .tool-wrapper,
@@ -41,7 +40,15 @@
   --tw-error: #ff7a7a;
 }
 
-/* Header bar */
+html {
+    scroll-padding-top: var(--tw-offset);
+}
+
+body.has-tool-wrapper {
+    box-sizing: border-box;
+    padding-top: var(--tw-offset) !important;
+}
+
 .tool-wrapper {
   position: fixed;
   inset: 0 0 auto 0;
@@ -50,7 +57,8 @@
   background: var(--tw-bar-bg);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   backdrop-filter: blur(16px) saturate(180%);
-  border-bottom: 1px solid var(--tw-border);
+  box-sizing: border-box;
+  box-shadow: 0 1px 0 var(--tw-border);
   color: var(--tw-fg);
 }
 
