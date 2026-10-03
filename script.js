@@ -725,7 +725,7 @@ const toolCategories = Object.freeze([
   { key: "learning", label: "یادگیری", icon: "🎓" },
   { key: "finance", label: "مالی", icon: "💰" },
   { key: "text", label: "متن", icon: "✍️" },
-  { key: "media", label: "تصویر و صدا", icon: "🎨" },    
+  { key: "media", label: "تصویر و صدا", icon: "🎨" },
   { key: "security", label: "امنیت و رمزنگاری", icon: "🔐" },
   { key: "project", label: "مدیریت پروژه", icon: "🗂️" },
   { key: "dev", label: "ابزار توسعه‌دهنده", icon: "🛠️" },
@@ -845,6 +845,7 @@ class ListBrowser {
           external: true,
           group: i.category,
           searchText: ListBrowser.#normalize(`${i.name} ${i.id}`),
+          telegramId: key === "apps" ? null : i.id,
         };
       });
   }
@@ -862,6 +863,16 @@ class ListBrowser {
       .replace(/[يك\u200c]/g, (ch) => ListBrowser.#persianChars[ch])
       .toLowerCase()
       .trim();
+  }
+
+  static #supportsIntentUrls() {
+    const ua = navigator.userAgent;
+    return /Android/i.test(ua) && !/;\s*wv\)/.test(ua);
+  }
+
+  static #buildTelegramIntent(username) {
+    const fallback = encodeURIComponent(`https://t.me/${username}`);
+    return `intent://resolve?domain=${username}#Intent;scheme=tg;S.browser_fallback_url=${fallback};end`;
   }
 
   static #escape(text) {
@@ -895,6 +906,14 @@ class ListBrowser {
         e.preventDefault();
         this.#dom.search.focus();
       }
+    });
+
+    this.#dom.list.addEventListener("click", (e) => {
+      const link = e.target.closest("a[data-tg]");
+      if (!link || !ListBrowser.#supportsIntentUrls()) return;
+
+      e.preventDefault();
+      window.location.href = ListBrowser.#buildTelegramIntent(link.dataset.tg);
     });
   }
 
@@ -940,10 +959,11 @@ class ListBrowser {
       ? ' target="_blank" rel="noopener noreferrer"'
       : "";
     const dir = entry.external ? ' dir="ltr"' : "";
+    const tg = entry.telegramId ? ` data-tg="${esc(entry.telegramId)}"` : "";
 
     return `
             <li>
-                <a class="link" href="${esc(entry.href)}"${attrs}>
+                <a class="link" href="${esc(entry.href)}"${attrs}${tg}>
                     <div class="icon">${this.#createIconHtml(entry.icon)}</div>
                     <div class="content">
                         <div class="lang-section fa">
