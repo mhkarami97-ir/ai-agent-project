@@ -1,102 +1,159 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">برنامه‌ریز سفر</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/styles/main.css" rel="stylesheet">
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
-</link></head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">برنامه‌ریز سفر</title>
+    <meta name="description" content="محاسبهٔ فاصله و زمان سفر و ثبت برنامهٔ مسیر و بودجه، بدون بک‌اند">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/styles/main.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+    <script src="assets/scripts/app.js" defer></script>
+    <script src="../assets/tool-wrapper.js" defer></script>
+</head>
+
 <body>
-<header class="hero">
-<div class="hero__content">
-<p class="hero__eyebrow" data-i18n="text_hero__eyebrow_0">سفر با برنامه</p>
-<h1 data-i18n="heading_0">محاسبه‌گر فاصله و برنامه‌ریز سفر</h1>
-<p class="dark-text" data-i18n="text_dark_text_1">
-        تمام ابزارهای لازم برای تخمین زمان، فاصله، هزینه و یادداشت‌های مسیرها را با
-        یک رابط ساده در اختیار دارید. هیچ بک‌اندی لازم نیست؛ همه داده‌ها در مرورگر
-        شما ذخیره می‌شود.
-      </p>
-</div>
-<div class="hero__panel">
-<h2 data-i18n="heading_1">برنامه‌ریزی هوشمند</h2>
-<p>
-        با ثبت مسیرها، بودجه و یادداشت‌ها، یک خلاصه سفر برای خود بسازید و هر زمان
-        آن را ادامه دهید؛ اطلاعات تا وقتی مرورگر شما پاک نشود، باقی می‌مانند.
-      </p>
-</div>
-</header>
-<main>
-<section class="panel" id="calculator">
-<div class="panel__header">
-<h3 data-i18n="heading_2">محاسبه‌گر فاصله و زمان سفر</h3>
-<p>مسافت، سرعت متوسط و نتیجه زمانی را همین حالا ببینید.</p>
-</div>
-<form class="form-grid" id="distance-form">
-<label data-i18n="label_0">
-          شهر مبدا
-          <input name="origin" placeholder="مثلاً تهران" required="" type="text"/>
-</label>
-<label data-i18n="label_1">
-          شهر مقصد
-          <input name="destination" placeholder="مثلاً مشهد" required="" type="text"/>
-</label>
-<label data-i18n="label_2">
-          سرعت متوسط (کیلومتر بر ساعت)
-          <input min="10" name="speed" placeholder="مثلاً 90" required="" step="5" type="number"/>
-</label>
-<p class="form-note" data-i18n="text_form_note_2">
-          فقط مبدا، مقصد و سرعت را وارد کنید؛ فاصله و زمان با استفاده از داده‌های آزاد نقشه (OpenStreetMap/OSRM) و در صورت نیاز محاسبه کروی داخلی تخمین زده می‌شود.
-        </p>
-<button class="btn primary" data-i18n="button_0" type="submit">محاسبه کن</button>
-</form>
-<div aria-live="polite" class="result-card" id="distance-result">
-<p>در اینجا نتیجه فاصله و زمان نشان داده می‌شود.</p>
-</div>
-</section>
-<section class="panel" id="itinerary">
-<div class="panel__header">
-<h3 data-i18n="heading_3">برنامه‌ریز مسیر و هزینه</h3>
-<p>هر مسیر را همراه با هزینه و توضیحات ثبت کن و همیشه در دسترس داشته باش.</p>
-</div>
-<form class="form-grid" id="itinerary-form">
-<label data-i18n="label_3">
-          نام مسیر یا شهر
-          <input name="title" placeholder="مثلاً تهران به شیراز" required="" type="text"/>
-</label>
-<label data-i18n="label_4">
-          مدت (شب)
-          <input min="1" name="nights" placeholder="مثلاً 3" required="" step="1" type="number"/>
-</label>
-<label data-i18n="label_5">
-          بودجه تخمینی (ریال)
-          <input min="1" name="budget" placeholder="مثلاً 25000000" required="" step="1000" type="number"/>
-</label>
-<label data-i18n="label_6">
-          یادداشت‌های کوتاه
-          <textarea name="notes" placeholder="مکان‌های پیشنهادی یا نکات مهم" rows="2"></textarea>
-</label>
-<button class="btn secondary" data-i18n="button_1" type="submit">ذخیره برنامه</button>
-</form>
-<div class="itinerary">
-<div class="itinerary__header">
-<h4>لیست برنامه‌ها</h4>
-<button class="btn ghost" data-i18n="button_2" id="clear-itinerary">پاک کردن همه</button>
-</div>
-<div class="itinerary__list" id="itinerary-list">
-<p>هنوز برنامه‌ای ذخیره نشده است.</p>
-</div>
-</div>
-</section>
-</main>
-<footer class="footer">
-<p>همه اطلاعات روی مرورگر شما نگهداری می‌شود و برای راه‌اندازی فقط کافیست صفحه را باز کنید.</p>
-</footer>
-<script defer="" src="assets/scripts/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="page page--narrow">
+        <header class="page-header">
+            <p class="eyebrow" data-i18n="text_hero__eyebrow_0">سفر با برنامه</p>
+            <h2 class="page-title" data-i18n="heading_0">محاسبه‌گر فاصله و برنامه‌ریز سفر</h2>
+            <p class="page-lead" data-i18n="text_dark_text_1">تمام ابزارهای لازم برای تخمین زمان، فاصله، هزینه و یادداشت‌های مسیرها را با یک رابط ساده در اختیار دارید. هیچ بک‌اندی لازم نیست؛ همه داده‌ها در مرورگر شما ذخیره می‌شود.</p>
+        </header>
+
+        <div class="stack">
+            <section class="card card--lg stack" id="calculator" aria-labelledby="calcTitle">
+                <div>
+                    <h3 class="card-title" id="calcTitle" data-i18n="heading_2">محاسبه‌گر فاصله و زمان سفر</h3>
+                    <p class="muted" data-i18n="text_calc_lead">مسافت، سرعت متوسط و نتیجه زمانی را همین حالا ببینید.</p>
+                </div>
+
+                <form class="stack" id="distance-form" novalidate>
+                    <div class="route-fields">
+                        <div>
+                            <label class="label" for="origin" data-i18n="label_0">شهر مبدا</label>
+                            <input class="field" id="origin" name="origin" type="text" required autocomplete="off"
+                                placeholder="مثلاً تهران" data-i18n-placeholder="placeholder_origin">
+                        </div>
+
+                        <button type="button" class="btn btn--secondary btn--icon swap-btn" id="swapBtn"
+                            aria-label="Swap origin and destination" data-i18n-label="button_swap">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M7 4v14" />
+                                <path d="m3 14 4 4 4-4" />
+                                <path d="M17 20V6" />
+                                <path d="m13 10 4-4 4 4" />
+                            </svg>
+                        </button>
+
+                        <div>
+                            <label class="label" for="destination" data-i18n="label_1">شهر مقصد</label>
+                            <input class="field" id="destination" name="destination" type="text" required
+                                autocomplete="off" placeholder="مثلاً مشهد" data-i18n-placeholder="placeholder_destination">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="label" for="speed" data-i18n="label_2">سرعت متوسط (کیلومتر بر ساعت)</label>
+                        <input class="field" id="speed" name="speed" type="text" inputmode="numeric" value="90"
+                            dir="ltr" required placeholder="مثلاً 90" data-i18n-placeholder="placeholder_speed">
+                    </div>
+
+                    <p class="hint" data-i18n="text_form_note_2">مختصات شهرها از جدول داخلی یا Open-Meteo و مسیر رانندگی از OSRM (داده‌های OpenStreetMap) گرفته می‌شود؛ اگر در دسترس نبود، فاصلهٔ مستقیم روی کره تخمین زده می‌شود.</p>
+
+                    <button class="btn btn--primary" id="calculateBtn" type="submit" data-i18n="button_0">محاسبه کن</button>
+                </form>
+
+                <div class="result-card" id="distance-result" aria-live="polite">
+                    <p class="muted" data-i18n="text_result_placeholder">در اینجا نتیجه فاصله و زمان نشان داده می‌شود.</p>
+                </div>
+            </section>
+
+            <section class="card card--lg stack" id="itinerary" aria-labelledby="planTitle">
+                <div>
+                    <h3 class="card-title" id="planTitle" data-i18n="heading_3">برنامه‌ریز مسیر و هزینه</h3>
+                    <p class="muted" data-i18n="text_plan_lead">هر مسیر را همراه با هزینه و توضیحات ثبت کن و همیشه در دسترس داشته باش.</p>
+                </div>
+
+                <form class="stack" id="itinerary-form" novalidate>
+                    <div>
+                        <label class="label" for="planTitleInput" data-i18n="label_3">نام مسیر یا شهر</label>
+                        <input class="field" id="planTitleInput" name="title" type="text" required autocomplete="off"
+                            maxlength="80" placeholder="مثلاً تهران به شیراز" data-i18n-placeholder="placeholder_title">
+                    </div>
+
+                    <div class="plan-numbers">
+                        <div>
+                            <label class="label" for="nights" data-i18n="label_4">مدت (شب)</label>
+                            <input class="field" id="nights" name="nights" type="text" inputmode="numeric" required
+                                dir="ltr" placeholder="مثلاً 3" data-i18n-placeholder="placeholder_nights">
+                        </div>
+                        <div>
+                            <label class="label" for="budget" data-i18n="label_5">بودجه تخمینی (ریال)</label>
+                            <input class="field" id="budget" name="budget" type="text" inputmode="numeric" required
+                                dir="ltr" placeholder="مثلاً 25000000" data-i18n-placeholder="placeholder_budget">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="label" for="notes" data-i18n="label_6">یادداشت‌های کوتاه</label>
+                        <textarea class="field" id="notes" name="notes" rows="2" maxlength="400"
+                            placeholder="مکان‌های پیشنهادی یا نکات مهم" data-i18n-placeholder="placeholder_notes"></textarea>
+                    </div>
+
+                    <button class="btn btn--secondary" type="submit" data-i18n="button_1">ذخیره برنامه</button>
+                </form>
+
+                <div class="plans">
+                    <div class="plans-head">
+                        <h4 class="card-title" data-i18n="text_plans_title">لیست برنامه‌ها</h4>
+                        <button class="btn btn--danger btn--sm" id="clear-itinerary" type="button" data-i18n="button_2"
+                            hidden>پاک کردن همه</button>
+                    </div>
+                    <p class="badge plans-summary" id="plans-summary" hidden></p>
+                    <ul class="plan-list" id="itinerary-list"></ul>
+                    <p class="empty" id="emptyPlans" data-i18n="text_no_plans">هنوز برنامه‌ای ذخیره نشده است.</p>
+                </div>
+            </section>
+        </div>
+
+        <footer class="page-footer">
+            <p data-i18n="text_footer">همه اطلاعات روی مرورگر شما نگهداری می‌شود.</p>
+            <p>
+                <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
+                · <a href="https://project-osrm.org/" target="_blank" rel="noopener noreferrer">OSRM</a>
+                · <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo.com</a>
+            </p>
+        </footer>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <dialog class="modal" id="confirmDialog" aria-labelledby="confirmTitle">
+        <form method="dialog" class="modal-form">
+            <div class="modal-header">
+                <h2 class="modal-title" id="confirmTitle" data-dialog-title></h2>
+            </div>
+            <div class="modal-body">
+                <p data-dialog-message></p>
+            </div>
+            <div class="modal-footer modal-footer--split">
+                <button type="button" class="btn btn--ghost" data-dialog-cancel data-i18n="dialog_cancel">انصراف</button>
+                <button type="submit" class="btn btn--danger" value="ok" data-i18n="dialog_confirm">تأیید</button>
+            </div>
+        </form>
+    </dialog>
 </body>
+
 </html>

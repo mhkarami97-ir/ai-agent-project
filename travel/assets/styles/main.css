@@ -1,276 +1,141 @@
-﻿:root {
-  --bg: #0d1b2a;
-  --panel-bg: #152a3a;
-  --card-bg: #1b3752;
-  --accent: #ff9f1c;
-  --muted: #a3b6c0;
-  --border: rgba(255, 255, 255, 0.1);
-  --radius: 16px;
-  --text: #a3b6c0;
-  font-family: 'Vazirmatn', system-ui, sans-serif;
+/* Travel planner: only what the shared tools.css does not cover */
+
+/* ---------- Route form ---------- */
+.route-fields {
+    display: grid;
+    align-items: end;
+    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr);
 }
 
-* {
-  box-sizing: border-box;
+.swap-btn {
+    justify-self: center;
+    border-radius: 50%;
 }
 
-body {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  color: var(--text);
-  min-height: 100vh;
-  margin: 0;
-  font-family: inherit;
+.swap-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
-img {
-  max-width: 100%;
-  display: block;
+@media (min-width: 640px) {
+    .route-fields {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    }
+
+    .swap-btn {
+        margin-bottom: 0.125rem;
+    }
 }
 
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-h1, .dark-text {
-  color: var(--bg);
-}
-
-.hero {
-  padding: 4rem 1rem 3rem;
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-}
-
-.hero__content h1 {
-  margin: 0.5rem 0;
-  font-size: clamp(2.25rem, 4vw, 3rem);
-}
-
-.hero__eyebrow {
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  color: var(--bg);
-  margin: 0;
-}
-
-.hero__actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-top: 1rem;
-}
-
-.hero__panel {
-  background: var(--panel-bg);
-  border-radius: var(--radius);
-  padding: 2rem;
-  border: 1px solid var(--border);
-  box-shadow: 0 20px 20px rgba(0, 0, 0, 0.35);
-}
-
-.hero__panel h2 {
-  margin-top: 0;
-  font-size: 1.6rem;
-}
-
-.hero__panel p {
-  margin-bottom: 0;
-  color: var(--text);
-}
-
-main {
-  padding: 0 1rem 3rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.panel {
-  background: var(--panel-bg);
-  padding: 2rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-}
-
-.panel__header h3 {
-  margin: 0;
-  font-size: 1.8rem;
-}
-
-.panel__header p {
-  color: var(--bg);
-  margin: 0.5rem 0 1.5rem;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  font-size: 0.95rem;
-}
-
-input,
-textarea,
-button {
-  font-family: inherit;
-}
-
-input,
-textarea {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.75rem 0.9rem;
-  color: var(--text);
-}
-
-textarea {
-  resize: vertical;
-}
-
-button {
-  border: none;
-  padding: 0.9rem 1.4rem;
-  font-size: 1rem;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.25);
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn.primary {
-  background: var(--accent);
-  color: #0d1b2a;
-}
-
-.btn.secondary {
-  background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--text);
-}
-
-.btn.ghost {
-  background: transparent;
-  color: var(--accent);
-  border: 1px dashed rgba(255, 255, 255, 0.4);
-}
-
+/* ---------- Result ---------- */
 .result-card {
-  margin-top: 1.5rem;
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
 }
 
-.itinerary {
-  margin-top: 1.5rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 1.2rem;
+.result-card .alert {
+    width: 100%;
 }
 
-.itinerary__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+.result-route {
+    font-size: 1rem;
+    font-weight: 700;
 }
 
-.itinerary__list {
-  margin-top: 1rem;
-  display: grid;
-  gap: 1rem;
+.result-distance {
+    color: var(--accent-text);
+    font-size: clamp(1.75rem, 1.2rem + 2.5vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.2;
 }
 
-.itinerary__item {
-  padding: 1rem;
-  border-radius: 12px;
-  background: var(--card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.result-times {
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
 }
 
-.footer {
-  padding: 2rem 1rem 3rem;
-  text-align: center;
-  color: var(--bg);
+.result-times li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
 }
 
-@media (max-width: 600px) {
-  .hero,
-  .panel,
-  .itinerary {
-    padding: 1.5rem;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
+/* ---------- Plans ---------- */
+.plan-numbers {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
 }
 
-.form-note {
-  grid-column: 1 / -1;
-  font-size: 0.9rem;
-  color: var(--muted);
-  margin: 0;
+.plans {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
 }
 
-/* Dark Mode Styles */
-body[data-theme="dark"] {
-    background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 100%);
-    color: #e0e0e0;
+.plans-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
 }
 
-body[data-theme="dark"] h1,
-body[data-theme="dark"] .dark-text {
-    color: #e0e0e0;
+.plans-head .card-title {
+    margin-bottom: 0;
 }
 
-body[data-theme="dark"] .panel {
-    background: var(--panel-bg);
+.plans-summary {
+    align-self: flex-start;
+    white-space: normal;
 }
 
-body[data-theme="dark"] .card,
-body[data-theme="dark"] .destination-card {
-    background: var(--card-bg);
+.plan-list {
+    display: grid;
+    gap: 0.75rem;
 }
 
-body[data-theme="dark"] input,
-body[data-theme="dark"] textarea,
-body[data-theme="dark"] select {
-    background: var(--panel-bg);
-    border-color: var(--border);
-    color: #e0e0e0;
+.plan {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
 }
 
-body[data-theme="dark"] input:focus,
-body[data-theme="dark"] textarea:focus,
-body[data-theme="dark"] select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(255, 159, 28, 0.2);
+.plan-title {
+    font-size: 1.0625rem;
 }
 
-body[data-theme="dark"] .footer {
+.plan-meta {
+    gap: 0.5rem;
+}
+
+.plan-notes {
     color: var(--muted);
+    white-space: pre-wrap;
 }
 
+.plan-delete {
+    justify-self: flex-start;
+}

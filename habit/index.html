@@ -1,272 +1,153 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html dir="rtl"
-      lang="fa">
 <head>
-    <link href="/favicon.ico"
-          rel="icon"
-          type="image/x-icon"/>
-    <link href="/favicon.ico"
-          rel="shortcut icon"
-          type="image/x-icon"/>
-    <meta charset="utf-8"/>
-    <meta content="IE=edge"
-          http-equiv="X-UA-Compatible"/>
-    <meta content="width=device-width, initial-scale=1.0"
-          name="viewport"/>
-    <title data-i18n="title">
-        رهیاب
-        عادت‌ها</title>
-    <meta content="نرم‌افزار ردیابی عادت‌ها با نمودار پیشرفت و یادآوری"
-          name="description"/>
-    <link href="../Vazirmatn-font-face.css"
-          rel="stylesheet"/>
-    <link href="assets/css/styles.css"
-          rel="stylesheet">
-    <link href="../assets/tool-wrapper.css"
-          rel="stylesheet"/>
-    </link>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">رهیاب عادت‌ها</title>
+    <meta name="description" content="ردیابی عادت‌ها با پیشرفت روزانه، رکورد پیاپی، نمودار هفتگی و یادآوری">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+    <script src="assets/js/app.js" defer></script>
+    <script src="../assets/tool-wrapper.js" defer></script>
 </head>
+
 <body>
-<div class="app-shell">
-    <header class="hero">
-        <p class="hero-label"
-           data-i18n="text_hero_label_0">
-            رهیاب
-            روزانه</p>
-        <h1 data-i18n="heading_0">
-            مرتب‌تر
-            از
-            قبل
-            پیش
-            برو</h1>
-        <p class="hero-subtitle"
-           data-i18n="text_hero_subtitle_1">
-            عادت‌های
-            روزانه
-            را
-            ثبت
-            کن،
-            پیشرفت
-            را
-            دنبال
-            کن
-            و
-            بدون
-            فراموشی
-            به
-            یادآوری‌ها
-            پاسخ
-            بده.
-        </p>
-    </header>
-    <section
-            aria-labelledby="new-habit-heading"
-            class="panel">
-        <div class="panel-heading">
-            <div>
-                <h2 data-i18n="heading_1"
-                    id="new-habit-heading">
-                    افزودن
-                    عادت
-                    جدید</h2>
-                <p>
-                    کارهایی
-                    که
-                    به
-                    طور
-                    مداوم
-                    انجام
-                    می‌دهی
-                    را
-                    ثبت
-                    کن
-                    تا
-                    نمودارها
-                    رشد
-                    کنند.</p>
+    <main class="page">
+        <header class="page-header">
+            <p class="eyebrow" data-i18n="text_hero_label_0">رهیاب روزانه</p>
+            <h2 class="page-title" data-i18n="heading_0">مرتب‌تر از قبل پیش برو</h2>
+            <p class="page-lead" data-i18n="text_hero_subtitle_1">عادت‌های روزانه را ثبت کن، پیشرفت را دنبال کن و بدون فراموشی به یادآوری‌ها پاسخ بده.</p>
+        </header>
+
+        <div class="stack">
+            <!-- Overview -->
+            <section class="stats" aria-labelledby="overview-title">
+                <h3 class="sr-only" id="overview-title" data-i18n="heading_2">وضعیت کلی</h3>
+                <article class="stat">
+                    <p class="stat-value" id="totalHabits">0</p>
+                    <p class="stat-label" data-i18n="text_label_2">عادت‌های فعال</p>
+                </article>
+                <article class="stat">
+                    <p class="stat-value" id="weeklyCompletions">0</p>
+                    <p class="stat-label" data-i18n="text_label_4">تکمیل شده این هفته</p>
+                </article>
+                <article class="stat">
+                    <p class="stat-value" id="bestStreak">0</p>
+                    <p class="stat-label" data-i18n="text_label_6">بهترین استرک</p>
+                </article>
+                <article class="stat">
+                    <p class="stat-value" id="reminderCount">0</p>
+                    <p class="stat-label" data-i18n="text_label_8">یادآوری‌های برنامه‌ریزی‌شده</p>
+                </article>
+            </section>
+
+            <div class="habit-layout">
+                <div class="stack">
+                    <!-- New habit -->
+                    <section class="card card--lg stack" aria-labelledby="new-habit-heading">
+                        <div>
+                            <h3 class="card-title" id="new-habit-heading" data-i18n="heading_1">افزودن عادت جدید</h3>
+                            <p class="muted" data-i18n="text_form_lead">کارهایی که به طور مداوم انجام می‌دهی را ثبت کن تا نمودارها رشد کنند.</p>
+                        </div>
+
+                        <form class="stack" id="habitForm" novalidate>
+                            <div>
+                                <label class="label" for="habitTitle" data-i18n="label_0">عنوان عادت</label>
+                                <input class="field" id="habitTitle" name="title" type="text" maxlength="60" required
+                                    autocomplete="off" placeholder="مثلاً مطالعه ۲۰ دقیقه" data-i18n-placeholder="placeholder_title">
+                            </div>
+                            <div>
+                                <label class="label" for="habitDescription" data-i18n="label_1">توضیح کوتاه</label>
+                                <textarea class="field" id="habitDescription" name="description" rows="2" maxlength="300"
+                                    placeholder="هدف اصلی یا توضیح را وارد کن" data-i18n-placeholder="placeholder_description"></textarea>
+                            </div>
+                            <div class="form-pair">
+                                <div>
+                                    <label class="label" for="habitTarget" data-i18n="label_2">تعداد دفعات هدف در روز</label>
+                                    <input class="field" id="habitTarget" name="target" type="text" inputmode="numeric"
+                                        dir="ltr" value="1" required>
+                                </div>
+                                <div>
+                                    <label class="label" for="habitReminder" data-i18n="label_3">زمان یادآوری (اختیاری)</label>
+                                    <input class="field" id="habitReminder" name="reminder" type="time" dir="ltr">
+                                </div>
+                            </div>
+                            <button class="btn btn--primary" type="submit" data-i18n="button_0">ثبت عادت</button>
+                        </form>
+                    </section>
+
+                    <!-- Reminders -->
+                    <section class="card card--lg stack" aria-labelledby="reminder-heading">
+                        <div>
+                            <h3 class="card-title" id="reminder-heading" data-i18n="heading_5">یادآورها</h3>
+                            <p class="muted" data-i18n="text_reminders_lead">آخرین رویدادها و یادآوری‌هایی که فعال شده‌اند.</p>
+                        </div>
+                        <ul class="feed" id="reminderFeed" aria-live="polite"></ul>
+                        <div class="row">
+                            <button class="btn btn--secondary btn--sm" id="enableNotifications" type="button"
+                                data-i18n="button_enable_notifications" hidden>فعال‌سازی اعلان‌ها</button>
+                            <p class="hint" id="permissionStatus"></p>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="stack">
+                    <!-- Habit list -->
+                    <section class="card card--lg stack" aria-labelledby="habits-heading">
+                        <div>
+                            <h3 class="card-title" id="habits-heading" data-i18n="heading_3">لیست عادت‌ها</h3>
+                            <p class="muted" id="habitSummary"></p>
+                        </div>
+                        <div class="habit-list" id="habitList"></div>
+                        <p class="empty" id="emptyHabits" data-i18n="empty_habits" hidden>هنوز عادتی اضافه نشده. از فرم کناری شروع کن.</p>
+                    </section>
+
+                    <!-- Weekly chart -->
+                    <section class="card card--lg stack" aria-labelledby="chart-heading">
+                        <div>
+                            <h3 class="card-title" id="chart-heading" data-i18n="heading_4">نمودار هفتگی</h3>
+                            <p class="muted" data-i18n="text_chart_lead">جمع تکمیل‌های هر روز را ببین.</p>
+                        </div>
+                        <ul class="bars" id="weekChart"></ul>
+                    </section>
+                </div>
             </div>
         </div>
-        <form class="grid-form"
-              id="habitForm">
-            <label>
-                <span data-i18n="label_0">
-                    عنوان
-                    عادت
-                </span>
-                <input id="habitTitle"
-                       name="title"
-                       placeholder="مثلاً مطالعه ۲۰ دقیقه"
-                       required=""
-                       type="text"/>
-            </label>
-            <label>
-                <span data-i18n="label_1">
-                    توضیح
-                    کوتاه
-                </span>
-                <textarea
-                        id="habitDescription"
-                        name="description"
-                        placeholder="هدف اصلی یا توضیح را وارد کن"></textarea>
-            </label>
-            <label>
-                <span data-i18n="label_2">
-                    تعداد
-                    دفعات
-                    هدف
-                    در
-                    روز
-                </span>
-                <input id="habitTarget"
-                       min="1"
-                       name="target"
-                       required=""
-                       type="number"
-                       value="1"/>
-            </label>
-            <label>
-                <span data-i18n="label_3">
-                    زمان
-                    یادآوری
-                    (اختیاری)
-                </span>
-                <input id="habitReminder"
-                       name="reminder"
-                       type="time"/>
-            </label>
-            <button class="primary-btn"
-                    data-i18n="button_0"
-                    type="submit">
-                ثبت
-                عادت
-            </button>
+
+        <footer class="page-footer">
+            <p data-i18n="footer">اطلاعات فقط در مرورگر شما ذخیره می‌شود.</p>
+        </footer>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <dialog class="modal" id="confirmDialog" aria-labelledby="confirmTitle">
+        <form method="dialog" class="modal-form">
+            <div class="modal-header">
+                <h2 class="modal-title" id="confirmTitle" data-dialog-title></h2>
+            </div>
+            <div class="modal-body">
+                <p data-dialog-message></p>
+            </div>
+            <div class="modal-footer modal-footer--split">
+                <button type="button" class="btn btn--ghost" data-dialog-cancel data-i18n="dialog_cancel">انصراف</button>
+                <button type="submit" class="btn btn--danger" value="ok" data-i18n="dialog_confirm">تأیید</button>
+            </div>
         </form>
-    </section>
-    <section
-            aria-label="وضعیت کلی"
-            class="panel stats-panel">
-        <h2 data-i18n="heading_2">
-            وضعیت
-            کلی</h2>
-        <div class="stats-grid">
-            <article>
-                <p class="label"
-                   data-i18n="text_label_2">
-                    عادت‌های
-                    فعال</p>
-                <p class="value"
-                   id="totalHabits">
-                    ۰</p>
-            </article>
-            <article>
-                <p class="label"
-                   data-i18n="text_label_4">
-                    تکمیل
-                    شده
-                    این
-                    هفته</p>
-                <p class="value"
-                   id="weeklyCompletions">
-                    ۰</p>
-            </article>
-            <article>
-                <p class="label"
-                   data-i18n="text_label_6">
-                    بهترین
-                    استرک</p>
-                <p class="value"
-                   id="bestStreak">
-                    ۰</p>
-            </article>
-            <article>
-                <p class="label"
-                   data-i18n="text_label_8">
-                    یادآوری‌های
-                    برنامه‌ریزی‌شده</p>
-                <p class="value"
-                   id="reminderCount">
-                    ۰</p>
-            </article>
-        </div>
-    </section>
-    <section
-            aria-labelledby="habits-heading"
-            class="panel">
-        <div class="panel-heading">
-            <div>
-                <h2 data-i18n="heading_3"
-                    id="habits-heading">
-                    لیست
-                    عادت‌ها</h2>
-                <p id="habitSummary">
-                    هنوز
-                    عادت
-                    اضافه
-                    نشده.</p>
-            </div>
-        </div>
-        <div class="habit-list"
-             id="habitList"></div>
-    </section>
-    <section
-            aria-labelledby="chart-heading"
-            class="panel">
-        <div class="panel-heading">
-            <div>
-                <h2 data-i18n="heading_4"
-                    id="chart-heading">
-                    نمودار
-                    هفتگی</h2>
-                <p>
-                    جمع
-                    تکمیل‌های
-                    هر
-                    روز
-                    را
-                    ببین.</p>
-            </div>
-        </div>
-        <div class="chart-wrapper">
-            <canvas aria-label="نمودار پیشرفت"
-                    height="300"
-                    id="progressChart"
-                    width="600"></canvas>
-        </div>
-    </section>
-    <section
-            aria-labelledby="reminder-heading"
-            class="panel">
-        <div class="panel-heading">
-            <div>
-                <h2 data-i18n="heading_5"
-                    id="reminder-heading">
-                    یادآورها</h2>
-                <p>
-                    آخرین
-                    یادآوری‌هایی
-                    که
-                    در
-                    زمان
-                    مشخص
-                    شده
-                    فعال
-                    شده‌اند.</p>
-            </div>
-        </div>
-        <div class="reminder-feed"
-             id="reminderFeed">
-            <p class="placeholder"
-               data-i18n="text_placeholder_10">
-                هنوز
-                یادآوری‌ای
-                اجرا
-                نشده.</p>
-        </div>
-    </section>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="assets/js/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    </dialog>
 </body>
+
 </html>

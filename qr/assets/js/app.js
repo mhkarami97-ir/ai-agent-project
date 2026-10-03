@@ -1,356 +1,553 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
-    }
+(() => {
+    'use strict';
 
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
-    }
+    const SETTINGS_KEY = 'qr-app-settings';
+    const JSQR_URL = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+    const TOAST_DURATION_MS = 1800;
+    const RENDER_DELAY_MS = 150;
+    const SCAN_INTERVAL_MS = 160;
+    const MAX_DECODE_SIZE = 1280;
+    const MIN_CONTRAST = 3;
 
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
-    }
-
-    getTheme() {
-        return this.currentTheme;
-    }
-}
-
-const themeManager = new ThemeManager();
-
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
-    }
-
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
-        }
-    }
-
-    t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
-        }
-        
-        return value;
-    }
-
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
-        });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
-        }
-    }
-
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
-    }
-}
-
-const i18n = new I18n();
-
-
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-const generatorForm = document.getElementById("qr-generator");
-const qrText = document.getElementById("qr-text");
-const qrColor = document.getElementById("qr-color");
-const qrBg = document.getElementById("qr-bg");
-const qrSize = document.getElementById("qr-size");
-const qrCanvas = document.getElementById("qr-canvas");
-const generatorStatus = document.getElementById("generator-status");
-const downloadBtn = document.getElementById("download-btn");
-const copyBtn = document.getElementById("copy-btn");
-
-const fileInput = document.getElementById("qr-file");
-const readerStatus = document.getElementById("reader-status");
-const readerOutput = document.getElementById("reader-output");
-const readerResult = document.getElementById("reader-result");
-const openLinkBtn = document.getElementById("open-link");
-const copyResultBtn = document.getElementById("copy-result");
-const startCameraBtn = document.getElementById("start-camera");
-const stopCameraBtn = document.getElementById("stop-camera");
-const video = document.getElementById("qr-video");
-const readerCanvas = document.getElementById("qr-reader-canvas");
-const readerCtx = readerCanvas.getContext("2d");
-
-let stream = null;
-let scanInterval = null;
-
-const STORAGE_KEY = "qr-app-settings";
-const LINK_REGEX = /^https?:\/\//i;
-
-const defaultSettings = {
-  text: "https://example.com",
-  color: "#111827",
-  bg: "#ffffff",
-  size: "240",
-};
-
-const isLink = (value) => LINK_REGEX.test(value.trim());
-
-const hydrateSettings = () => {
-  try {
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!data) return defaultSettings;
-    return { ...defaultSettings, ...data };
-  } catch (error) {
-    console.warn("Cannot parse saved settings", error);
-    return defaultSettings;
-  }
-};
-
-const settings = hydrateSettings();
-qrText.value = settings.text;
-qrColor.value = settings.color;
-qrBg.value = settings.bg;
-qrSize.value = settings.size;
-
-const persistSettings = () => {
-  const payload = {
-    text: qrText.value.trim() || defaultSettings.text,
-    color: qrColor.value,
-    bg: qrBg.value,
-    size: qrSize.value,
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-};
-
-const renderQR = async () => {
-  const qrLib = window.QRCode;
-  if (!qrLib) {
-    generatorStatus.textContent = "کتابخانه QR بارگیری نشد؛ صفحه را رفرش کنید.";
-    return;
-  }
-  const value = qrText.value.trim();
-  if (!value) {
-    generatorStatus.textContent = "لطفا متن را وارد کنید";
-    return;
-  }
-
-  generatorStatus.textContent = "در حال ساخت...";
-
-  try {
-    qrCanvas.width = qrCanvas.height = parseInt(qrSize.value, 10);
-    await qrLib.toCanvas(qrCanvas, value, {
-      margin: 1,
-      color: { dark: qrColor.value, light: qrBg.value },
-      width: qrCanvas.width,
+    const DEFAULT_SETTINGS = Object.freeze({
+        text: 'https://example.com',
+        color: '#111827',
+        bg: '#ffffff',
+        size: 240,
+        level: 'M'
     });
-    generatorStatus.textContent = "آماده شد";
-  } catch (error) {
-    console.error(error);
-    generatorStatus.textContent = "ساخت QR با خطا مواجه شد";
-  }
-};
+    const ERROR_LEVELS = Object.freeze(['L', 'M', 'Q', 'H']);
 
-const downloadQR = () => {
-  const link = document.createElement("a");
-  link.href = qrCanvas.toDataURL("image/png");
-  link.download = "qr-code.png";
-  link.click();
-};
+    /* ---------- Pure logic (no DOM) ---------- */
 
-const copyText = async () => {
-  const text = qrText.value.trim();
-  if (!text) {
-    generatorStatus.textContent = "متنی برای کپی وجود ندارد";
-    return;
-  }
+    class Color {
+        static normalize(value) {
+            let hex = String(value ?? '').trim().replace(/^#/, '');
+            if (/^[0-9a-f]{3}$/i.test(hex)) hex = [...hex].map((char) => char + char).join('');
+            return /^[0-9a-f]{6}$/i.test(hex) ? `#${hex.toLowerCase()}` : null;
+        }
 
-  try {
-    await navigator.clipboard.writeText(text);
-    generatorStatus.textContent = "متن کپی شد";
-  } catch (error) {
-    generatorStatus.textContent = "امکان کپی نیست";
-  }
-};
+        /** WCAG relative luminance. */
+        static luminance(hex) {
+            const [r, g, b] = [1, 3, 5].map((start) => {
+                const channel = Number.parseInt(hex.slice(start, start + 2), 16) / 255;
+                return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+            });
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        }
 
-const handleFile = (file) => {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (event) => processImage(event.target.result);
-  reader.readAsDataURL(file);
-};
+        /** WCAG contrast ratio, from 1 (identical) to 21 (black on white). */
+        static contrast(a, b) {
+            const [light, dark] = [Color.luminance(a), Color.luminance(b)].sort((x, y) => y - x);
+            return (light + 0.05) / (dark + 0.05);
+        }
 
-const processImage = (src) => {
-  const jsQrLib = window.jsQR;
-  if (!jsQrLib) {
-    readerStatus.textContent = "امکان خواندن QR وجود ندارد";
-    return;
-  }
-  const image = new Image();
-  image.onload = () => {
-    readerCanvas.width = image.width;
-    readerCanvas.height = image.height;
-    readerCtx.drawImage(image, 0, 0, image.width, image.height);
-    const imageData = readerCtx.getImageData(0, 0, image.width, image.height);
-    const code = jsQrLib(imageData.data, imageData.width, imageData.height);
-    if (code) {
-      showResult(code.data);
-    } else {
-      readerStatus.textContent = "کدی پیدا نشد";
-      readerOutput.textContent = "—";
+        /** @returns {'ok'|'low'|'inverted'} */
+        static assessQr(darkHex, lightHex) {
+            if (Color.contrast(darkHex, lightHex) < MIN_CONTRAST) return 'low';
+            // Some scanners cannot read light modules on a dark background
+            return Color.luminance(darkHex) > Color.luminance(lightHex) ? 'inverted' : 'ok';
+        }
     }
-  };
-  image.onerror = () => {
-    readerStatus.textContent = "خواندن فایل ممکن نشد";
-  };
-  image.src = src;
-};
 
-const showResult = (text) => {
-  readerOutput.textContent = text;
-  readerStatus.textContent = "کد شناسایی شد";
-  openLinkBtn.disabled = !/^https?:\/\//i.test(text);
-  copyResultBtn.disabled = !text;
-};
+    class LinkGuard {
+        /** Returns a URL only for http(s) links, never for javascript:, data:, etc. */
+        static parse(text) {
+            const value = String(text ?? '').trim();
+            if (!/^https?:\/\//i.test(value)) return null;
+            try {
+                return new URL(value);
+            } catch {
+                return null;
+            }
+        }
+    }
 
-const startCamera = async () => {
-  try {
-    readerStatus.textContent = "در حال آماده‌سازی دوربین";
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-    video.srcObject = stream;
-    startCameraBtn.disabled = true;
-    stopCameraBtn.disabled = false;
-    scanInterval = setInterval(scanFrame, 500);
-  } catch (error) {
-    readerStatus.textContent = "اجازه دسترسی به دوربین داده نشد";
-  }
-};
+    class SettingsStore {
+        load() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+                if (!saved || typeof saved !== 'object') return { ...DEFAULT_SETTINGS };
 
-const stopCamera = () => {
-  if (scanInterval) {
-    clearInterval(scanInterval);
-    scanInterval = null;
-  }
-  if (stream) {
-    stream.getTracks().forEach((track) => track.stop());
-    stream = null;
-  }
-  video.srcObject = null;
-  startCameraBtn.disabled = false;
-  stopCameraBtn.disabled = true;
-  readerStatus.textContent = "دوربین متوقف شد";
-};
+                return {
+                    text: typeof saved.text === 'string' ? saved.text : DEFAULT_SETTINGS.text,
+                    color: Color.normalize(saved.color) ?? DEFAULT_SETTINGS.color,
+                    bg: Color.normalize(saved.bg) ?? DEFAULT_SETTINGS.bg,
+                    size: [200, 240, 320, 512, 1024].includes(Number(saved.size)) ? Number(saved.size) : DEFAULT_SETTINGS.size,
+                    level: ERROR_LEVELS.includes(saved.level) ? saved.level : DEFAULT_SETTINGS.level
+                };
+            } catch {
+                return { ...DEFAULT_SETTINGS };
+            }
+        }
 
-const scanFrame = () => {
-  const jsQrLib = window.jsQR;
-  if (!jsQrLib) {
-    readerStatus.textContent = "کتابخانه خواندن QR بارگیری نشد";
-    stopCamera();
-    return;
-  }
-  if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
-  readerCanvas.width = video.videoWidth;
-  readerCanvas.height = video.videoHeight;
-  readerCtx.drawImage(video, 0, 0, readerCanvas.width, readerCanvas.height);
-  const imageData = readerCtx.getImageData(0, 0, readerCanvas.width, readerCanvas.height);
-  const code = jsQrLib(imageData.data, imageData.width, imageData.height);
-  if (code) {
-    showResult(code.data);
-    stopCamera();
-  }
-};
+        save(settings) {
+            try {
+                localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+            } catch {
+                // storage blocked: settings are a convenience only
+            }
+        }
+    }
 
-const openLink = () => {
-  const text = readerOutput.textContent;
-  if (/^https?:\/\//i.test(text)) {
-    window.open(text, "_blank");
-  }
-};
+    /* ---------- Services ---------- */
 
-const copyResult = async () => {
-  const text = readerOutput.textContent;
-  if (!text || text === "—") {
-    readerStatus.textContent = "متنی برای کپی وجود ندارد";
-    return;
-  }
-  try {
-    await navigator.clipboard.writeText(text);
-    readerStatus.textContent = "نتیجه کپی شد";
-  } catch (error) {
-    readerStatus.textContent = "امکان کپی نیست";
-  }
-};
+    class I18n {
+        #translations = {};
+        #lang = localStorage.getItem('lang') || 'fa';
 
-generatorForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  persistSettings();
-  renderQR();
-});
+        async load() {
+            try {
+                const response = await fetch('assets/translations.json');
+                this.#translations = await response.json();
+            } catch (error) {
+                console.error('Failed to load translations:', error);
+            }
+            this.apply();
+        }
 
-qrColor.addEventListener("change", renderQR);
-qrBg.addEventListener("change", renderQR);
-qrSize.addEventListener("change", renderQR);
-qrText.addEventListener("input", () => {
-  persistSettings();
-  renderQR();
-});
+        t(key, params = {}) {
+            const template = this.#translations[this.#lang]?.[key] ?? key;
+            return template.replace(/\{(\w+)\}/g, (match, name) => params[name] ?? match);
+        }
 
-downloadBtn.addEventListener("click", downloadQR);
-copyBtn.addEventListener("click", copyText);
-fileInput.addEventListener("change", (event) => handleFile(event.target.files[0]));
-openLinkBtn.addEventListener("click", openLink);
-copyResultBtn.addEventListener("click", copyResult);
-startCameraBtn.addEventListener("click", startCamera);
-stopCameraBtn.addEventListener("click", stopCamera);
+        apply() {
+            const html = document.documentElement;
+            html.lang = this.#lang;
+            html.dir = this.#lang === 'fa' ? 'rtl' : 'ltr';
 
-renderQR();
+            for (const element of document.querySelectorAll('[data-i18n]')) {
+                element.textContent = this.t(element.dataset.i18n);
+            }
+            for (const element of document.querySelectorAll('[data-i18n-label]')) {
+                element.setAttribute('aria-label', this.t(element.dataset.i18nLabel));
+            }
 
-window.addEventListener("beforeunload", () => {
-  if (stream) stopCamera();
-});
+            const titleKey = document.querySelector('title')?.dataset.i18n;
+            if (titleKey) document.title = this.t(titleKey);
+        }
+    }
+
+    class Toast {
+        #element;
+        #timer = 0;
+
+        constructor(element) {
+            this.#element = element;
+        }
+
+        show(message, duration = TOAST_DURATION_MS) {
+            clearTimeout(this.#timer);
+            this.#element.textContent = message;
+            this.#element.hidden = false;
+            this.#timer = setTimeout(() => {
+                this.#element.hidden = true;
+            }, duration);
+        }
+    }
+
+    const copyText = async (text) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch {
+            const area = document.createElement('textarea');
+            area.value = text;
+            area.setAttribute('readonly', '');
+            area.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+            document.body.append(area);
+            area.select();
+            const isCopied = document.execCommand('copy');
+            area.remove();
+            return isCopied;
+        }
+    };
+
+    class ScriptLoader {
+        static #loading = new Map();
+
+        static load(src) {
+            if (!ScriptLoader.#loading.has(src)) {
+                ScriptLoader.#loading.set(src, new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.crossOrigin = 'anonymous';
+                    script.onload = resolve;
+                    script.onerror = () => {
+                        ScriptLoader.#loading.delete(src); // allow a retry after a network failure
+                        reject(new Error(`Could not load ${src}`));
+                    };
+                    document.head.append(script);
+                }));
+            }
+            return ScriptLoader.#loading.get(src);
+        }
+    }
+
+    /**
+     * Reads QR codes. Prefers the browser's native BarcodeDetector (fast, works offline)
+     * and falls back to jsQR, which is downloaded only when it is really needed.
+     */
+    class QrDecoder {
+        #detector = null;
+        #jsQr = null;
+        #canvas = document.createElement('canvas');
+        #context = this.#canvas.getContext('2d', { willReadFrequently: true });
+        #ready = null;
+
+        /** @returns {Promise<string|null>} decoded text, or null when no code was found */
+        async decode(source, { tryInverted = false } = {}) {
+            await (this.#ready ??= this.#prepare());
+
+            if (this.#detector) {
+                try {
+                    const codes = await this.#detector.detect(source);
+                    if (codes.length > 0) return codes[0].rawValue;
+                    if (!tryInverted) return null;
+                } catch {
+                    this.#detector = null; // native detection failed: switch to jsQR for good
+                    await (this.#ready = this.#prepare());
+                }
+            }
+            return this.#decodeWithJsQr(source, tryInverted);
+        }
+
+        async #prepare() {
+            if (!this.#detector && 'BarcodeDetector' in window) {
+                try {
+                    const formats = await BarcodeDetector.getSupportedFormats();
+                    if (formats.includes('qr_code')) {
+                        this.#detector = new BarcodeDetector({ formats: ['qr_code'] });
+                        return;
+                    }
+                } catch {
+                    // fall through to jsQR
+                }
+            }
+            if (typeof window.jsQR !== 'function') await ScriptLoader.load(JSQR_URL);
+            if (typeof window.jsQR !== 'function') throw new Error('jsQR unavailable');
+            this.#jsQr = window.jsQR;
+        }
+
+        #decodeWithJsQr(source, tryInverted) {
+            if (!this.#jsQr) throw new Error('jsQR unavailable');
+
+            const width = source.videoWidth ?? source.naturalWidth ?? source.width;
+            const height = source.videoHeight ?? source.naturalHeight ?? source.height;
+            const scale = Math.min(1, MAX_DECODE_SIZE / Math.max(width, height));
+            const targetWidth = Math.max(1, Math.round(width * scale));
+            const targetHeight = Math.max(1, Math.round(height * scale));
+
+            if (this.#canvas.width !== targetWidth) this.#canvas.width = targetWidth;
+            if (this.#canvas.height !== targetHeight) this.#canvas.height = targetHeight;
+
+            this.#context.drawImage(source, 0, 0, targetWidth, targetHeight);
+            const { data } = this.#context.getImageData(0, 0, targetWidth, targetHeight);
+            const code = this.#jsQr(data, targetWidth, targetHeight, {
+                inversionAttempts: tryInverted ? 'attemptBoth' : 'dontInvert'
+            });
+            return code ? code.data : null;
+        }
+    }
+
+    /* ---------- Generator ---------- */
+
+    class QrGenerator {
+        #dom;
+        #i18n;
+        #toast;
+        #store = new SettingsStore();
+        #timer = 0;
+
+        constructor(i18n, toast) {
+            this.#i18n = i18n;
+            this.#toast = toast;
+            const byId = (id) => document.getElementById(id);
+            this.#dom = {
+                form: byId('qr-generator'),
+                text: byId('qr-text'),
+                color: byId('qr-color'),
+                bg: byId('qr-bg'),
+                size: byId('qr-size'),
+                level: byId('qr-level'),
+                canvas: byId('qr-canvas'),
+                status: byId('generator-status'),
+                warning: byId('contrast-warning'),
+                download: byId('download-btn'),
+                copy: byId('copy-btn')
+            };
+        }
+
+        init() {
+            const dom = this.#dom;
+            const settings = this.#store.load();
+            dom.text.value = settings.text;
+            dom.color.value = settings.color;
+            dom.bg.value = settings.bg;
+            dom.size.value = String(settings.size);
+            dom.level.value = settings.level;
+
+            dom.form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                this.render();
+            });
+            dom.text.addEventListener('input', () => this.#scheduleRender());
+            for (const input of [dom.color, dom.bg, dom.size, dom.level]) {
+                input.addEventListener('input', () => this.#scheduleRender());
+            }
+            dom.download.addEventListener('click', () => this.#download());
+            dom.copy.addEventListener('click', () => this.#copy());
+
+            this.render();
+        }
+
+        #scheduleRender() {
+            clearTimeout(this.#timer);
+            this.#timer = setTimeout(() => this.render(), RENDER_DELAY_MS);
+        }
+
+        async render() {
+            const dom = this.#dom;
+            const value = dom.text.value.trim();
+
+            this.#store.save({
+                text: dom.text.value,
+                color: dom.color.value,
+                bg: dom.bg.value,
+                size: Number(dom.size.value),
+                level: dom.level.value
+            });
+            this.#updateWarning();
+
+            if (!window.QRCode) return this.#setStatus('error_library');
+            if (!value) {
+                dom.canvas.getContext('2d').clearRect(0, 0, dom.canvas.width, dom.canvas.height);
+                dom.download.disabled = true;
+                dom.copy.disabled = true;
+                return this.#setStatus('status_empty');
+            }
+
+            try {
+                const size = Number(dom.size.value);
+                dom.canvas.width = dom.canvas.height = size;
+                await window.QRCode.toCanvas(dom.canvas, value, {
+                    margin: 1,
+                    width: size,
+                    errorCorrectionLevel: dom.level.value,
+                    color: { dark: dom.color.value, light: dom.bg.value }
+                });
+                dom.download.disabled = false;
+                dom.copy.disabled = false;
+                this.#setStatus('status_ready');
+            } catch (error) {
+                console.warn('QR generation failed', error);
+                dom.download.disabled = true;
+                this.#setStatus('error_too_long');
+            }
+        }
+
+        #updateWarning() {
+            const { color, bg, warning } = this.#dom;
+            const verdict = Color.assessQr(color.value, bg.value);
+            warning.hidden = verdict === 'ok';
+            if (verdict !== 'ok') warning.textContent = this.#i18n.t(`warning_${verdict}`);
+        }
+
+        #setStatus(key) {
+            this.#dom.status.textContent = this.#i18n.t(key);
+        }
+
+        #download() {
+            const link = document.createElement('a');
+            link.href = this.#dom.canvas.toDataURL('image/png');
+            link.download = 'qr-code.png';
+            link.click();
+        }
+
+        async #copy() {
+            const isCopied = await copyText(this.#dom.text.value.trim());
+            this.#toast.show(this.#i18n.t(isCopied ? 'toast_copied' : 'toast_copy_failed'));
+        }
+    }
+
+    /* ---------- Reader ---------- */
+
+    class QrReader {
+        #dom;
+        #i18n;
+        #toast;
+        #decoder = new QrDecoder();
+        #stream = null;
+        #scanTimer = 0;
+        #isScanning = false;
+        #output = '';
+
+        constructor(i18n, toast) {
+            this.#i18n = i18n;
+            this.#toast = toast;
+            const byId = (id) => document.getElementById(id);
+            this.#dom = {
+                file: byId('qr-file'),
+                start: byId('start-camera'),
+                stop: byId('stop-camera'),
+                cameraBox: byId('camera-box'),
+                video: byId('qr-video'),
+                status: byId('reader-status'),
+                output: byId('reader-output'),
+                open: byId('open-link'),
+                copy: byId('copy-result'),
+                linkHint: byId('link-hint')
+            };
+        }
+
+        init() {
+            const dom = this.#dom;
+            dom.file.addEventListener('change', () => this.#readFile(dom.file.files[0]));
+            dom.start.addEventListener('click', () => this.#startCamera());
+            dom.stop.addEventListener('click', () => this.stopCamera());
+            dom.open.addEventListener('click', () => this.#openLink());
+            dom.copy.addEventListener('click', () => this.#copyResult());
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) this.stopCamera();
+            });
+            window.addEventListener('pagehide', () => this.stopCamera());
+        }
+
+        /* ----- still images ----- */
+
+        async #readFile(file) {
+            if (!file) return;
+            this.#setStatus('status_reading');
+
+            let bitmap = null;
+            try {
+                bitmap = await createImageBitmap(file);
+                const text = await this.#decoder.decode(bitmap, { tryInverted: true });
+                if (text === null) {
+                    this.#showResult('');
+                    return this.#setStatus('status_not_found');
+                }
+                this.#showResult(text);
+            } catch (error) {
+                console.warn('read failed', error);
+                this.#setStatus(error.message === 'jsQR unavailable' || error.message?.startsWith('Could not load')
+                    ? 'error_reader_library'
+                    : 'error_image');
+            } finally {
+                bitmap?.close();
+                this.#dom.file.value = '';
+            }
+        }
+
+        /* ----- camera ----- */
+
+        async #startCamera() {
+            if (!navigator.mediaDevices?.getUserMedia) return this.#setStatus('error_camera_unsupported');
+
+            this.#setStatus('status_camera_starting');
+            try {
+                this.#stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: 'environment' } },
+                    audio: false
+                });
+            } catch (error) {
+                return this.#setStatus(error.name === 'NotFoundError' ? 'error_camera_missing' : 'error_camera_denied');
+            }
+
+            const { video, cameraBox, start, stop } = this.#dom;
+            video.srcObject = this.#stream;
+            await video.play().catch(() => {});
+            cameraBox.hidden = false;
+            start.disabled = true;
+            stop.disabled = false;
+            this.#setStatus('status_scanning');
+            this.#scheduleScan();
+        }
+
+        stopCamera() {
+            clearTimeout(this.#scanTimer);
+            this.#scanTimer = 0;
+            this.#stream?.getTracks().forEach((track) => track.stop());
+            this.#stream = null;
+
+            const { video, cameraBox, start, stop } = this.#dom;
+            video.srcObject = null;
+            cameraBox.hidden = true;
+            start.disabled = false;
+            stop.disabled = true;
+        }
+
+        #scheduleScan() {
+            this.#scanTimer = setTimeout(() => this.#scanFrame(), SCAN_INTERVAL_MS);
+        }
+
+        async #scanFrame() {
+            const { video } = this.#dom;
+            if (!this.#stream) return;
+            if (this.#isScanning || video.readyState < video.HAVE_ENOUGH_DATA) return this.#scheduleScan();
+
+            this.#isScanning = true;
+            try {
+                const text = await this.#decoder.decode(video);
+                if (text !== null) {
+                    this.stopCamera();
+                    this.#showResult(text);
+                    return;
+                }
+            } catch (error) {
+                console.warn('scan failed', error);
+                this.stopCamera();
+                return this.#setStatus('error_reader_library');
+            } finally {
+                this.#isScanning = false;
+            }
+            if (this.#stream) this.#scheduleScan();
+        }
+
+        /* ----- result ----- */
+
+        #setStatus(key) {
+            this.#dom.status.textContent = this.#i18n.t(key);
+        }
+
+        #showResult(text) {
+            const { output, open, copy, linkHint } = this.#dom;
+            const url = LinkGuard.parse(text);
+
+            this.#output = text;
+            output.textContent = text || this.#i18n.t('result_empty');
+            open.disabled = url === null;
+            copy.disabled = text === '';
+            linkHint.hidden = url === null;
+            if (url) linkHint.textContent = this.#i18n.t('link_hint', { host: url.hostname });
+            if (text) this.#setStatus('status_found');
+        }
+
+        #openLink() {
+            const url = LinkGuard.parse(this.#output);
+            if (url) window.open(url.href, '_blank', 'noopener,noreferrer');
+        }
+
+        async #copyResult() {
+            const isCopied = await copyText(this.#output);
+            this.#toast.show(this.#i18n.t(isCopied ? 'toast_copied' : 'toast_copy_failed'));
+        }
+    }
+
+    /* ---------- Application ---------- */
+
+    class QrApp {
+        async init() {
+            const i18n = new I18n();
+            const toast = new Toast(document.getElementById('toast'));
+            await i18n.load();
+
+            new QrGenerator(i18n, toast).init();
+            new QrReader(i18n, toast).init();
+            window.addEventListener('languageChanged', () => window.location.reload());
+        }
+    }
+
+    new QrApp().init();
+})();

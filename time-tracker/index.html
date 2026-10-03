@@ -1,64 +1,132 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">پیگیری زمان</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/css/styles.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">پیگیری زمان</title>
+    <meta name="description" content="ثبت و پیگیری زمان کارها با دسته‌بندی و گزارش روزانه">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+    <script src="assets/js/app.js" defer></script>
+    <script src="../assets/tool-wrapper.js" defer></script>
 </head>
+
 <body>
-<main class="app-shell">
-<header class="app-header">
-<div>
-<p class="eyebrow" data-i18n="text_eyebrow_0">پیگیری عمیق روزانه</p>
-<h1 data-i18n="heading_0">مدیریت زمان با یک نگاه</h1>
-</div>
-</header>
-<section class="panel new-task-panel">
-<form class="task-form" id="task-form">
-<div class="form-row">
-<label data-i18n="label_0" for="task-title">عنوان کار</label>
-<input id="task-title" name="title" placeholder="مثلاً برگزاری جلسه" required="" type="text"/>
-</div>
-<div class="form-row">
-<label data-i18n="label_1" for="task-category">دسته‌بندی</label>
-<input id="task-category" name="category" placeholder="طراحی، توسعه، تحلیل" type="text"/>
-</div>
-<div class="form-actions">
-<button class="primary" data-i18n="button_0" type="submit">ثبت سریع و شروع</button>
-</div>
-</form>
-</section>
-<section class="panel tracker-panel">
-<header>
-<div>
-<h2 data-i18n="heading_1">لیست کارها</h2>
-<p class="helper" data-i18n="text_helper_1">برای هر مورد زمان شروع، توقف، ویرایش یا حذف را انجام دهید.</p>
-</div>
-<span aria-live="polite" class="badge" data-i18n="text_badge_2">رویدادهای جاری</span>
-</header>
-<div aria-live="polite" class="task-list" id="task-list">
-<p class="empty-state" data-i18n="text_empty_state_3">فعلاً کاری ثبت نشده است.</p>
-</div>
-</section>
-<section class="panel report-panel">
-<header>
-<div>
-<h2 data-i18n="heading_2">گزارش روزانه</h2>
-<p class="helper" data-i18n="text_helper_4">خلاصه زمان‌های صرف‌شده برای هر روز ثبت‌شده.</p>
-</div>
-</header>
-<div class="report-list" id="report-list">
-<p class="empty-state" data-i18n="text_empty_state_5">هیچ گزارشی در دسترس نیست.</p>
-</div>
-</section>
-</main>
-<script defer="" src="assets/js/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="page page--narrow">
+        <header class="page-header">
+            <p class="eyebrow" data-i18n="text_eyebrow_0">پیگیری عمیق روزانه</p>
+            <h2 class="page-title" data-i18n="heading_0">مدیریت زمان با یک نگاه</h2>
+        </header>
+
+        <div class="stack">
+            <!-- Today -->
+            <section class="card card--lg today" aria-labelledby="todayTitle">
+                <div>
+                    <p class="muted" id="todayTitle" data-i18n="label_today">امروز</p>
+                    <p class="today-total" id="today-total">—</p>
+                </div>
+                <p class="today-running badge" id="running-label" aria-live="polite">—</p>
+            </section>
+
+            <!-- New task -->
+            <section class="card card--lg" aria-labelledby="newTaskTitle">
+                <h3 class="sr-only" id="newTaskTitle" data-i18n="heading_new">کار جدید</h3>
+                <form class="task-form" id="task-form" novalidate>
+                    <div>
+                        <label class="label" for="task-title" data-i18n="label_0">عنوان کار</label>
+                        <input class="field" id="task-title" name="title" type="text" maxlength="80" required
+                            autocomplete="off" enterkeyhint="go" placeholder="مثلاً برگزاری جلسه"
+                            data-i18n-placeholder="placeholder_title">
+                    </div>
+                    <div>
+                        <label class="label" for="task-category" data-i18n="label_1">دسته‌بندی</label>
+                        <input class="field" id="task-category" name="category" type="text" maxlength="80" list="category-list"
+                            autocomplete="off" placeholder="طراحی، توسعه، تحلیل" data-i18n-placeholder="placeholder_category">
+                        <datalist id="category-list"></datalist>
+                    </div>
+                    <button class="btn btn--primary task-submit" type="submit" data-i18n="button_0">ثبت سریع و شروع</button>
+                </form>
+            </section>
+
+            <!-- Tasks -->
+            <section class="card card--lg stack" aria-labelledby="tasksTitle">
+                <div>
+                    <h3 class="card-title" id="tasksTitle" data-i18n="heading_1">لیست کارها</h3>
+                    <p class="muted" data-i18n="text_helper_1">برای هر مورد زمان شروع، توقف، ویرایش یا حذف را انجام دهید.</p>
+                </div>
+                <div class="task-list" id="task-list" aria-live="polite"></div>
+                <p class="empty" id="empty-tasks" data-i18n="text_empty_state_3" hidden>فعلاً کاری ثبت نشده است.</p>
+            </section>
+
+            <!-- Report -->
+            <section class="card card--lg stack" aria-labelledby="reportTitle">
+                <div>
+                    <h3 class="card-title" id="reportTitle" data-i18n="heading_2">گزارش روزانه</h3>
+                    <p class="muted" data-i18n="text_helper_4">خلاصه زمان‌های صرف‌شده برای هر روز ثبت‌شده.</p>
+                </div>
+                <div class="report-list" id="report-list"></div>
+                <p class="empty" id="empty-report" data-i18n="text_empty_state_5" hidden>هیچ گزارشی در دسترس نیست.</p>
+            </section>
+        </div>
+
+        <footer class="page-footer">
+            <p data-i18n="footer">جعبه ابزار</p>
+        </footer>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <!-- Edit -->
+    <dialog class="modal" id="editDialog" aria-labelledby="editTitle">
+        <form method="dialog" class="modal-form">
+            <div class="modal-header">
+                <h2 class="modal-title" id="editTitle" data-i18n="button_edit">ویرایش</h2>
+            </div>
+            <div class="modal-body stack">
+                <div>
+                    <label class="label" for="edit-title-input" data-i18n="label_0">عنوان کار</label>
+                    <input class="field" id="edit-title-input" name="title" type="text" maxlength="80" required autocomplete="off">
+                </div>
+                <div>
+                    <label class="label" for="edit-category-input" data-i18n="label_1">دسته‌بندی</label>
+                    <input class="field" id="edit-category-input" name="category" type="text" maxlength="80" autocomplete="off">
+                </div>
+            </div>
+            <div class="modal-footer modal-footer--split">
+                <button type="button" class="btn btn--ghost" data-dialog-cancel data-i18n="dialog_cancel">انصراف</button>
+                <button type="submit" class="btn btn--primary" value="ok" data-i18n="dialog_save">ذخیره</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Confirm -->
+    <dialog class="modal" id="confirmDialog" aria-labelledby="confirmTitle">
+        <form method="dialog" class="modal-form">
+            <div class="modal-header">
+                <h2 class="modal-title" id="confirmTitle" data-dialog-title></h2>
+            </div>
+            <div class="modal-body">
+                <p data-dialog-message></p>
+            </div>
+            <div class="modal-footer modal-footer--split">
+                <button type="button" class="btn btn--ghost" data-dialog-cancel data-i18n="dialog_cancel">انصراف</button>
+                <button type="submit" class="btn btn--danger" value="ok" data-i18n="dialog_confirm">تأیید</button>
+            </div>
+        </form>
+    </dialog>
 </body>
+
 </html>

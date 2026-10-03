@@ -1,501 +1,620 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
-    }
+(() => {
+  "use strict";
 
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
-    }
+  const FAVORITES_KEY = "unitConverterFavorites";
+  const MAX_FAVORITES = 30;
+  const TOAST_DURATION_MS = 1800;
+  const ABSOLUTE_ZERO_CELSIUS = -273.15;
 
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
-    }
+  /* ---------- Unit catalog ---------- */
 
-    getTheme() {
-        return this.currentTheme;
-    }
-}
-
-const themeManager = new ThemeManager();
-
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
-    }
-
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
-        }
-    }
-
-    t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
-        }
-        
-        return value;
-    }
-
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
-        });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
-        }
-    }
-
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
-    }
-}
-
-const i18n = new I18n();
-
-
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-// واحدهای اندازه‌گیری
-const units = {
+  // Linear categories store "factor": how many base units one of this unit equals.
+  // Factors are the exact international definitions (1 in = 0.0254 m, 1 lb = 0.45359237 kg, 1 knot = 1852 m/h ...).
+  const CATALOG = Object.freeze({
     length: {
-        name: 'طول',
-        units: {
-            'متر': 1,
-            'کیلومتر': 0.001,
-            'سانتی‌متر': 100,
-            'میلی‌متر': 1000,
-            'مایل': 0.000621371,
-            'یارد': 1.09361,
-            'فوت': 3.28084,
-            'اینچ': 39.3701
-        }
+      base: "m",
+      units: [
+        { id: "m", factor: 1, fa: "متر", en: "Meter" },
+        { id: "km", factor: 1000, fa: "کیلومتر", en: "Kilometer" },
+        { id: "cm", factor: 0.01, fa: "سانتی‌متر", en: "Centimeter" },
+        { id: "mm", factor: 0.001, fa: "میلی‌متر", en: "Millimeter" },
+        { id: "mi", factor: 1609.344, fa: "مایل", en: "Mile" },
+        { id: "yd", factor: 0.9144, fa: "یارد", en: "Yard" },
+        { id: "ft", factor: 0.3048, fa: "فوت", en: "Foot" },
+        { id: "in", factor: 0.0254, fa: "اینچ", en: "Inch" },
+      ],
     },
     weight: {
-        name: 'وزن',
-        units: {
-            'کیلوگرم': 1,
-            'گرم': 1000,
-            'میلی‌گرم': 1000000,
-            'تن': 0.001,
-            'پاند': 2.20462,
-            'اونس': 35.274
-        }
+      base: "kg",
+      units: [
+        { id: "kg", factor: 1, fa: "کیلوگرم", en: "Kilogram" },
+        { id: "g", factor: 0.001, fa: "گرم", en: "Gram" },
+        { id: "mg", factor: 0.000001, fa: "میلی‌گرم", en: "Milligram" },
+        { id: "t", factor: 1000, fa: "تن", en: "Tonne" },
+        { id: "lb", factor: 0.45359237, fa: "پاند", en: "Pound" },
+        { id: "oz", factor: 0.028349523125, fa: "اونس", en: "Ounce" },
+      ],
     },
     temperature: {
-        name: 'دما',
-        units: {
-            'سلسیوس': 'celsius',
-            'فارنهایت': 'fahrenheit',
-            'کلوین': 'kelvin'
-        }
+      units: [
+        { id: "celsius", fa: "سلسیوس", en: "Celsius" },
+        { id: "fahrenheit", fa: "فارنهایت", en: "Fahrenheit" },
+        { id: "kelvin", fa: "کلوین", en: "Kelvin" },
+      ],
     },
     speed: {
-        name: 'سرعت',
-        units: {
-            'متر بر ثانیه': 1,
-            'کیلومتر بر ساعت': 3.6,
-            'مایل بر ساعت': 2.23694,
-            'گره دریایی': 1.94384,
-            'فوت بر ثانیه': 3.28084
-        }
+      base: "m/s",
+      units: [
+        { id: "mps", factor: 1, fa: "متر بر ثانیه", en: "Meter/second" },
+        {
+          id: "kmh",
+          factor: 1000 / 3600,
+          fa: "کیلومتر بر ساعت",
+          en: "Kilometer/hour",
+        },
+        { id: "mph", factor: 0.44704, fa: "مایل بر ساعت", en: "Mile/hour" },
+        { id: "kn", factor: 1852 / 3600, fa: "گره دریایی", en: "Knot" },
+        { id: "fps", factor: 0.3048, fa: "فوت بر ثانیه", en: "Foot/second" },
+      ],
+    },
+  });
+
+  const CATEGORY_IDS = Object.freeze(Object.keys(CATALOG));
+
+  const TO_CELSIUS = Object.freeze({
+    celsius: (value) => value,
+    fahrenheit: (value) => ((value - 32) * 5) / 9,
+    kelvin: (value) => value + ABSOLUTE_ZERO_CELSIUS,
+  });
+  const FROM_CELSIUS = Object.freeze({
+    celsius: (value) => value,
+    fahrenheit: (value) => (value * 9) / 5 + 32,
+    kelvin: (value) => value - ABSOLUTE_ZERO_CELSIUS,
+  });
+
+  /* ---------- Pure logic (no DOM) ---------- */
+
+  class UnitConverter {
+    static unit(categoryId, unitId) {
+      return (
+        CATALOG[categoryId]?.units.find((unit) => unit.id === unitId) ?? null
+      );
     }
-};
 
-// متغیرهای سراسری
-let currentCategory = 'length';
-let favorites = [];
+    /** @throws {RangeError} when a temperature is below absolute zero */
+    static convert(categoryId, fromId, toId, value) {
+      const from = UnitConverter.unit(categoryId, fromId);
+      const to = UnitConverter.unit(categoryId, toId);
+      if (!from || !to) throw new TypeError("Unknown unit");
 
-// المنت‌های DOM
-const categoryButtons = document.querySelectorAll('.tab-btn');
-const fromUnitSelect = document.getElementById('fromUnit');
-const toUnitSelect = document.getElementById('toUnit');
-const inputValue = document.getElementById('inputValue');
-const outputValue = document.getElementById('outputValue');
-const convertBtn = document.getElementById('convertBtn');
-const saveBtn = document.getElementById('saveBtn');
-const swapBtn = document.getElementById('swapBtn');
-const favoritesList = document.getElementById('favoritesList');
-const clearAllBtn = document.getElementById('clearAllBtn');
-
-// بارگذاری داده‌ها از LocalStorage
-function loadFavorites() {
-    const saved = localStorage.getItem('unitConverterFavorites');
-    if (saved) {
-        favorites = JSON.parse(saved);
+      if (categoryId === "temperature") {
+        const celsius = TO_CELSIUS[fromId](value);
+        if (celsius < ABSOLUTE_ZERO_CELSIUS - 1e-9)
+          throw new RangeError("Below absolute zero");
+        return FROM_CELSIUS[toId](celsius);
+      }
+      return (value * from.factor) / to.factor;
     }
-    renderFavorites();
-}
+  }
 
-// ذخیره داده‌ها در LocalStorage
-function saveFavorites() {
-    localStorage.setItem('unitConverterFavorites', JSON.stringify(favorites));
-}
-
-// پر کردن لیست واحدها
-function populateUnits(category) {
-    const unitList = units[category].units;
-    const unitNames = Object.keys(unitList);
-    
-    fromUnitSelect.innerHTML = '';
-    toUnitSelect.innerHTML = '';
-    
-    unitNames.forEach(unit => {
-        const option1 = document.createElement('option');
-        option1.value = unit;
-        option1.textContent = unit;
-        fromUnitSelect.appendChild(option1);
-        
-        const option2 = document.createElement('option');
-        option2.value = unit;
-        option2.textContent = unit;
-        toUnitSelect.appendChild(option2);
+  class NumberText {
+    static #DIGITS = Object.freeze({
+      "۰": "0",
+      "۱": "1",
+      "۲": "2",
+      "۳": "3",
+      "۴": "4",
+      "۵": "5",
+      "۶": "6",
+      "۷": "7",
+      "۸": "8",
+      "۹": "9",
+      "٠": "0",
+      "١": "1",
+      "٢": "2",
+      "٣": "3",
+      "٤": "4",
+      "٥": "5",
+      "٦": "6",
+      "٧": "7",
+      "٨": "8",
+      "٩": "9",
     });
-    
-    // انتخاب پیش‌فرض
-    if (unitNames.length > 1) {
-        toUnitSelect.selectedIndex = 1;
+
+    /** Understands Persian/Arabic digits, "٫" as decimal point and ","/"٬"/"،" as digit grouping. */
+    static parse(text) {
+      const normalized = String(text)
+        .replace(/[۰-۹٠-٩]/g, (digit) => NumberText.#DIGITS[digit])
+        .replace(/٫/g, ".")
+        .replace(/[,٬،\s]/g, "");
+
+      return /^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(normalized)
+        ? Number(normalized)
+        : Number.NaN;
     }
-}
 
-// تبدیل واحد
-function convertUnit() {
-    const value = parseFloat(inputValue.value);
-    
-    if (isNaN(value)) {
-        outputValue.value = '';
-        return;
+    static format(value) {
+      if (!Number.isFinite(value)) return "";
+      if (value === 0) return "0";
+
+      const magnitude = Math.abs(value);
+      if (magnitude >= 1e15 || magnitude < 1e-6) {
+        return value.toExponential(6).replace(/\.?0+e/, "e");
+      }
+      return String(Number(value.toPrecision(10)));
     }
-    
-    const fromUnit = fromUnitSelect.value;
-    const toUnit = toUnitSelect.value;
-    
-    let result;
-    
-    if (currentCategory === 'temperature') {
-        result = convertTemperature(value, fromUnit, toUnit);
-    } else {
-        const fromFactor = units[currentCategory].units[fromUnit];
-        const toFactor = units[currentCategory].units[toUnit];
-        result = (value / fromFactor) * toFactor;
+  }
+
+  class FavoritesStore {
+    list() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(FAVORITES_KEY) ?? "[]");
+        return Array.isArray(parsed)
+          ? parsed.map(FavoritesStore.#normalize).filter(Boolean)
+          : [];
+      } catch {
+        return [];
+      }
     }
-    
-    // نمایش نتیجه با دقت مناسب
-    outputValue.value = formatNumber(result);
-}
 
-// تبدیل دما
-function convertTemperature(value, from, to) {
-    const fromType = units.temperature.units[from];
-    const toType = units.temperature.units[to];
-    
-    // تبدیل به سلسیوس ابتدا
-    let celsius;
-    if (fromType === 'celsius') {
-        celsius = value;
-    } else if (fromType === 'fahrenheit') {
-        celsius = (value - 32) * 5 / 9;
-    } else if (fromType === 'kelvin') {
-        celsius = value - 273.15;
+    add(favorite) {
+      const items = this.list();
+      // Date.now() alone can repeat when two items are saved within the same millisecond
+      const id = Math.max(Date.now(), (items[0]?.id ?? 0) + 1);
+      this.#save(
+        [
+          { ...favorite, id, timestamp: new Date().toISOString() },
+          ...items,
+        ].slice(0, MAX_FAVORITES),
+      );
     }
-    
-    // تبدیل از سلسیوس به واحد مورد نظر
-    if (toType === 'celsius') {
-        return celsius;
-    } else if (toType === 'fahrenheit') {
-        return (celsius * 9 / 5) + 32;
-    } else if (toType === 'kelvin') {
-        return celsius + 273.15;
+
+    remove(id) {
+      this.#save(this.list().filter((favorite) => favorite.id !== id));
     }
-}
 
-// فرمت کردن اعداد
-function formatNumber(num) {
-    if (Math.abs(num) < 0.0001 && num !== 0) {
-        return num.toExponential(4);
+    clear() {
+      this.#save([]);
     }
-    
-    // نمایش حداکثر 6 رقم اعشار
-    const rounded = Math.round(num * 1000000) / 1000000;
-    
-    // حذف صفرهای اضافی
-    return rounded.toString();
-}
 
-// تعویض واحدها
-function swapUnits() {
-    const temp = fromUnitSelect.value;
-    fromUnitSelect.value = toUnitSelect.value;
-    toUnitSelect.value = temp;
-    
-    const tempValue = inputValue.value;
-    inputValue.value = outputValue.value;
-    
-    convertUnit();
-}
+    /** Accepts the current shape and the old one (unit names stored as Persian labels). */
+    static #normalize(raw) {
+      if (!raw || !CATEGORY_IDS.includes(raw.category)) return null;
 
-// ذخیره در علاقه‌مندی‌ها
-function saveToFavorites() {
-    const value = parseFloat(inputValue.value);
-    
-    if (isNaN(value) || !outputValue.value) {
-        alert('لطفاً ابتدا یک تبدیل انجام دهید');
-        return;
+      const resolve = (value) =>
+        UnitConverter.unit(raw.category, value)?.id ??
+        CATALOG[raw.category].units.find((unit) => unit.fa === value)?.id ??
+        null;
+
+      const from = resolve(raw.from ?? raw.fromUnit);
+      const to = resolve(raw.to ?? raw.toUnit);
+      if (!from || !to) return null;
+
+      return {
+        id: Number(raw.id) || Date.now(),
+        category: raw.category,
+        from,
+        to,
+        fromValue: String(raw.fromValue ?? ""),
+        toValue: String(raw.toValue ?? ""),
+        timestamp: raw.timestamp ?? "",
+      };
     }
-    
-    const favorite = {
-        id: Date.now(),
-        category: currentCategory,
-        categoryName: units[currentCategory].name,
-        fromUnit: fromUnitSelect.value,
-        toUnit: toUnitSelect.value,
-        fromValue: inputValue.value,
-        toValue: outputValue.value,
-        timestamp: new Date().toISOString()
-    };
-    
-    favorites.unshift(favorite);
-    saveFavorites();
-    renderFavorites();
-    
-    // نمایش پیام موفقیت
-    showNotification('تبدیل با موفقیت ذخیره شد');
-}
 
-// نمایش نوتیفیکیشن
-function showNotification(message) {
-    // ایجاد یک المنت موقت برای نمایش پیام
-    const notification = document.createElement('div');
-    notification.textContent = message;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #48bb78;
-        color: white;
-        padding: 16px 24px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 1000;
-        font-family: 'Vazirmatn', sans-serif;
-        animation: slideIn 0.3s ease;
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            document.body.removeChild(notification);
-        }, 300);
-    }, 2000);
-}
-
-// رندر کردن علاقه‌مندی‌ها
-function renderFavorites() {
-    if (favorites.length === 0) {
-        favoritesList.innerHTML = '<p class="empty-message">هیچ موردی در علاقه‌مندی‌ها وجود ندارد</p>';
-        return;
+    #save(items) {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(items));
     }
-    
-    favoritesList.innerHTML = favorites.map(fav => `
-        <div class="favorite-item" data-id="${fav.id}">
-            <div class="favorite-content">
-                <div class="favorite-title">${fav.categoryName}</div>
-                <div class="favorite-conversion">
-                    ${fav.fromValue} ${fav.fromUnit} = ${fav.toValue} ${fav.toUnit}
-                </div>
-            </div>
-            <div class="favorite-actions">
-                <button class="btn-icon btn-load" onclick="loadFavorite(${fav.id})">بارگذاری</button>
-                <button class="btn-icon btn-delete" onclick="deleteFavorite(${fav.id})">حذف</button>
-            </div>
-        </div>
-    `).join('');
-}
+  }
 
-// بارگذاری علاقه‌مندی
-function loadFavorite(id) {
-    const favorite = favorites.find(f => f.id === id);
-    if (!favorite) return;
-    
-    // تغییر دسته‌بندی اگر لازم است
-    if (favorite.category !== currentCategory) {
-        currentCategory = favorite.category;
-        updateCategoryUI();
-        populateUnits(currentCategory);
+  /* ---------- Services ---------- */
+
+  class I18n {
+    #translations = {};
+    #lang = localStorage.getItem("lang") || "fa";
+
+    get lang() {
+      return this.#lang;
     }
-    
-    // تنظیم مقادیر
-    fromUnitSelect.value = favorite.fromUnit;
-    toUnitSelect.value = favorite.toUnit;
-    inputValue.value = favorite.fromValue;
-    
-    // انجام تبدیل
-    convertUnit();
-    
-    // اسکرول به بالا
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 
-// حذف علاقه‌مندی
-function deleteFavorite(id) {
-    favorites = favorites.filter(f => f.id !== id);
-    saveFavorites();
-    renderFavorites();
-    showNotification('مورد حذف شد');
-}
-
-// پاک کردن همه علاقه‌مندی‌ها
-function clearAllFavorites() {
-    if (favorites.length === 0) return;
-    
-    if (confirm('آیا مطمئن هستید که می‌خواهید همه علاقه‌مندی‌ها را حذف کنید؟')) {
-        favorites = [];
-        saveFavorites();
-        renderFavorites();
-        showNotification('همه موارد حذف شدند');
+    async load() {
+      try {
+        const response = await fetch("assets/translations.json");
+        this.#translations = await response.json();
+      } catch (error) {
+        console.error("Failed to load translations:", error);
+      }
+      this.apply();
     }
-}
 
-// به‌روزرسانی UI دسته‌بندی
-function updateCategoryUI() {
-    categoryButtons.forEach(btn => {
-        if (btn.dataset.category === currentCategory) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-}
-
-// تغییر دسته‌بندی
-function changeCategory(category) {
-    currentCategory = category;
-    updateCategoryUI();
-    populateUnits(category);
-    inputValue.value = '';
-    outputValue.value = '';
-}
-
-// Event Listeners
-categoryButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        changeCategory(btn.dataset.category);
-    });
-});
-
-convertBtn.addEventListener('click', convertUnit);
-saveBtn.addEventListener('click', saveToFavorites);
-swapBtn.addEventListener('click', swapUnits);
-clearAllBtn.addEventListener('click', clearAllFavorites);
-
-// تبدیل خودکار هنگام تایپ
-inputValue.addEventListener('input', () => {
-    if (inputValue.value) {
-        convertUnit();
-    } else {
-        outputValue.value = '';
+    t(key, params = {}) {
+      const template = this.#translations[this.#lang]?.[key] ?? key;
+      return template.replace(
+        /\{(\w+)\}/g,
+        (match, name) => params[name] ?? match,
+      );
     }
-});
 
-// تبدیل هنگام تغییر واحد
-fromUnitSelect.addEventListener('change', () => {
-    if (inputValue.value) {
-        convertUnit();
+    unitLabel(categoryId, unitId) {
+      return UnitConverter.unit(categoryId, unitId)?.[this.#lang] ?? unitId;
     }
-});
 
-toUnitSelect.addEventListener('change', () => {
-    if (inputValue.value) {
-        convertUnit();
+    apply() {
+      const html = document.documentElement;
+      html.lang = this.#lang;
+      html.dir = this.#lang === "fa" ? "rtl" : "ltr";
+
+      for (const element of document.querySelectorAll("[data-i18n]")) {
+        element.textContent = this.t(element.dataset.i18n);
+      }
+      for (const element of document.querySelectorAll(
+        "[data-i18n-placeholder]",
+      )) {
+        element.placeholder = this.t(element.dataset.i18nPlaceholder);
+      }
+      for (const element of document.querySelectorAll("[data-i18n-label]")) {
+        const label = this.t(element.dataset.i18nLabel);
+        element.setAttribute("aria-label", label);
+        element.title = label;
+      }
+
+      const titleKey = document.querySelector("title")?.dataset.i18n;
+      if (titleKey) document.title = this.t(titleKey);
     }
-});
+  }
 
-// تبدیل با کلید Enter
-inputValue.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        convertUnit();
+  class Toast {
+    #element;
+    #timer = 0;
+
+    constructor(element) {
+      this.#element = element;
     }
-});
 
-// افزودن استایل برای انیمیشن‌ها
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+    show(message, duration = TOAST_DURATION_MS) {
+      clearTimeout(this.#timer);
+      this.#element.textContent = message;
+      this.#element.hidden = false;
+      this.#timer = setTimeout(() => {
+        this.#element.hidden = true;
+      }, duration);
     }
-    
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
+  }
+
+  class ConfirmDialog {
+    #dialog;
+
+    constructor(dialog) {
+      this.#dialog = dialog;
+      dialog
+        .querySelector("[data-dialog-cancel]")
+        .addEventListener("click", () => dialog.close("cancel"));
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close("cancel");
+      });
     }
-`;
-document.head.appendChild(style);
 
-// مقداردهی اولیه
-populateUnits(currentCategory);
-loadFavorites();
+    ask({ title, message }) {
+      this.#dialog.querySelector("[data-dialog-title]").textContent = title;
+      this.#dialog.querySelector("[data-dialog-message]").textContent = message;
 
+      return new Promise((resolve) => {
+        this.#dialog.addEventListener(
+          "close",
+          () => resolve(this.#dialog.returnValue === "ok"),
+          { once: true },
+        );
+        this.#dialog.returnValue = "";
+        this.#dialog.showModal();
+      });
+    }
+  }
+
+  const copyText = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+      document.body.append(area);
+      area.select();
+      const isCopied = document.execCommand("copy");
+      area.remove();
+      return isCopied;
+    }
+  };
+
+  /* ---------- Application ---------- */
+
+  class UnitConverterApp {
+    #i18n = new I18n();
+    #favorites = new FavoritesStore();
+    #toast;
+    #confirm;
+    #dom;
+    #category = "length";
+
+    async init() {
+      this.#cacheDom();
+      this.#toast = new Toast(this.#dom.toast);
+      this.#confirm = new ConfirmDialog(this.#dom.dialog);
+      await this.#i18n.load();
+
+      this.#populateUnits();
+      this.#bindEvents();
+      this.#renderFavorites();
+      window.addEventListener("languageChanged", () =>
+        window.location.reload(),
+      );
+    }
+
+    #cacheDom() {
+      const byId = (id) => document.getElementById(id);
+      this.#dom = {
+        tabs: [...document.querySelectorAll('[role="tab"][data-category]')],
+        from: byId("fromUnit"),
+        to: byId("toUnit"),
+        input: byId("inputValue"),
+        output: byId("outputValue"),
+        hint: byId("resultHint"),
+        swap: byId("swapBtn"),
+        convert: byId("convertBtn"),
+        copy: byId("copyBtn"),
+        save: byId("saveBtn"),
+        favorites: byId("favoritesList"),
+        empty: byId("emptyFavorites"),
+        clearAll: byId("clearAllBtn"),
+        toast: byId("toast"),
+        dialog: byId("confirmDialog"),
+      };
+    }
+
+    #bindEvents() {
+      const dom = this.#dom;
+
+      for (const tab of dom.tabs) {
+        tab.addEventListener("click", () =>
+          this.#changeCategory(tab.dataset.category),
+        );
+        tab.addEventListener("keydown", (event) => this.#onTabKeydown(event));
+      }
+
+      dom.input.addEventListener("input", () => this.#convert());
+      dom.from.addEventListener("change", () => this.#convert());
+      dom.to.addEventListener("change", () => this.#convert());
+      dom.convert.addEventListener("click", () => this.#convert());
+      dom.swap.addEventListener("click", () => this.#swap());
+      dom.copy.addEventListener("click", () => this.#copyResult());
+      dom.save.addEventListener("click", () => this.#saveFavorite());
+      dom.clearAll.addEventListener("click", () => this.#clearFavorites());
+
+      dom.favorites.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+        const id = Number(button.closest("[data-id]").dataset.id);
+        if (button.dataset.action === "load") this.#loadFavorite(id);
+        else this.#deleteFavorite(id);
+      });
+    }
+
+    /* ----- categories & units ----- */
+
+    #onTabKeydown(event) {
+      const tabs = this.#dom.tabs;
+      const index = tabs.indexOf(event.currentTarget);
+      const isRtl = document.documentElement.dir === "rtl";
+      let next = index;
+
+      if (event.key === "ArrowRight") next = isRtl ? index - 1 : index + 1;
+      else if (event.key === "ArrowLeft") next = isRtl ? index + 1 : index - 1;
+      else if (event.key === "Home") next = 0;
+      else if (event.key === "End") next = tabs.length - 1;
+      else return;
+
+      event.preventDefault();
+      const target = tabs[(next + tabs.length) % tabs.length];
+      target.focus();
+      this.#changeCategory(target.dataset.category);
+    }
+
+    #changeCategory(category) {
+      this.#category = category;
+      for (const tab of this.#dom.tabs) {
+        const isActive = tab.dataset.category === category;
+        tab.setAttribute("aria-selected", String(isActive));
+        tab.tabIndex = isActive ? 0 : -1;
+      }
+      this.#populateUnits();
+      this.#dom.input.value = "";
+      this.#convert();
+    }
+
+    #populateUnits() {
+      const { units } = CATALOG[this.#category];
+      for (const select of [this.#dom.from, this.#dom.to]) {
+        select.replaceChildren(
+          ...units.map((unit) => {
+            const option = document.createElement("option");
+            option.value = unit.id;
+            option.textContent = unit[this.#i18n.lang];
+            return option;
+          }),
+        );
+      }
+      if (units.length > 1) this.#dom.to.selectedIndex = 1;
+    }
+
+    /* ----- conversion ----- */
+
+    /** @returns {boolean} true when the output holds a valid result */
+    #convert() {
+      const { input, output, hint, from, to } = this.#dom;
+      hint.hidden = true;
+
+      if (input.value.trim() === "") {
+        output.value = "";
+        return false;
+      }
+
+      const value = NumberText.parse(input.value);
+      if (Number.isNaN(value)) {
+        output.value = "";
+        this.#showHint("error_invalid_number");
+        return false;
+      }
+
+      try {
+        output.value = NumberText.format(
+          UnitConverter.convert(this.#category, from.value, to.value, value),
+        );
+        return true;
+      } catch (error) {
+        output.value = "";
+        this.#showHint(
+          error instanceof RangeError
+            ? "error_absolute_zero"
+            : "error_invalid_number",
+        );
+        return false;
+      }
+    }
+
+    #showHint(key) {
+      this.#dom.hint.textContent = this.#i18n.t(key);
+      this.#dom.hint.hidden = false;
+    }
+
+    #swap() {
+      const { from, to, input, output } = this.#dom;
+      [from.value, to.value] = [to.value, from.value];
+      if (output.value) input.value = output.value;
+      this.#convert();
+    }
+
+    async #copyResult() {
+      const { output } = this.#dom;
+      if (!output.value) return;
+
+      const isCopied = await copyText(output.value);
+      this.#toast.show(
+        this.#i18n.t(isCopied ? "toast_copied" : "toast_copy_failed"),
+      );
+    }
+
+    /* ----- favorites ----- */
+
+    #saveFavorite() {
+      const { from, to, input, output } = this.#dom;
+      if (!this.#convert())
+        return this.#toast.show(this.#i18n.t("toast_need_conversion"));
+
+      this.#favorites.add({
+        category: this.#category,
+        from: from.value,
+        to: to.value,
+        fromValue: input.value.trim(),
+        toValue: output.value,
+      });
+      this.#renderFavorites();
+      this.#toast.show(this.#i18n.t("toast_saved"));
+    }
+
+    #loadFavorite(id) {
+      const favorite = this.#favorites.list().find((item) => item.id === id);
+      if (!favorite) return;
+
+      if (favorite.category !== this.#category)
+        this.#changeCategory(favorite.category);
+      this.#dom.from.value = favorite.from;
+      this.#dom.to.value = favorite.to;
+      this.#dom.input.value = favorite.fromValue;
+      this.#convert();
+      this.#dom.input.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    #deleteFavorite(id) {
+      this.#favorites.remove(id);
+      this.#renderFavorites();
+      this.#toast.show(this.#i18n.t("toast_deleted"));
+    }
+
+    async #clearFavorites() {
+      if (this.#favorites.list().length === 0) return;
+
+      const isConfirmed = await this.#confirm.ask({
+        title: this.#i18n.t("button_7"),
+        message: this.#i18n.t("confirm_clear"),
+      });
+      if (!isConfirmed) return;
+
+      this.#favorites.clear();
+      this.#renderFavorites();
+      this.#toast.show(this.#i18n.t("toast_cleared"));
+    }
+
+    #renderFavorites() {
+      const items = this.#favorites.list();
+      this.#dom.empty.hidden = items.length > 0;
+      this.#dom.clearAll.hidden = items.length === 0;
+      this.#dom.favorites.replaceChildren(
+        ...items.map((favorite) => this.#createFavorite(favorite)),
+      );
+    }
+
+    #createFavorite(favorite) {
+      const item = document.createElement("li");
+      item.className = "favorite";
+      item.dataset.id = String(favorite.id);
+
+      const category = this.#dom.tabs.find(
+        (tab) => tab.dataset.category === favorite.category,
+      );
+
+      const title = document.createElement("div");
+      title.className = "favorite-title";
+      title.textContent = category?.textContent ?? favorite.category;
+
+      const conversion = document.createElement("div");
+      conversion.className = "favorite-conversion";
+      conversion.dir = "auto";
+      conversion.textContent =
+        `${favorite.fromValue} ${this.#i18n.unitLabel(favorite.category, favorite.from)} = ` +
+        `${favorite.toValue} ${this.#i18n.unitLabel(favorite.category, favorite.to)}`;
+
+      const content = document.createElement("div");
+      content.className = "favorite-content";
+      content.append(title, conversion);
+
+      const actions = document.createElement("div");
+      actions.className = "row favorite-actions";
+      actions.append(
+        this.#createButton(
+          "btn btn--secondary btn--sm",
+          "load",
+          this.#i18n.t("button_load"),
+        ),
+        this.#createButton(
+          "btn btn--danger btn--sm",
+          "delete",
+          this.#i18n.t("button_delete"),
+        ),
+      );
+
+      item.append(content, actions);
+      return item;
+    }
+
+    #createButton(className, action, text) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = className;
+      button.dataset.action = action;
+      button.textContent = text;
+      return button;
+    }
+  }
+
+  new UnitConverterApp().init();
+})();

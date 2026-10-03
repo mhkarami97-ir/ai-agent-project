@@ -1,47 +1,116 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">وضعیت آب و هوا</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">وضعیت آب و هوا</title>
+    <meta name="description" content="وضعیت فعلی و پیش‌بینی هفت‌روزهٔ آب‌وهوای هر شهر">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+    <script src="assets/script.js" defer></script>
+    <script src="../assets/tool-wrapper.js" defer></script>
 </head>
+
 <body>
-<div class="container">
-<div class="weather-card">
-<div class="search-section">
-<input id="cityInput" placeholder="نام شهر را وارد کنید..." type="text"/>
-<button data-i18n="button_0" id="searchBtn">جستجو</button>
-</div>
-<div class="weather-info" id="weatherInfo">
-<div class="weather-icon">
-<img alt="آیکون آب و هوا" id="weatherIcon" src=""/>
-</div>
-<h1 class="temperature" data-i18n="heading_0" id="temperature">--</h1>
-<h2 class="city-name" data-i18n="heading_1" id="cityName">نام شهر</h2>
-<p class="description" id="description">--</p>
-<div class="details">
-<div class="detail-item">
-<span class="detail-label" data-i18n="text_detail_label_1">رطوبت</span>
-<span class="detail-value" id="humidity">--%</span>
-</div>
-<div class="detail-item">
-<span class="detail-label" data-i18n="text_detail_label_3">سرعت باد</span>
-<span class="detail-value" data-i18n="text_detail_value_4" id="windSpeed">-- km/h</span>
-</div>
-</div>
-</div>
-<div class="error-message" id="errorMessage" style="display: none;">
-<p>خطا در دریافت اطلاعات آب و هوا. لطفاً دوباره تلاش کنید.</p>
-</div>
-</div>
-</div>
-<script src="assets/script.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="page page--narrow">
+        <header class="page-header">
+            <h2 class="page-title" data-i18n="heading_0">وضعیت آب و هوا</h2>
+        </header>
+
+        <div class="stack">
+            <form class="card stack" id="searchForm" role="search" autocomplete="off">
+                <div class="search">
+                    <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="m20 20-3.5-3.5" />
+                    </svg>
+                    <input id="cityInput" class="field" type="search" enterkeyhint="search" autocapitalize="words"
+                        spellcheck="false" placeholder="نام شهر را وارد کنید..."
+                        data-i18n-placeholder="placeholder_city" aria-label="نام شهر" data-i18n-label="label_city">
+                </div>
+
+                <div class="row">
+                    <button class="btn btn--primary" id="searchBtn" type="submit" data-i18n="button_0">جستجو</button>
+                    <button class="btn btn--secondary" id="locateBtn" type="button">
+                        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                            <circle cx="12" cy="12" r="7" />
+                        </svg>
+                        <span data-i18n="button_location">موقعیت من</span>
+                    </button>
+                </div>
+
+                <ul class="suggestions" id="suggestions" aria-label="نتایج جستجو" data-i18n-label="label_results"
+                    hidden></ul>
+            </form>
+
+            <div class="alert status" id="statusMessage" role="status" hidden>
+                <span></span>
+                <button class="btn btn--secondary btn--sm" id="retryBtn" type="button" data-i18n="button_retry"
+                    hidden>تلاش دوباره</button>
+            </div>
+
+            <section class="card card--lg weather-hero" id="current" data-tone="cloud" aria-live="polite" hidden>
+                <div class="hero-main">
+                    <div class="hero-icon" id="weatherIcon"></div>
+                    <div class="hero-text">
+                        <p class="hero-temp" id="temperature">—</p>
+                        <p class="hero-description" id="description">—</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="hero-place" id="cityName">—</h3>
+                    <p class="muted hero-updated" id="updated"></p>
+                </div>
+
+                <dl class="metrics">
+                    <div class="metric">
+                        <dt data-i18n="label_feels_like">احساس واقعی</dt>
+                        <dd id="feelsLike">—</dd>
+                    </div>
+                    <div class="metric">
+                        <dt data-i18n="text_detail_label_1">رطوبت</dt>
+                        <dd id="humidity">—</dd>
+                    </div>
+                    <div class="metric">
+                        <dt data-i18n="text_detail_label_3">سرعت باد</dt>
+                        <dd id="windSpeed">—</dd>
+                    </div>
+                    <div class="metric">
+                        <dt data-i18n="label_rain_chance">احتمال بارش</dt>
+                        <dd id="rainChance">—</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="card card--lg" id="forecast" aria-labelledby="forecastTitle" hidden>
+                <h3 class="card-title" id="forecastTitle" data-i18n="heading_forecast">پیش‌بینی ۷ روز آینده</h3>
+                <ul class="forecast" id="forecastList"></ul>
+            </section>
+        </div>
+
+        <footer class="page-footer">
+            <p>
+                <span data-i18n="attribution">داده‌های آب‌وهوا:</span>
+                <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo.com</a>
+            </p>
+        </footer>
+    </main>
 </body>
+
 </html>

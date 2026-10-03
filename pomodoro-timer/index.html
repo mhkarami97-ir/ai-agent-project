@@ -1,129 +1,161 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta content="تایمر پومودورو RTL با آمار روزانه و ذخیره‌سازی در مرورگر برای مدیریت زمان" name="description"/>
-<title data-i18n="title">تایمر پومودورو روزانه</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/css/main.css" rel="stylesheet">
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
-</link></head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">تایمر پومودورو روزانه</title>
+    <meta name="description" content="تایمر پومودورو با آمار روزانه و ذخیره‌سازی در مرورگر برای مدیریت زمان">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+    <script src="assets/js/app.js" defer></script>
+    <script src="../assets/tool-wrapper.js" defer></script>
+</head>
+
 <body>
-<header class="hero" role="banner">
-<div class="container hero__grid">
-<div>
-<p class="eyebrow" data-i18n="text_eyebrow_0">مدیریت زمان با تمرکز</p>
-<h1 data-i18n="heading_0">تایمر پومودورو - آمار لحظه‌ای و گزارش روزانه</h1>
-<p class="dark-text" data-i18n="text_dark_text_1">
-            چرخه‌های تمرکز و استراحت را با تکنیک پومودورو دنبال کنید، ریتم کاری خود را حفظ
-            کنید و گزارش روزانه از عملکردتان بگیرید؛ همه‌چیز در مرورگر شما و بدون نیاز به
-            سرور.
-          </p>
-<div class="hero__badges">
-<span>RTL</span>
-<span>آفلاین</span>
-<span>پشتیبانی موبایل</span>
-</div>
-</div>
-<div class="hero__note">
-<p>
-            تنظیم کنید، استارت بزنید، و بقیه‌اش را به داشبورد هوشمند بسپارید. داده‌های هر روز
-            به‌صورت خودکار ذخیره می‌شوند تا روند پیشرفت‌تان همیشه جلوی چشم باشد.
-          </p>
-</div>
-</div>
-</header>
-<main class="container" id="app" tabindex="-1">
-<section aria-labelledby="timer-heading" class="panel timer-card">
-<div class="panel__header">
-<h2 data-i18n="heading_1" id="timer-heading">چرخه فعال</h2>
-<p class="panel__subtitle" data-i18n="text_panel__subtitle_2" id="cycle-label">چرخه ۱ از ۴</p>
-</div>
-<div aria-label="انتخاب حالت" class="mode-tabs" role="tablist">
-<button class="mode-tab is-active" data-i18n="button_0" data-mode="focus" role="tab">تمرکز</button>
-<button class="mode-tab" data-i18n="button_1" data-mode="short" role="tab">استراحت کوتاه</button>
-<button class="mode-tab" data-i18n="button_2" data-mode="long" role="tab">استراحت بلند</button>
-</div>
-<div aria-live="polite" class="timer-display">
-<div aria-hidden="true" class="timer-progress" role="img">
-<span class="timer-progress__shadow"></span>
-<span class="timer-progress__inner" id="timer-fill"></span>
-</div>
-<p class="timer-display__value" data-i18n="text_timer_display__value_5" id="time-text">25:00</p>
-<p class="timer-display__label" data-i18n="text_timer_display__label_6" id="mode-label">تمرکز فعال</p>
-</div>
-<div class="controls">
-<button class="btn btn-primary" data-i18n="button_3" id="start-pause">شروع</button>
-<button class="btn" data-i18n="button_4" id="reset">بازنشانی</button>
-<button class="btn btn-ghost" data-i18n="button_5" id="skip">رد کردن فاز</button>
-</div>
-<form autocomplete="off" class="settings" id="settings-form">
-<h3 data-i18n="heading_2">تنظیم مدت زمان چرخه‌ها</h3>
-<div class="settings__grid">
-<label data-i18n="label_0">
-              تمرکز (دقیقه)
-              <input max="60" min="10" name="focus" required="" step="1" type="number"/>
-</label>
-<label data-i18n="label_1">
-              استراحت کوتاه (دقیقه)
-              <input max="20" min="3" name="short" required="" step="1" type="number"/>
-</label>
-<label data-i18n="label_2">
-              استراحت بلند (دقیقه)
-              <input max="40" min="10" name="long" required="" step="1" type="number"/>
-</label>
-<label data-i18n="label_3">
-              تعداد چرخه تا استراحت بلند
-              <input max="6" min="2" name="interval" required="" step="1" type="number"/>
-</label>
-</div>
-<div class="settings__actions">
-<button class="btn" data-i18n="button_6" type="submit">ذخیره و اعمال</button>
-<button class="btn btn-ghost" data-i18n="button_7" id="reset-stats" type="button">
-              پاک‌سازی آمار روزانه
-            </button>
-</div>
-</form>
-</section>
-<section aria-labelledby="stats-heading" class="panel stats-card">
-<div class="panel__header">
-<h2 data-i18n="heading_3" id="stats-heading">آمار امروز</h2>
-<p class="panel__subtitle" id="today-date">—</p>
-</div>
-<div class="stats-grid" id="today-stats">
-<article class="stat">
-<p class="stat__label" data-i18n="text_stat__label_8">چرخه‌های کامل شده</p>
-<p class="stat__value" id="today-focus">0</p>
-</article>
-<article class="stat">
-<p class="stat__label" data-i18n="text_stat__label_10">دقایق تمرکز</p>
-<p class="stat__value" id="today-focus-minutes">0</p>
-</article>
-<article class="stat">
-<p class="stat__label" data-i18n="text_stat__label_12">دقایق استراحت</p>
-<p class="stat__value" id="today-break-minutes">0</p>
-</article>
-</div>
-<div class="history">
-<div class="history__header">
-<h3 data-i18n="heading_4">گزارش هفت روز اخیر</h3>
-<p class="history__hint" data-i18n="text_history__hint_14">ذخیره‌سازی در مرورگر انجام می‌شود.</p>
-</div>
-<ul aria-live="polite" class="history__list" id="history-list"></ul>
-</div>
-</section>
-</main>
-<footer class="footer">
-<div class="container footer__grid">
-<p class="footer__signature" data-i18n="text_footer__signature_15">پروژه پومودورو RTL</p>
-</div>
-</footer>
-<script defer="" src="assets/js/storage.js"></script>
-<script defer="" src="assets/js/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="page">
+        <header class="page-header">
+            <p class="eyebrow" data-i18n="text_eyebrow_0">مدیریت زمان با تمرکز</p>
+            <h2 class="page-title" data-i18n="heading_0">تایمر پومودورو - آمار لحظه‌ای و گزارش روزانه</h2>
+            <p class="page-lead" data-i18n="text_dark_text_1">چرخه‌های تمرکز و استراحت را با تکنیک پومودورو دنبال کنید، ریتم کاری خود را حفظ کنید و گزارش روزانه از عملکردتان بگیرید؛ همه‌چیز در مرورگر شما و بدون نیاز به سرور.</p>
+        </header>
+
+        <div class="pomo-layout">
+            <!-- Timer -->
+            <section class="card card--lg stack timer-card" id="timerCard" data-mode="focus" aria-labelledby="timer-heading">
+                <div class="timer-head">
+                    <h3 class="card-title" id="timer-heading" data-i18n="heading_1">چرخه فعال</h3>
+                    <span class="badge" id="cycle-label">—</span>
+                </div>
+
+                <div class="tabs" role="tablist" aria-label="Mode" data-i18n-label="label_mode">
+                    <button type="button" class="tab" role="tab" data-mode="focus" aria-selected="true" data-i18n="button_0">تمرکز</button>
+                    <button type="button" class="tab" role="tab" data-mode="short" aria-selected="false" tabindex="-1" data-i18n="button_1">استراحت کوتاه</button>
+                    <button type="button" class="tab" role="tab" data-mode="long" aria-selected="false" tabindex="-1" data-i18n="button_2">استراحت بلند</button>
+                </div>
+
+                <div class="timer">
+                    <svg class="ring" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                        <circle class="ring-track" cx="60" cy="60" r="52" />
+                        <circle class="ring-progress" id="ring-progress" cx="60" cy="60" r="52" transform="rotate(-90 60 60)" />
+                    </svg>
+                    <div class="timer-face">
+                        <p class="timer-value" id="time-text" role="timer">25:00</p>
+                        <p class="timer-label" id="mode-label">—</p>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn--primary btn--lg" id="start-pause" type="button" aria-pressed="false" data-i18n="button_3">شروع</button>
+                    <button class="btn btn--secondary" id="reset" type="button" data-i18n="button_4">بازنشانی</button>
+                    <button class="btn btn--ghost" id="skip" type="button" data-i18n="button_5">رد کردن فاز</button>
+                </div>
+
+                <p class="hint text-center" id="phase-status" role="status" aria-live="polite"></p>
+
+                <details class="settings">
+                    <summary data-i18n="heading_2">تنظیم مدت زمان چرخه‌ها</summary>
+                    <form class="stack settings-form" id="settings-form" autocomplete="off" novalidate>
+                        <div class="settings-grid">
+                            <div>
+                                <label class="label" for="set-focus" data-i18n="label_0">تمرکز (دقیقه)</label>
+                                <input class="field" id="set-focus" name="focus" type="text" inputmode="numeric" dir="ltr" required>
+                            </div>
+                            <div>
+                                <label class="label" for="set-short" data-i18n="label_1">استراحت کوتاه (دقیقه)</label>
+                                <input class="field" id="set-short" name="short" type="text" inputmode="numeric" dir="ltr" required>
+                            </div>
+                            <div>
+                                <label class="label" for="set-long" data-i18n="label_2">استراحت بلند (دقیقه)</label>
+                                <input class="field" id="set-long" name="long" type="text" inputmode="numeric" dir="ltr" required>
+                            </div>
+                            <div>
+                                <label class="label" for="set-interval" data-i18n="label_3">تعداد چرخه تا استراحت بلند</label>
+                                <input class="field" id="set-interval" name="interval" type="text" inputmode="numeric" dir="ltr" required>
+                            </div>
+                        </div>
+
+                        <label class="check-row">
+                            <input class="checkbox" type="checkbox" name="alert">
+                            <span data-i18n="label_alert">در پایان هر فاز صدا و لرزش داشته باش</span>
+                        </label>
+                        <label class="check-row">
+                            <input class="checkbox" type="checkbox" name="keepAwake">
+                            <span data-i18n="label_keep_awake">هنگام اجرا، صفحه خاموش نشود</span>
+                        </label>
+
+                        <div class="row">
+                            <button class="btn btn--primary" type="submit" data-i18n="button_6">ذخیره و اعمال</button>
+                            <button class="btn btn--danger btn--sm" id="reset-stats" type="button" data-i18n="button_7">پاک‌سازی آمار روزانه</button>
+                        </div>
+                    </form>
+                </details>
+            </section>
+
+            <!-- Statistics -->
+            <section class="card card--lg stack" aria-labelledby="stats-heading">
+                <div class="timer-head">
+                    <h3 class="card-title" id="stats-heading" data-i18n="heading_3">آمار امروز</h3>
+                    <span class="muted" id="today-date">—</span>
+                </div>
+
+                <div class="stats" id="today-stats">
+                    <article class="stat">
+                        <p class="stat-value" id="today-focus">0</p>
+                        <p class="stat-label" data-i18n="text_stat__label_8">چرخه‌های کامل شده</p>
+                    </article>
+                    <article class="stat">
+                        <p class="stat-value" id="today-focus-minutes">0</p>
+                        <p class="stat-label" data-i18n="text_stat__label_10">دقایق تمرکز</p>
+                    </article>
+                    <article class="stat">
+                        <p class="stat-value" id="today-break-minutes">0</p>
+                        <p class="stat-label" data-i18n="text_stat__label_12">دقایق استراحت</p>
+                    </article>
+                </div>
+
+                <div class="history">
+                    <h4 class="card-title" data-i18n="heading_4">گزارش هفت روز اخیر</h4>
+                    <ul class="history-list" id="history-list" aria-live="polite"></ul>
+                    <p class="empty" id="history-empty" data-i18n="history_empty" hidden>هنوز آماری ثبت نشده است.</p>
+                    <p class="hint" data-i18n="text_history__hint_14">ذخیره‌سازی در مرورگر انجام می‌شود.</p>
+                </div>
+            </section>
+        </div>
+
+        <footer class="page-footer">
+            <p data-i18n="text_footer__signature_15">پروژه پومودورو</p>
+        </footer>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <dialog class="modal" id="confirmDialog" aria-labelledby="confirmTitle">
+        <form method="dialog" class="modal-form">
+            <div class="modal-header">
+                <h2 class="modal-title" id="confirmTitle" data-dialog-title></h2>
+            </div>
+            <div class="modal-body">
+                <p data-dialog-message></p>
+            </div>
+            <div class="modal-footer modal-footer--split">
+                <button type="button" class="btn btn--ghost" data-dialog-cancel data-i18n="dialog_cancel">انصراف</button>
+                <button type="submit" class="btn btn--danger" value="ok" data-i18n="dialog_confirm">تأیید</button>
+            </div>
+        </form>
+    </dialog>
 </body>
+
 </html>
