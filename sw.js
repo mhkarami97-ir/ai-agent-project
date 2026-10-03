@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "web-tools-v1.4.6";
+﻿const CACHE_NAME = "web-tools-v1.4.8";
 const OFFLINE_PAGE = "/offline.html";
 
 const urlsToCache = [
@@ -8,6 +8,7 @@ const urlsToCache = [
   "/favicon.png",
   "/favicon.ico",
   "/manifest.json",
+  "/app-updater.js",
   "/Vazirmatn-font-face.css",
   "/assets/tool-wrapper.js",
   "/assets/tool-wrapper.css",
@@ -43,7 +44,11 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log("Opened cache");
-      return cache.addAll(urlsToCache);
+      // cache: "reload" bypasses the browser HTTP cache, so a new version
+      // never precaches stale copies of the files
+      return cache.addAll(
+        urlsToCache.map((url) => new Request(url, { cache: "reload" })),
+      );
     }),
   );
 });
@@ -96,7 +101,8 @@ async function handleRequest(event) {
   }
 
   try {
-    const response = await fetch(request);
+    // no-cache: revalidate with the server instead of trusting the HTTP cache
+    const response = await fetch(request, { cache: "no-cache" });
 
     if (response.ok && shouldCache(request.url)) {
       const copy = response.clone();
