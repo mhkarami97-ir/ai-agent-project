@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "web-tools-v1.4.5";
+﻿const CACHE_NAME = "web-tools-v1.4.6";
 const OFFLINE_PAGE = "/offline.html";
 
 const urlsToCache = [
@@ -13,6 +13,7 @@ const urlsToCache = [
   "/assets/tool-wrapper.css",
   "/assets/contact-form.css",
   "/assets/contact-form.js",
+  "/assets/contact-form.html",
 ];
 
 function shouldCache(url) {
@@ -63,6 +64,7 @@ self.addEventListener("activate", (event) => {
           }),
         );
       })
+      .then(() => self.clients.claim())
       .then(() => {
         // Notify all clients about the update
         return self.clients.matchAll().then((clients) => {
@@ -75,8 +77,6 @@ self.addEventListener("activate", (event) => {
         });
       }),
   );
-
-  return self.clients.claim();
 });
 
 // Listen for skip waiting message from page
@@ -86,62 +86,65 @@ self.addEventListener("message", (event) => {
   }
 });
 
+// Cache first, then network, with a safe offline fallback
+async function handleRequest(event) {
+  const { request } = event;
+
+  const cached = await caches.match(request);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const response = await fetch(request);
+
+    if (response.ok && shouldCache(request.url)) {
+      const copy = response.clone();
+      event.waitUntil(
+        caches
+          .open(CACHE_NAME)
+          .then((cache) => cache.put(request, copy))
+          .catch((error) =>
+            console.warn("[SW] Cache put failed:", request.url, error),
+          ),
+      );
+    }
+
+    return response;
+  } catch (error) {
+    console.warn("[SW] Network request failed:", request.url, error);
+
+    if (request.mode === "navigate") {
+      const offlinePage = await caches.match(OFFLINE_PAGE);
+      if (offlinePage) {
+        return offlinePage;
+      }
+    }
+
+    return new Response("", { status: 504, statusText: "Offline" });
+  }
+}
+
 // Fetch and cache strategy with offline fallback
 self.addEventListener("fetch", (event) => {
+  const { request } = event;
+
   // Skip non-GET requests
-  if (event.request.method !== "GET") {
+  if (request.method !== "GET") {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Return cached response if found
-      if (response) {
-        return response;
-      }
+  // Chrome throws if only-if-cached is used with a non same-origin mode
+  if (request.cache === "only-if-cached" && request.mode !== "same-origin") {
+    return;
+  }
 
-      const fetchRequest = event.request.clone();
+  // Let the browser handle third-party requests (fonts, analytics, CDNs)
+  if (new URL(request.url).origin !== self.location.origin) {
+    return;
+  }
 
-      return fetch(fetchRequest)
-        .then((response) => {
-          // Don't cache if response is not valid
-          if (
-            !response ||
-            response.status !== 200 ||
-            response.type === "error"
-          ) {
-            return response;
-          }
-
-          // Check if this URL should be cached
-          if (shouldCache(event.request.url)) {
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-
-          return response;
-        })
-        .catch((error) => {
-          console.log("Fetch failed:", error);
-
-          // Return offline page for navigation requests
-          if (event.request.mode === "navigate") {
-            return caches.match(OFFLINE_PAGE);
-          }
-
-          // For other requests, try to return cached version or reject
-          return caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-              return cachedResponse;
-            }
-            throw error;
-          });
-        });
-    }),
-  );
+  event.respondWith(handleRequest(event));
 });
 
 // Background sync event
