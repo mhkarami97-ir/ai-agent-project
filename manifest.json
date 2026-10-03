@@ -1,8 +1,8 @@
 {
   "id": "/",
   "scope": "/",
-  "name": "Web Tools",
-  "short_name": "ابزارهای وب",
+  "name": "جعبه ابزار",
+  "short_name": "جعبه ابزار",
   "description": "مجموعه ابزارهای کاربردی وب شامل محاسبه‌گرها، مبدل‌ها و ابزارهای روزمره",
   "start_url": "/",
   "display": "fullscreen",
