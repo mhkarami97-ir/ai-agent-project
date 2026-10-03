@@ -1,6 +1,6 @@
 ﻿:root {
     --tw-height: 52px;
-    --tw-offset: calc(var(--tw-height) + env(safe-area-inset-top));
+    --tw-offset: calc(var(--tw-height) + env(safe-area-inset-top, 0px));
 }
 
 .tool-wrapper,
@@ -41,12 +41,12 @@
 }
 
 html {
+    padding-top: var(--tw-offset);
     scroll-padding-top: var(--tw-offset);
 }
 
 body.has-tool-wrapper {
     box-sizing: border-box;
-    padding-top: var(--tw-offset) !important;
 }
 
 .tool-wrapper {

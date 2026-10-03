@@ -29,6 +29,12 @@
       return div.innerHTML.replace(/"/g, "&quot;");
     }
 
+    static #systemTheme() {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
+
     static #icon(name, className = "") {
       const cls = className ? ` class="${className}"` : "";
       return `<svg${cls} viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[name]}</svg>`;
@@ -74,7 +80,10 @@
     }
 
     getCurrentTheme() {
-      return localStorage.getItem(STORAGE_KEYS.theme) || "light";
+      const stored = localStorage.getItem(STORAGE_KEYS.theme);
+      return stored === "dark" || stored === "light"
+        ? stored
+        : ToolWrapper.#systemTheme();
     }
 
     getCurrentLanguage() {
@@ -157,9 +166,6 @@
       this.#wrapper
         .querySelector("#toolThemeBtn")
         .addEventListener("click", () => this.toggleTheme());
-      this.#wrapper
-        .querySelector("#toolLangBtn")
-        .addEventListener("click", () => this.toggleLanguage());
       this.#contactButton.addEventListener("click", () =>
         this.openContactModal(),
       );
@@ -230,13 +236,25 @@
     }
 
     #applyStoredPreferences() {
-      this.#applyTheme(this.getCurrentTheme());
+      const hadStoredTheme = localStorage.getItem(STORAGE_KEYS.theme) !== null;
+      const theme = this.getCurrentTheme();
+
+      this.#applyTheme(theme);
       this.#applyLanguage(this.getCurrentLanguage());
+
+      if (!hadStoredTheme) {
+        // First visit: keep every page and tool on the same effective theme
+        localStorage.setItem(STORAGE_KEYS.theme, theme);
+        window.dispatchEvent(
+          new CustomEvent("themeChanged", { detail: theme }),
+        );
+      }
     }
 
     #applyTheme(theme) {
       const isDark = theme === "dark";
       document.documentElement.setAttribute("data-theme", theme);
+      document.body.setAttribute("data-theme", theme);
       this.#wrapper.classList.toggle("dark-mode", isDark);
       this.#modal.classList.toggle("dark-mode", isDark);
       this.#wrapper
@@ -250,17 +268,16 @@
       html.setAttribute("lang", lang);
       html.setAttribute("dir", isFa ? "rtl" : "ltr");
       document.body.style.direction = isFa ? "rtl" : "ltr";
-      this.#wrapper.querySelector("#toolLangText").textContent = isFa
-        ? "EN"
-        : "FA";
+      const label = this.#wrapper.querySelector("#toolLangText");
+      if (label) label.textContent = isFa ? "EN" : "FA";
     }
 
     #watchThemeFromOtherTabs() {
       window.addEventListener("storage", (e) => {
         if (e.key !== STORAGE_KEYS.theme) return;
-        const isDark = e.newValue === "dark";
-        this.#wrapper.classList.toggle("dark-mode", isDark);
-        this.#modal.classList.toggle("dark-mode", isDark);
+        if (e.newValue === "dark" || e.newValue === "light") {
+          this.#applyTheme(e.newValue);
+        }
       });
     }
   }
