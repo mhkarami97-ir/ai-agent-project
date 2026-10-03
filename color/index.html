@@ -1,69 +1,114 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title data-i18n="title">ژنراتور پالت رنگ هماهنگ</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/css/styles.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">ژنراتور پالت رنگ هماهنگ</title>
+    <meta name="description" content="ساخت پالت رنگ هماهنگ از یک رنگ پایه، با ذخیره در مرورگر و کپی CSS">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+    <script src="assets/js/app.js" defer></script>
+    <script src="../assets/tool-wrapper.js" defer></script>
 </head>
+
 <body>
-<div class="page-shell">
-<header class="hero">
-<div>
-<p class="eyebrow" data-i18n="text_eyebrow_0">خلق پالت برای وب‌سایت‌های شما</p>
-<h1 data-i18n="heading_0">ژنراتور رنگ و پالت</h1>
-<div class="hero-actions">
-<button data-i18n="button_0" id="randomizeBtn" type="button">تولید فوری</button>
-<button data-i18n="button_1" id="copyCssBtn" type="button">کپی CSS پالت</button>
-</div>
-</div>
-<div class="hero-badge">
-<p>بدون سرور، فقط مرورگر</p>
-</div>
-</header>
-<main>
-<section class="controls">
-<h2 data-i18n="heading_1">تنظیمات پالت</h2>
-<div class="control-row">
-<label data-i18n="label_0" for="colorPicker">رنگ پایه</label>
-<div class="color-input">
-<input id="colorPicker" type="color" value="#1F7A8C"/>
-<span id="colorCode">#1F7A8C</span>
-</div>
-</div>
-<div class="control-row">
-<label data-i18n="label_1" for="countRange">تعداد رنگ‌ها (<span id="countIndicator">5</span>)</label>
-<input id="countRange" max="6" min="3" type="range" value="5"/>
-</div>
-<div class="control-row">
-<label data-i18n="label_2" for="paletteName">نام پالت (اختیاری)</label>
-<div class="input-with-button">
-<input id="paletteName" maxlength="30" placeholder="مثلاً پالت شب‌مهتاب" type="text"/>
-<button data-i18n="button_2" id="savePaletteBtn" type="button">ذخیره</button>
-</div>
-</div>
-<p class="control-hint" data-i18n="text_control_hint_1">هر پالت با مرورگر شما ذخیره می‌شود و می‌توانید بارها بازیابی‌اش کنید.</p>
-</section>
-<section aria-live="polite" class="palette">
-<h2 data-i18n="heading_2">پالت فعلی</h2>
-<div class="palette-grid" id="paletteDisplay"></div>
-</section>
-<section class="saved-palettes">
-<div class="section-header">
-<h2 data-i18n="heading_3">پالت‌های ذخیره‌شده</h2>
-<p>برای بارگذاری، یکی را انتخاب کنید.</p>
-</div>
-<div class="saved-grid" id="savedPalettes"></div>
-</section>
-</main>
-</div>
-<div aria-live="assertive" class="toast" id="toast" role="status"></div>
-<script defer="" src="assets/js/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="page">
+        <header class="page-header">
+            <p class="eyebrow" data-i18n="text_eyebrow_0">خلق پالت برای وب‌سایت‌های شما</p>
+            <h2 class="page-title" data-i18n="heading_0">ژنراتور رنگ و پالت</h2>
+            <p class="page-lead" data-i18n="text_badge">بدون سرور، فقط مرورگر</p>
+        </header>
+
+        <div class="stack">
+            <div class="studio">
+                <!-- Settings -->
+                <section class="card card--lg stack" aria-labelledby="settingsTitle">
+                    <h3 class="card-title" id="settingsTitle" data-i18n="heading_1">تنظیمات پالت</h3>
+
+                    <button class="btn btn--primary btn--block" id="randomizeBtn" type="button"
+                        data-i18n="button_0">تولید فوری</button>
+
+                    <div>
+                        <label class="label" for="colorCode" data-i18n="label_0">رنگ پایه</label>
+                        <div class="color-field">
+                            <input id="colorPicker" class="color-picker" type="color" value="#1f7a8c"
+                                aria-label="Base color picker">
+                            <input id="colorCode" class="field mono" type="text" value="#1f7a8c" dir="ltr" maxlength="7"
+                                autocomplete="off" spellcheck="false" aria-invalid="false">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="label" for="schemeSelect" data-i18n="label_scheme">طرح رنگی</label>
+                        <select id="schemeSelect" class="field">
+                            <option value="analogous" data-i18n="scheme_analogous">مجاور</option>
+                            <option value="monochromatic" data-i18n="scheme_monochromatic">تک‌رنگ</option>
+                            <option value="complementary" data-i18n="scheme_complementary">مکمل</option>
+                            <option value="triadic" data-i18n="scheme_triadic">سه‌گانه</option>
+                            <option value="tetradic" data-i18n="scheme_tetradic">چهارگانه</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="label range-label" for="countRange">
+                            <span data-i18n="label_1">تعداد رنگ‌ها</span>
+                            <output id="countIndicator" for="countRange">5</output>
+                        </label>
+                        <input id="countRange" class="range" type="range" min="3" max="8" value="5">
+                    </div>
+
+                    <div>
+                        <label class="label" for="paletteName" data-i18n="label_2">نام پالت (اختیاری)</label>
+                        <div class="input-row">
+                            <input id="paletteName" class="field" type="text" maxlength="30" autocomplete="off"
+                                enterkeyhint="done" placeholder="مثلاً پالت شب‌مهتاب"
+                                data-i18n-placeholder="placeholder_name">
+                            <button class="btn btn--secondary" id="savePaletteBtn" type="button"
+                                data-i18n="button_2">ذخیره</button>
+                        </div>
+                        <p class="hint" data-i18n="text_control_hint_1">هر پالت با مرورگر شما ذخیره می‌شود و می‌توانید
+                            بارها بازیابی‌اش کنید.</p>
+                    </div>
+                </section>
+
+                <!-- Current palette -->
+                <section class="card card--lg stack palette-card" aria-labelledby="paletteTitle">
+                    <div class="palette-head">
+                        <h3 class="card-title" id="paletteTitle" data-i18n="heading_2">پالت فعلی</h3>
+                        <button class="btn btn--secondary btn--sm" id="copyCssBtn" type="button"
+                            data-i18n="button_1">کپی CSS پالت</button>
+                    </div>
+                    <div class="palette-grid" id="paletteDisplay" aria-live="polite"></div>
+                    <p class="hint" data-i18n="text_tile_hint">برای کپی کد هر رنگ، روی آن بزنید.</p>
+                </section>
+            </div>
+
+            <!-- Saved palettes -->
+            <section class="card card--lg stack" aria-labelledby="savedTitle">
+                <div>
+                    <h3 class="card-title" id="savedTitle" data-i18n="heading_3">پالت‌های ذخیره‌شده</h3>
+                    <p class="muted" data-i18n="text_saved_hint">برای بارگذاری، یکی را انتخاب کنید.</p>
+                </div>
+                <div class="saved-grid" id="savedPalettes"></div>
+                <p class="empty" id="emptySaved" data-i18n="text_empty_saved" hidden>هنوز پالتی ذخیره نشده است.</p>
+            </section>
+        </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 </body>
+
 </html>

@@ -1,79 +1,115 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">مقایسه‌گر متن</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">مقایسه‌گر متن</title>
+    <meta name="description" content="مقایسهٔ زندهٔ دو متن و نمایش خط‌های افزوده، حذف و تغییریافته">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+    <script src="assets/script.js" defer></script>
+    <script src="../assets/tool-wrapper.js" defer></script>
 </head>
+
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">مقایسه‌گر متن</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">تغییرات بین دو متن را به صورت زنده مشاهده کنید</p>
-</header>
-<div class="controls">
-<button class="btn btn-secondary" data-i18n="button_0" id="clearBtn">پاک کردن</button>
-<button class="btn btn-secondary" data-i18n="button_1" id="swapBtn">جابه‌جایی</button>
-<button class="btn btn-primary" data-i18n="button_2" id="compareBtn">مقایسه</button>
-</div>
-<div class="editor-container">
-<div class="editor-panel">
-<div class="panel-header">
-<h2 data-i18n="heading_1">متن اصلی</h2>
-<span class="line-count" data-i18n="text_line_count_1" id="leftLineCount">0 خط</span>
-</div>
-<textarea aria-label="متن اصلی" class="text-input" id="leftText" placeholder="متن اصلی خود را اینجا وارد کنید..." spellcheck="false"></textarea>
-</div>
-<div class="divider"></div>
-<div class="editor-panel">
-<div class="panel-header">
-<h2 data-i18n="heading_2">متن جدید</h2>
-<span class="line-count" data-i18n="text_line_count_2" id="rightLineCount">0 خط</span>
-</div>
-<textarea aria-label="متن جدید" class="text-input" id="rightText" placeholder="متن جدید خود را اینجا وارد کنید..." spellcheck="false"></textarea>
-</div>
-</div>
-<div class="diff-container" id="diffContainer" style="display: none;">
-<div class="diff-header">
-<h2 data-i18n="heading_3">نتیجه مقایسه</h2>
-<div class="legend">
-<span class="legend-item" data-i18n="text_legend_item_3">
-<span class="legend-box added"></span>
-                        افزوده شده
-                    </span>
-<span class="legend-item" data-i18n="text_legend_item_5">
-<span class="legend-box removed"></span>
-                        حذف شده
-                    </span>
-<span class="legend-item" data-i18n="text_legend_item_7">
-<span class="legend-box modified"></span>
-                        تغییر یافته
-                    </span>
-</div>
-</div>
-<div class="diff-view">
-<div class="diff-panel">
-<h3 data-i18n="heading_4">متن اصلی</h3>
-<div class="diff-content" id="leftDiff"></div>
-</div>
-<div class="diff-panel">
-<h3 data-i18n="heading_5">متن جدید</h3>
-<div class="diff-content" id="rightDiff"></div>
-</div>
-</div>
-<div class="stats" id="stats"></div>
-</div>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
-</div>
-<script src="assets/script.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="page">
+        <header class="page-header">
+            <h2 class="page-title" data-i18n="heading_0">مقایسه‌گر متن</h2>
+            <p class="page-lead" data-i18n="text_subtitle_0">تغییرات بین دو متن را به صورت زنده مشاهده کنید</p>
+        </header>
+
+        <div class="stack">
+            <div class="row">
+                <button class="btn btn--primary" id="compareBtn" type="button" data-i18n="button_2">مقایسه</button>
+                <button class="btn btn--secondary" id="swapBtn" type="button" data-i18n="button_1">جابه‌جایی</button>
+                <button class="btn btn--ghost" id="clearBtn" type="button" data-i18n="button_0">پاک کردن</button>
+            </div>
+
+            <p class="alert" id="compareStatus" role="status" hidden></p>
+
+            <div class="editors">
+                <section class="card editor-card">
+                    <div class="editor-head">
+                        <label class="card-title" for="leftText" data-i18n="heading_1">متن اصلی</label>
+                        <span class="badge" id="leftLineCount">0</span>
+                    </div>
+                    <textarea id="leftText" class="field editor" dir="auto" spellcheck="false" autocomplete="off"
+                        placeholder="متن اصلی خود را اینجا وارد کنید..."
+                        data-i18n-placeholder="placeholder_left"></textarea>
+                </section>
+
+                <section class="card editor-card">
+                    <div class="editor-head">
+                        <label class="card-title" for="rightText" data-i18n="heading_2">متن جدید</label>
+                        <span class="badge" id="rightLineCount">0</span>
+                    </div>
+                    <textarea id="rightText" class="field editor" dir="auto" spellcheck="false" autocomplete="off"
+                        placeholder="متن جدید خود را اینجا وارد کنید..."
+                        data-i18n-placeholder="placeholder_right"></textarea>
+                </section>
+            </div>
+
+            <section class="card card--lg stack" id="diffContainer" aria-labelledby="resultTitle" hidden>
+                <div class="result-head">
+                    <h3 class="card-title" id="resultTitle" data-i18n="heading_3">نتیجه مقایسه</h3>
+
+                    <div class="segmented view-toggle" role="radiogroup" data-i18n-label="label_view"
+                        aria-label="نمایش">
+                        <label class="segmented-item">
+                            <input type="radio" name="view" value="split" checked>
+                            <span data-i18n="view_split">دو ستونی</span>
+                        </label>
+                        <label class="segmented-item">
+                            <input type="radio" name="view" value="unified">
+                            <span data-i18n="view_unified">یکپارچه</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <span class="legend-item"><span class="legend-box legend-box--added"></span><span
+                            data-i18n="text_legend_item_3">افزوده شده</span></span>
+                    <span class="legend-item"><span class="legend-box legend-box--removed"></span><span
+                            data-i18n="text_legend_item_5">حذف شده</span></span>
+                    <span class="legend-item"><span class="legend-box legend-box--modified"></span><span
+                            data-i18n="text_legend_item_7">تغییر یافته</span></span>
+                </div>
+
+                <div class="diff-view" id="diffView" data-view="split">
+                    <div class="diff-panel diff-panel--left">
+                        <h4 class="diff-title" data-i18n="heading_4">متن اصلی</h4>
+                        <div class="diff-content" id="leftDiff" tabindex="0"></div>
+                    </div>
+                    <div class="diff-panel diff-panel--right">
+                        <h4 class="diff-title" data-i18n="heading_5">متن جدید</h4>
+                        <div class="diff-content" id="rightDiff" tabindex="0"></div>
+                    </div>
+                    <div class="diff-panel diff-panel--unified">
+                        <div class="diff-content" id="unifiedDiff" tabindex="0"></div>
+                    </div>
+                </div>
+
+                <div class="stats" id="stats" aria-live="polite"></div>
+            </section>
+        </div>
+
+        <footer class="page-footer">
+            <p data-i18n="footer">جعبه ابزار</p>
+        </footer>
+    </main>
 </body>
+
 </html>

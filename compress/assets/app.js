@@ -1,296 +1,707 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
+(() => {
+  "use strict";
+
+  const TOAST_DURATION_MS = 2200;
+  const IMAGE_EXTENSION =
+    /\.(jpe?g|png|webp|gif|bmp|tiff?|svg|heic|heif|avif)$/i;
+  const OUTPUT_MIME = Object.freeze({
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+  });
+  const MIME_EXTENSION = Object.freeze({
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+  });
+  const BYTE_UNITS = Object.freeze(["B", "KB", "MB", "GB"]);
+
+  /* ---------- Pure logic (no DOM) ---------- */
+
+  /** Minimal ZIP writer using the "stored" method; images are already compressed. */
+  class ZipWriter {
+    static #CRC_TABLE = (() => {
+      const table = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++)
+          c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+        table[n] = c >>> 0;
+      }
+      return table;
+    })();
+
+    static #encoder = new TextEncoder();
+    #entries = [];
+
+    static crc32(bytes) {
+      let crc = 0xffffffff;
+      for (let i = 0; i < bytes.length; i++)
+        crc = ZipWriter.#CRC_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+      return (crc ^ 0xffffffff) >>> 0;
     }
 
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
+    add(name, data, date = new Date()) {
+      const year = Math.max(date.getFullYear(), 1980);
+      this.#entries.push({
+        nameBytes: ZipWriter.#encoder.encode(name),
+        data,
+        crc: ZipWriter.crc32(data),
+        time:
+          (date.getHours() << 11) |
+          (date.getMinutes() << 5) |
+          (date.getSeconds() >> 1),
+        date:
+          ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
+      });
     }
 
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
+    build() {
+      const parts = [];
+      const central = [];
+      let offset = 0;
+
+      for (const entry of this.#entries) {
+        const local = new DataView(new ArrayBuffer(30));
+        local.setUint32(0, 0x04034b50, true);
+        local.setUint16(4, 20, true);
+        local.setUint16(6, 0x0800, true); // UTF-8 file names
+        local.setUint16(8, 0, true);
+        local.setUint16(10, entry.time, true);
+        local.setUint16(12, entry.date, true);
+        local.setUint32(14, entry.crc, true);
+        local.setUint32(18, entry.data.length, true);
+        local.setUint32(22, entry.data.length, true);
+        local.setUint16(26, entry.nameBytes.length, true);
+        local.setUint16(28, 0, true);
+        parts.push(new Uint8Array(local.buffer), entry.nameBytes, entry.data);
+
+        const header = new DataView(new ArrayBuffer(46));
+        header.setUint32(0, 0x02014b50, true);
+        header.setUint16(4, 20, true);
+        header.setUint16(6, 20, true);
+        header.setUint16(8, 0x0800, true);
+        header.setUint16(10, 0, true);
+        header.setUint16(12, entry.time, true);
+        header.setUint16(14, entry.date, true);
+        header.setUint32(16, entry.crc, true);
+        header.setUint32(20, entry.data.length, true);
+        header.setUint32(24, entry.data.length, true);
+        header.setUint16(28, entry.nameBytes.length, true);
+        header.setUint32(42, offset, true);
+        central.push(new Uint8Array(header.buffer), entry.nameBytes);
+
+        offset += 30 + entry.nameBytes.length + entry.data.length;
+      }
+
+      const centralSize = central.reduce((sum, part) => sum + part.length, 0);
+      const end = new DataView(new ArrayBuffer(22));
+      end.setUint32(0, 0x06054b50, true);
+      end.setUint16(8, this.#entries.length, true);
+      end.setUint16(10, this.#entries.length, true);
+      end.setUint32(12, centralSize, true);
+      end.setUint32(16, offset, true);
+
+      return new Blob([...parts, ...central, new Uint8Array(end.buffer)], {
+        type: "application/zip",
+      });
+    }
+  }
+
+  class FileNames {
+    static isImage(file) {
+      return file.type.startsWith("image/") || IMAGE_EXTENSION.test(file.name);
     }
 
-    getTheme() {
-        return this.currentTheme;
-    }
-}
-
-const themeManager = new ThemeManager();
-
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
+    static withExtension(fileName, extension) {
+      return `${fileName.replace(/\.[^.]+$/, "") || "image"}.${extension}`;
     }
 
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
+    /** Makes names unique inside one archive: a.jpg, a-1.jpg, a-2.jpg ... */
+    static unique(name, used) {
+      if (!used.has(name)) {
+        used.add(name);
+        return name;
+      }
+      const dot = name.lastIndexOf(".");
+      const base = dot === -1 ? name : name.slice(0, dot);
+      const extension = dot === -1 ? "" : name.slice(dot);
+      let counter = 1;
+      while (used.has(`${base}-${counter}${extension}`)) counter++;
+      const candidate = `${base}-${counter}${extension}`;
+      used.add(candidate);
+      return candidate;
+    }
+  }
+
+  class ImageCompressor {
+    static targetSize(width, height, maxDimension) {
+      if (!maxDimension || maxDimension <= 0) return { width, height };
+      const scale = Math.min(maxDimension / width, maxDimension / height, 1);
+      return {
+        width: Math.max(1, Math.round(width * scale)),
+        height: Math.max(1, Math.round(height * scale)),
+      };
+    }
+
+    /** @returns {Promise<{blob: Blob, extension: string}>} */
+    static async compress(file, { quality, maxDimension, format }) {
+      const source = await ImageCompressor.#decode(file);
+      const canvas = document.createElement("canvas");
+
+      try {
+        const sourceWidth = source.naturalWidth ?? source.width;
+        const sourceHeight = source.naturalHeight ?? source.height;
+        if (!sourceWidth || !sourceHeight) throw new Error("decode");
+
+        const { width, height } = ImageCompressor.targetSize(
+          sourceWidth,
+          sourceHeight,
+          maxDimension,
+        );
+        canvas.width = width;
+        canvas.height = height;
+
+        const mime = OUTPUT_MIME[format] ?? OUTPUT_MIME.jpeg;
+        const context = canvas.getContext("2d");
+        if (mime === "image/jpeg") {
+          // JPEG has no alpha channel: transparent pixels would turn black
+          context.fillStyle = "#ffffff";
+          context.fillRect(0, 0, width, height);
         }
-    }
+        context.imageSmoothingQuality = "high";
+        context.drawImage(source, 0, 0, width, height);
 
-    t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
-        }
-        
-        return value;
-    }
-
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
+        const blob = await new Promise((resolve) => {
+          canvas.toBlob(
+            resolve,
+            mime,
+            mime === "image/png" ? undefined : quality / 100,
+          );
         });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
+        if (!blob) throw new Error("encode");
+
+        // Some browsers cannot encode WebP and silently return PNG, so trust blob.type
+        return { blob, extension: MIME_EXTENSION[blob.type] ?? "jpg" };
+      } finally {
+        source.close?.();
+        canvas.width = 0;
+        canvas.height = 0;
+      }
+    }
+
+    static async #decode(file) {
+      if ("createImageBitmap" in window) {
+        try {
+          return await createImageBitmap(file, {
+            imageOrientation: "from-image",
+          });
+        } catch {
+          try {
+            return await createImageBitmap(file);
+          } catch {
+            // fall through to <img>
+          }
         }
-    }
+      }
 
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
-    }
-}
-
-const i18n = new I18n();
-
-
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-const state = {
-  files: [],
-  results: new Map(), // name -> { blob }
-};
-
-const fileInput = document.getElementById('fileInput');
-const dropzone = document.getElementById('dropzone');
-const preview = document.getElementById('preview');
-const compressBtn = document.getElementById('compressBtn');
-const zipBtn = document.getElementById('zipBtn');
-const summary = document.getElementById('summary');
-const resetBtn = document.getElementById('resetBtn');
-const clearBtn = document.getElementById('clearBtn');
-const quality = document.getElementById('quality');
-const qualityVal = document.getElementById('qualityVal');
-const maxDim = document.getElementById('maxDim');
-const format = document.getElementById('format');
-
-quality.addEventListener('input', () => qualityVal.textContent = quality.value);
-
-function formatBytes(bytes) {
-  const units = ['B','KB','MB','GB'];
-  let i = 0; let v = bytes;
-  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
-  return v.toFixed(v < 10 && i > 0 ? 2 : 0) + ' ' + units[i];
-}
-
-function updateSummary() {
-  const count = state.files.length;
-  const done = state.results.size;
-  summary.textContent = `${count} فایل انتخاب شده — ${done} فشرده شده`;
-  zipBtn.disabled = done === 0;
-}
-
-function addFiles(files) {
-  const valid = Array.from(files).filter(f => /image\/(jpeg|png|webp|gif|bmp|tiff|svg|heic|heif)/i.test(f.type) || /\.(jpe?g|png|webp|gif|bmp|tiff|svg|heic|heif)$/i.test(f.name));
-  state.files.push(...valid);
-  renderPreview();
-  updateSummary();
-}
-
-fileInput.addEventListener('change', (e) => addFiles(e.target.files));
-
-// Drag & Drop
-['dragenter','dragover'].forEach(ev => dropzone.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); dropzone.classList.add('drag'); }));
-['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); dropzone.classList.remove('drag'); }));
-dropzone.addEventListener('drop', (e) => addFiles(e.dataTransfer.files));
-
-function renderPreview() {
-  preview.innerHTML = '';
-  state.files.forEach((file, idx) => {
-    const url = URL.createObjectURL(file);
-    const div = document.createElement('div');
-    div.className = 'thumb';
-    div.innerHTML = `
-      <img src="${url}" alt="${file.name}" />
-      <div class="meta">
-        <span class="muted">${file.name}</span>
-        <span>${formatBytes(file.size)}</span>
-      </div>
-      <div class="progress"><div id="progress-${idx}"></div></div>
-      <div style="display:flex; gap:8px; padding:8px;">
-        <button class="btn" data-action="download" data-index="${idx}">دانلود خروجی</button>
-        <button class="btn" data-action="remove" data-index="${idx}">حذف</button>
-      </div>
-    `;
-    preview.appendChild(div);
-  });
-  preview.querySelectorAll('button').forEach(btn => btn.addEventListener('click', onThumbAction));
-}
-
-function onThumbAction(e) {
-  const idx = Number(e.currentTarget.getAttribute('data-index'));
-  const act = e.currentTarget.getAttribute('data-action');
-  const file = state.files[idx];
-  if (!file) return;
-  if (act === 'remove') {
-    state.files.splice(idx, 1);
-    state.results.delete(file.name);
-    renderPreview(); updateSummary();
-  } else if (act === 'download') {
-    const res = state.results.get(file.name);
-    if (!res) return alert('ابتدا فایل را فشرده‌سازی کنید.');
-    const a = document.createElement('a');
-    const ext = format.value === 'jpeg' ? 'jpg' : format.value;
-    a.href = URL.createObjectURL(res.blob);
-    a.download = file.name.replace(/\.[^.]+$/, '') + `.${ext}`;
-    document.body.appendChild(a); a.click(); a.remove();
-  }
-}
-
-function readImage(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
-  });
-}
-
-function getTargetSize(width, height, max) {
-  if (!max || max <= 0) return { width, height };
-  const scale = Math.min(max / width, max / height, 1);
-  return { width: Math.round(width * scale), height: Math.round(height * scale) };
-}
-
-async function compressImage(file, opts) {
-  const img = await readImage(file);
-  const { width, height } = img;
-  const { width: tw, height: th } = getTargetSize(width, height, opts.maxDim);
-  const canvas = document.createElement('canvas');
-  canvas.width = tw; canvas.height = th;
-  const ctx = canvas.getContext('2d');
-  // Basic draw; EXIF orientation handling for JPEGs is skipped for brevity
-  ctx.drawImage(img, 0, 0, tw, th);
-
-  const typeMap = { jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp' };
-  const mime = typeMap[opts.format] || 'image/jpeg';
-  const quality = opts.quality;
-
-  const blob = await new Promise((res) => canvas.toBlob(b => res(b), mime, mime === 'image/png' ? undefined : quality / 100));
-  if (!blob) {
-    const dataUrl = canvas.toDataURL(mime, mime === 'image/png' ? undefined : quality / 100);
-    const bstr = atob(dataUrl.split(',')[1]);
-    const u8 = new Uint8Array(bstr.length);
-    for (let i = 0; i < bstr.length; i++) u8[i] = bstr.charCodeAt(i);
-    return new Blob([u8], { type: mime });
-  }
-  return blob;
-}
-
-async function handleCompress() {
-  if (state.files.length === 0) return alert('ابتدا چند تصویر انتخاب کنید.');
-  zipBtn.disabled = true;
-  const opts = { quality: Number(quality.value), maxDim: Number(maxDim.value), format: format.value };
-  for (let i = 0; i < state.files.length; i++) {
-    const f = state.files[i];
-    const progressBar = document.getElementById(`progress-${i}`);
-    try {
-      progressBar.style.width = '20%';
-      const blob = await compressImage(f, opts);
-      progressBar.style.width = '100%';
-      state.results.set(f.name, { blob });
-    } catch (err) {
-      console.error(err);
-      progressBar.style.background = 'var(--danger)';
+      const url = URL.createObjectURL(file);
+      try {
+        const image = new Image();
+        image.src = url;
+        await image.decode();
+        return image;
+      } catch {
+        throw new Error("decode");
+      } finally {
+        URL.revokeObjectURL(url);
+      }
     }
   }
-  updateSummary();
-  zipBtn.disabled = state.results.size === 0;
-}
 
-async function handleZip() {
-  if (state.results.size === 0) return;
-  const zip = new JSZip();
-  const ext = format.value === 'jpeg' ? 'jpg' : format.value;
-  for (const f of state.files) {
-    const res = state.results.get(f.name);
-    if (!res) continue;
-    const name = f.name.replace(/\.[^.]+$/, '') + `.${ext}`;
-    zip.file(name, res.blob);
+  /* ---------- Services ---------- */
+
+  class I18n {
+    #translations = {};
+    #lang = localStorage.getItem("lang") || "fa";
+
+    get locale() {
+      return this.#lang === "fa" ? "fa-IR" : "en-US";
+    }
+
+    async load() {
+      try {
+        const response = await fetch("assets/translations.json");
+        this.#translations = await response.json();
+      } catch (error) {
+        console.error("Failed to load translations:", error);
+      }
+      this.apply();
+    }
+
+    t(key, params = {}) {
+      const template = this.#translations[this.#lang]?.[key] ?? key;
+      return template.replace(
+        /\{(\w+)\}/g,
+        (match, name) => params[name] ?? match,
+      );
+    }
+
+    apply() {
+      const html = document.documentElement;
+      html.lang = this.#lang;
+      html.dir = this.#lang === "fa" ? "rtl" : "ltr";
+
+      for (const element of document.querySelectorAll("[data-i18n]")) {
+        element.textContent = this.t(element.dataset.i18n);
+      }
+
+      const titleKey = document.querySelector("title")?.dataset.i18n;
+      if (titleKey) document.title = this.t(titleKey);
+    }
   }
-  const content = await zip.generateAsync({ type: 'blob' });
-  const filename = `compressed_${Date.now()}.zip`;
-  if (window.saveAs) saveAs(content, filename);
-  else {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(content);
-    a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+
+  class Toast {
+    #element;
+    #timer = 0;
+
+    constructor(element) {
+      this.#element = element;
+    }
+
+    show(message, duration = TOAST_DURATION_MS) {
+      clearTimeout(this.#timer);
+      this.#element.textContent = message;
+      this.#element.hidden = false;
+      this.#timer = setTimeout(() => {
+        this.#element.hidden = true;
+      }, duration);
+    }
   }
-}
 
-function handleReset() {
-  fileInput.value = '';
-  state.files = []; state.results.clear();
-  preview.innerHTML = '';
-  updateSummary();
-}
+  const downloadBlob = (blob, fileName) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  };
 
-function handleClear() {
-  state.files = []; state.results.clear(); renderPreview(); updateSummary();
-}
+  /* ---------- Items ---------- */
 
-compressBtn.addEventListener('click', handleCompress);
-zipBtn.addEventListener('click', handleZip);
-resetBtn.addEventListener('click', handleReset);
-clearBtn.addEventListener('click', handleClear);
+  class ImageItem {
+    static #nextId = 1;
 
-updateSummary();
+    constructor(file) {
+      this.id = ImageItem.#nextId++;
+      this.file = file;
+      this.previewUrl = URL.createObjectURL(file);
+      this.status = "pending"; // pending | working | done | error
+      this.result = null;
+      this.errorKey = "";
+    }
+
+    static fingerprint(file) {
+      return `${file.name}|${file.size}|${file.lastModified}`;
+    }
+
+    dispose() {
+      URL.revokeObjectURL(this.previewUrl);
+    }
+  }
+
+  class ItemView {
+    element;
+    #i18n;
+    #refs;
+
+    constructor(item, i18n) {
+      this.#i18n = i18n;
+      this.element = document.createElement("article");
+      this.element.className = "card thumb";
+      this.element.dataset.id = String(item.id);
+
+      const image = document.createElement("img");
+      image.className = "thumb-image";
+      image.alt = "";
+      image.loading = "lazy";
+      image.src = item.previewUrl;
+
+      const name = document.createElement("div");
+      name.className = "thumb-name";
+      name.textContent = item.file.name;
+      name.title = item.file.name;
+
+      const sizes = document.createElement("div");
+      sizes.className = "thumb-sizes";
+      sizes.dir = "ltr";
+
+      const status = document.createElement("span");
+      status.className = "badge";
+
+      const progress = document.createElement("div");
+      progress.className = "progress";
+      const bar = document.createElement("div");
+      bar.className = "progress-bar";
+      progress.append(bar);
+
+      const error = document.createElement("p");
+      error.className = "thumb-error";
+      error.hidden = true;
+
+      const actions = document.createElement("div");
+      actions.className = "row thumb-actions";
+      const download = this.#createButton(
+        "btn btn--secondary btn--sm",
+        "download",
+        "button_download",
+      );
+      const remove = this.#createButton(
+        "btn btn--ghost btn--sm",
+        "remove",
+        "button_remove",
+      );
+      actions.append(download, remove);
+
+      this.element.append(image, name, sizes, status, progress, error, actions);
+      this.#refs = { sizes, status, bar, error, download, remove };
+    }
+
+    update(item, format) {
+      const { sizes, status, bar, error, download } = this.#refs;
+      const original = item.file.size;
+
+      this.element.dataset.status = item.status;
+      status.textContent = this.#i18n.t(`status_${item.status}`);
+      status.className = `badge${item.status === "done" ? " badge--success" : item.status === "error" ? " badge--warning" : ""}`;
+      bar.style.width = {
+        pending: "0%",
+        working: "55%",
+        done: "100%",
+        error: "100%",
+      }[item.status];
+
+      error.hidden = item.status !== "error";
+      error.textContent = item.errorKey ? this.#i18n.t(item.errorKey) : "";
+
+      if (item.result) {
+        const after = item.result.blob.size;
+        const change = Math.round((1 - after / original) * 100);
+        sizes.textContent = `${format(original)} → ${format(after)}  (${change >= 0 ? "−" : "+"}${Math.abs(change)}%)`;
+        sizes.classList.toggle("is-bigger", after >= original);
+      } else {
+        sizes.textContent = format(original);
+        sizes.classList.remove("is-bigger");
+      }
+      download.disabled = item.status !== "done";
+    }
+
+    setBusy(isBusy) {
+      this.#refs.remove.disabled = isBusy;
+    }
+
+    #createButton(className, action, labelKey) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = className;
+      button.dataset.action = action;
+      button.textContent = this.#i18n.t(labelKey);
+      return button;
+    }
+  }
+
+  /* ---------- Application ---------- */
+
+  class ImageCompressorApp {
+    #i18n = new I18n();
+    #toast;
+    #dom;
+    #items = new Map(); // id -> { item, view }
+    #seen = new Set();
+    #isBusy = false;
+    #lastOptions = null;
+
+    async init() {
+      this.#cacheDom();
+      this.#toast = new Toast(this.#dom.toast);
+      await this.#i18n.load();
+
+      this.#bindEvents();
+      this.#syncControls();
+      this.#render();
+      window.addEventListener("languageChanged", () =>
+        window.location.reload(),
+      );
+    }
+
+    #cacheDom() {
+      const byId = (id) => document.getElementById(id);
+      this.#dom = {
+        fileInput: byId("fileInput"),
+        dropzone: byId("dropzone"),
+        preview: byId("preview"),
+        emptyState: byId("emptyState"),
+        compress: byId("compressBtn"),
+        zip: byId("zipBtn"),
+        clear: byId("clearBtn"),
+        summary: byId("summary"),
+        stale: byId("staleHint"),
+        quality: byId("quality"),
+        qualityVal: byId("qualityVal"),
+        qualityHint: byId("qualityHint"),
+        maxDim: byId("maxDim"),
+        format: byId("format"),
+        toast: byId("toast"),
+      };
+    }
+
+    #bindEvents() {
+      const dom = this.#dom;
+
+      dom.fileInput.addEventListener("change", () => {
+        this.#addFiles(dom.fileInput.files);
+        dom.fileInput.value = "";
+      });
+
+      for (const type of ["dragenter", "dragover"]) {
+        dom.dropzone.addEventListener(type, (event) => {
+          event.preventDefault();
+          dom.dropzone.classList.add("is-dragover");
+        });
+      }
+      for (const type of ["dragleave", "drop"]) {
+        dom.dropzone.addEventListener(type, (event) => {
+          event.preventDefault();
+          dom.dropzone.classList.remove("is-dragover");
+        });
+      }
+      dom.dropzone.addEventListener("drop", (event) =>
+        this.#addFiles(event.dataTransfer.files),
+      );
+
+      dom.quality.addEventListener("input", () => this.#onOptionsChanged());
+      dom.maxDim.addEventListener("input", () => this.#onOptionsChanged());
+      dom.format.addEventListener("change", () => this.#onOptionsChanged());
+
+      dom.compress.addEventListener("click", () => this.#compressAll());
+      dom.zip.addEventListener("click", () => this.#downloadZip());
+      dom.clear.addEventListener("click", () => this.#clearAll());
+
+      dom.preview.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+        const id = Number(button.closest("[data-id]").dataset.id);
+        if (button.dataset.action === "remove") this.#remove(id);
+        else this.#downloadOne(id);
+      });
+    }
+
+    /* ----- options ----- */
+
+    get #options() {
+      const { quality, maxDim, format } = this.#dom;
+      return {
+        quality: Number(quality.value),
+        maxDimension: Math.max(0, Math.floor(Number(maxDim.value) || 0)),
+        format: format.value,
+      };
+    }
+
+    #onOptionsChanged() {
+      this.#syncControls();
+      const hasResults = [...this.#items.values()].some(
+        ({ item }) => item.status === "done",
+      );
+      this.#dom.stale.hidden = !(
+        hasResults && this.#lastOptions !== JSON.stringify(this.#options)
+      );
+    }
+
+    #syncControls() {
+      const isPng = this.#dom.format.value === "png";
+      this.#dom.qualityVal.textContent = this.#dom.quality.value;
+      this.#dom.quality.disabled = isPng;
+      this.#dom.qualityHint.hidden = !isPng;
+    }
+
+    /* ----- actions ----- */
+
+    #addFiles(fileList) {
+      const files = [...fileList];
+      const images = files.filter(FileNames.isImage);
+      const ignored = files.length - images.length;
+
+      for (const file of images) {
+        const fingerprint = ImageItem.fingerprint(file);
+        if (this.#seen.has(fingerprint)) continue;
+
+        this.#seen.add(fingerprint);
+        const item = new ImageItem(file);
+        const view = new ItemView(item, this.#i18n);
+        this.#items.set(item.id, { item, view });
+        this.#dom.preview.append(view.element);
+        view.update(item, (bytes) => this.#formatBytes(bytes));
+      }
+
+      if (ignored > 0)
+        this.#toast.show(this.#i18n.t("toast_ignored", { count: ignored }));
+      this.#render();
+    }
+
+    #remove(id) {
+      const entry = this.#items.get(id);
+      if (!entry) return;
+
+      this.#seen.delete(ImageItem.fingerprint(entry.item.file));
+      entry.item.dispose();
+      entry.view.element.remove();
+      this.#items.delete(id);
+      this.#render();
+    }
+
+    #clearAll() {
+      for (const { item, view } of this.#items.values()) {
+        item.dispose();
+        view.element.remove();
+      }
+      this.#items.clear();
+      this.#seen.clear();
+      this.#lastOptions = null;
+      this.#dom.stale.hidden = true;
+      this.#render();
+    }
+
+    async #compressAll() {
+      if (this.#items.size === 0)
+        return this.#toast.show(this.#i18n.t("toast_no_files"));
+
+      const options = this.#options;
+      this.#setBusy(true);
+
+      for (const { item, view } of this.#items.values()) {
+        item.status = "working";
+        item.result = null;
+        item.errorKey = "";
+        view.update(item, (bytes) => this.#formatBytes(bytes));
+        await new Promise((resolve) => requestAnimationFrame(resolve)); // let the UI paint
+
+        try {
+          item.result = await ImageCompressor.compress(item.file, options);
+          item.status = "done";
+        } catch (error) {
+          console.warn("compress failed", item.file.name, error);
+          item.status = "error";
+          item.errorKey =
+            error.message === "encode" ? "error_encode" : "error_decode";
+        }
+        view.update(item, (bytes) => this.#formatBytes(bytes));
+      }
+
+      this.#lastOptions = JSON.stringify(options);
+      this.#dom.stale.hidden = true;
+      this.#setBusy(false);
+      this.#toast.show(this.#i18n.t("toast_done"));
+    }
+
+    #downloadOne(id) {
+      const entry = this.#items.get(id);
+      if (!entry?.item.result)
+        return this.#toast.show(this.#i18n.t("toast_compress_first"));
+
+      const { file } = entry.item;
+      const { blob, extension } = entry.item.result;
+      downloadBlob(blob, FileNames.withExtension(file.name, extension));
+    }
+
+    async #downloadZip() {
+      const done = [...this.#items.values()].filter(({ item }) => item.result);
+      if (done.length === 0) return;
+
+      this.#dom.zip.disabled = true;
+      try {
+        const zip = new ZipWriter();
+        const usedNames = new Set();
+
+        for (const { item } of done) {
+          const name = FileNames.unique(
+            FileNames.withExtension(item.file.name, item.result.extension),
+            usedNames,
+          );
+          zip.add(name, new Uint8Array(await item.result.blob.arrayBuffer()));
+        }
+
+        downloadBlob(zip.build(), `compressed_${Date.now()}.zip`);
+        this.#toast.show(this.#i18n.t("toast_zip_ready"));
+      } finally {
+        this.#dom.zip.disabled = false;
+      }
+    }
+
+    /* ----- rendering ----- */
+
+    #setBusy(isBusy) {
+      this.#isBusy = isBusy;
+      const dom = this.#dom;
+      dom.compress.disabled = isBusy;
+      dom.clear.disabled = isBusy;
+      dom.fileInput.disabled = isBusy;
+      dom.preview.toggleAttribute("aria-busy", isBusy);
+      for (const { view } of this.#items.values()) view.setBusy(isBusy);
+      this.#render();
+    }
+
+    #render() {
+      const entries = [...this.#items.values()];
+      const done = entries.filter(({ item }) => item.result);
+
+      this.#dom.emptyState.hidden = entries.length > 0;
+      this.#dom.compress.disabled = this.#isBusy || entries.length === 0;
+      this.#dom.zip.disabled = this.#isBusy || done.length === 0;
+      this.#dom.clear.disabled = this.#isBusy || entries.length === 0;
+      this.#dom.summary.textContent = this.#buildSummary(entries, done);
+    }
+
+    #buildSummary(entries, done) {
+      const number = new Intl.NumberFormat(this.#i18n.locale);
+      let text = this.#i18n.t("summary", {
+        count: number.format(entries.length),
+        done: number.format(done.length),
+      });
+
+      if (done.length > 0) {
+        const before = done.reduce((sum, { item }) => sum + item.file.size, 0);
+        const after = done.reduce(
+          (sum, { item }) => sum + item.result.blob.size,
+          0,
+        );
+        if (after < before) {
+          const percent = new Intl.NumberFormat(this.#i18n.locale, {
+            style: "percent",
+          }).format(1 - after / before);
+          text += this.#i18n.t("summary_saved", {
+            percent,
+            size: this.#formatBytes(before - after),
+          });
+        }
+      }
+      return text;
+    }
+
+    #formatBytes(bytes) {
+      let value = bytes;
+      let unit = 0;
+      while (value >= 1024 && unit < BYTE_UNITS.length - 1) {
+        value /= 1024;
+        unit++;
+      }
+      const digits =
+        value < 10 && unit > 0 ? 2 : value < 100 && unit > 0 ? 1 : 0;
+      return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: digits }).format(value)} ${BYTE_UNITS[unit]}`;
+    }
+  }
+
+  new ImageCompressorApp().init();
+})();

@@ -1,262 +1,494 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
+(() => {
+  "use strict";
+
+  const TOAST_DURATION_MS = 1800;
+  const SCHEME_OFFSETS = Object.freeze({
+    complementary: [0, 180],
+    triadic: [0, 120, 240],
+    tetradic: [0, 90, 180, 270],
+  });
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  /* ---------- Pure logic (no DOM) ---------- */
+
+  class Color {
+    /** Accepts "#abc", "abc", "#AABBCC"; returns "#aabbcc" or null. */
+    static normalize(value) {
+      let hex = String(value ?? "")
+        .trim()
+        .replace(/^#/, "");
+      if (/^[0-9a-f]{3}$/i.test(hex))
+        hex = [...hex].map((char) => char + char).join("");
+      return /^[0-9a-f]{6}$/i.test(hex) ? `#${hex.toLowerCase()}` : null;
     }
 
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
+    static hexToHsl(hex) {
+      const [r, g, b] = [1, 3, 5].map(
+        (start) => Number.parseInt(hex.slice(start, start + 2), 16) / 255,
+      );
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const delta = max - min;
+      const lightness = (max + min) / 2;
+
+      if (delta === 0) return { h: 0, s: 0, l: lightness * 100 };
+
+      const saturation = delta / (1 - Math.abs(2 * lightness - 1));
+      let hue;
+      if (max === r) hue = ((g - b) / delta) % 6;
+      else if (max === g) hue = (b - r) / delta + 2;
+      else hue = (r - g) / delta + 4;
+
+      return {
+        h: (hue * 60 + 360) % 360,
+        s: saturation * 100,
+        l: lightness * 100,
+      };
     }
 
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
+    static hslToHex({ h, s, l }) {
+      const hue = ((h % 360) + 360) % 360;
+      const saturation = clamp(s, 0, 100) / 100;
+      const lightness = clamp(l, 0, 100) / 100;
+      const amount = saturation * Math.min(lightness, 1 - lightness);
+      const channel = (offset) => {
+        const k = (offset + hue / 30) % 12;
+        return lightness - amount * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+      };
+
+      return `#${[0, 8, 4]
+        .map((offset) =>
+          Math.round(channel(offset) * 255)
+            .toString(16)
+            .padStart(2, "0"),
+        )
+        .join("")}`;
     }
 
-    getTheme() {
-        return this.currentTheme;
+    static random() {
+      return Color.hslToHex({
+        h: Math.random() * 360,
+        s: 55 + Math.random() * 30,
+        l: 40 + Math.random() * 20,
+      });
     }
-}
+  }
 
-const themeManager = new ThemeManager();
-
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
+  class PaletteGenerator {
+    static get schemes() {
+      return ["analogous", "monochromatic", ...Object.keys(SCHEME_OFFSETS)];
     }
 
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
+    static generate(baseHex, count, scheme = "analogous") {
+      const base = Color.hexToHsl(baseHex);
+      const center = (count - 1) / 2;
+
+      return Array.from({ length: count }, (_, index) => {
+        if (scheme === "monochromatic") {
+          const progress = count === 1 ? 0.5 : index / (count - 1);
+          return Color.hslToHex({
+            h: base.h,
+            s: base.s,
+            l: 18 + progress * 70,
+          });
         }
-    }
 
-    t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
+        if (scheme === "analogous" || !SCHEME_OFFSETS[scheme]) {
+          const shift = index - center;
+          return Color.hslToHex({
+            h: base.h + shift * 25,
+            s: clamp(base.s + shift * 3, 10, 100),
+            l: clamp(base.l + shift * 5, 15, 90),
+          });
         }
-        
-        return value;
-    }
 
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
+        const offsets = SCHEME_OFFSETS[scheme];
+        const cycle = Math.floor(index / offsets.length);
+        const cycles = Math.ceil(count / offsets.length);
+        return Color.hslToHex({
+          h: base.h + offsets[index % offsets.length],
+          s: base.s,
+          l: clamp(base.l + (cycle - (cycles - 1) / 2) * 12, 15, 90),
         });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
-        }
+      });
+    }
+  }
+
+  class PaletteStore {
+    static #KEY = "palettes";
+    static #MAX_ITEMS = 12;
+
+    list() {
+      try {
+        const parsed = JSON.parse(
+          localStorage.getItem(PaletteStore.#KEY) ?? "[]",
+        );
+        return Array.isArray(parsed)
+          ? parsed.map(PaletteStore.#normalize).filter(Boolean)
+          : [];
+      } catch {
+        return [];
+      }
     }
 
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
+    add(name, colors) {
+      this.#save(
+        [{ name, colors }, ...this.list()].slice(0, PaletteStore.#MAX_ITEMS),
+      );
     }
-}
 
-const i18n = new I18n();
-
-
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-const paletteDisplay = document.getElementById('paletteDisplay');
-const randomizeBtn = document.getElementById('randomizeBtn');
-const copyCssBtn = document.getElementById('copyCssBtn');
-const colorPicker = document.getElementById('colorPicker');
-const countRange = document.getElementById('countRange');
-const countIndicator = document.getElementById('countIndicator');
-const paletteNameInput = document.getElementById('paletteName');
-const savePaletteBtn = document.getElementById('savePaletteBtn');
-const savedPalettesGrid = document.getElementById('savedPalettes');
-const toast = document.getElementById('toast');
-
-let currentPalette = [];
-
-function randomBaseColor() {
-    const color = Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
-    colorPicker.value = `#${color}`;
-}
-
-function generatePalette(baseHex, count) {
-    const baseHue = parseInt(baseHex.slice(1, 3), 16);
-    const baseSat = parseInt(baseHex.slice(3, 5), 16);
-    const baseLum = parseInt(baseHex.slice(5, 7), 16);
-
-    const palette = [];
-    for (let i = 0; i < count; i += 1) {
-        const hueShift = Math.round((i - (count - 1) / 2) * 12);
-        const satShift = (i - (count - 1) / 2) * 6;
-        const lumShift = (i - (count - 1) / 2) * 4;
-        const hue = Math.max(0, Math.min(255, baseHue + hueShift));
-        const sat = Math.max(0, Math.min(255, baseSat + satShift));
-        const lum = Math.max(0, Math.min(255, baseLum + lumShift));
-        const hex = `#${hue.toString(16).padStart(2, '0')}${sat.toString(16).padStart(2, '0')}${lum.toString(16).padStart(2, '0')}`;
-        palette.push(hex);
+    remove(index) {
+      const items = this.list();
+      items.splice(index, 1);
+      this.#save(items);
     }
-    return palette;
-}
 
-function renderPalette(palette) {
-    paletteDisplay.innerHTML = '';
-    palette.forEach((color) => {
-        const tile = document.createElement('div');
-        tile.className = 'palette-tile';
-        tile.style.background = color;
-        const code = document.createElement('span');
-        code.className = 'palette-code';
-        code.textContent = color;
-        tile.appendChild(code);
-        paletteDisplay.appendChild(tile);
-    });
-}
-
-function showToast(message) {
-    toast.textContent = message;
-    toast.classList.add('show');
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 1800);
-}
-
-function persistPalette(palette, name) {
-    const saved = JSON.parse(localStorage.getItem('palettes') || '[]');
-    const next = [{ name: name || `پالت ${saved.length + 1}`, colors: palette }, ...saved];
-    localStorage.setItem('palettes', JSON.stringify(next.slice(0, 12)));
-    loadSavedPalettes();
-    showToast('پالت ذخیره شد');
-}
-
-function loadSavedPalettes() {
-    const saved = JSON.parse(localStorage.getItem('palettes') || '[]');
-    savedPalettesGrid.innerHTML = '';
-    saved.forEach((item, index) => {
-        const card = document.createElement('article');
-        card.className = 'saved-card';
-
-        const header = document.createElement('header');
-        const title = document.createElement('strong');
-        title.textContent = item.name;
-        const loadBtn = document.createElement('button');
-        loadBtn.textContent = 'بارگذاری';
-        loadBtn.addEventListener('click', () => {
-            currentPalette = item.colors;
-            renderPalette(currentPalette);
-            showToast('پالت بارگذاری شد');
-        });
-        header.append(title, loadBtn);
-
-        const swatches = document.createElement('div');
-        swatches.className = 'swatches';
-        item.colors.forEach((swatch) => {
-            const dot = document.createElement('div');
-            dot.className = 'swatch';
-            dot.style.background = swatch;
-            swatches.appendChild(dot);
-        });
-
-        card.append(header, swatches);
-        savedPalettesGrid.appendChild(card);
-    });
-}
-
-function copyCss(palette) {
-    const css = `:root { ${palette.map((color, index) => `--accent-color-${index + 1}: ${color};`).join(' ')} }`;
-    navigator.clipboard.writeText(css).then(() => {
-        showToast('کد CSS کپی شد');
-    }).catch(() => {
-        showToast('کپی نشد');
-    });
-}
-
-function refreshPalette() {
-    const base = colorPicker.value;
-    const count = parseInt(countRange.value, 10);
-    countIndicator.textContent = count;
-    currentPalette = generatePalette(base, count);
-    renderPalette(currentPalette);
-}
-
-randomizeBtn.addEventListener('click', () => {
-    randomBaseColor();
-    refreshPalette();
-});
-
-countRange.addEventListener('input', () => {
-    countIndicator.textContent = countRange.value;
-    refreshPalette();
-});
-
-colorPicker.addEventListener('input', () => {
-    document.getElementById('colorCode').textContent = colorPicker.value;
-    refreshPalette();
-});
-
-savePaletteBtn.addEventListener('click', () => {
-    if (currentPalette.length === 0) {
-        showToast('ابتدا پالت ایجاد کنید');
-        return;
+    static #normalize(raw) {
+      const colors = Array.isArray(raw?.colors)
+        ? raw.colors.map(Color.normalize).filter(Boolean)
+        : [];
+      if (colors.length === 0) return null;
+      return {
+        name: String(raw.name ?? "")
+          .trim()
+          .slice(0, 30),
+        colors,
+      };
     }
-    persistPalette(currentPalette, paletteNameInput.value.trim());
-    paletteNameInput.value = '';
-});
 
-copyCssBtn.addEventListener('click', () => {
-    if (currentPalette.length === 0) {
-        showToast('ابتدا پالت ایجاد کنید');
-        return;
+    #save(items) {
+      localStorage.setItem(PaletteStore.#KEY, JSON.stringify(items));
     }
-    copyCss(currentPalette);
-});
+  }
 
-window.addEventListener('DOMContentLoaded', () => {
-    loadSavedPalettes();
-    randomBaseColor();
-    refreshPalette();
-});
+  /* ---------- Services ---------- */
 
+  class I18n {
+    #translations = {};
+    #lang = localStorage.getItem("lang") || "fa";
+
+    async load() {
+      try {
+        const response = await fetch("assets/translations.json");
+        this.#translations = await response.json();
+      } catch (error) {
+        console.error("Failed to load translations:", error);
+      }
+      this.apply();
+    }
+
+    t(key, params = {}) {
+      const template = this.#translations[this.#lang]?.[key] ?? key;
+      return template.replace(
+        /\{(\w+)\}/g,
+        (match, name) => params[name] ?? match,
+      );
+    }
+
+    apply() {
+      const html = document.documentElement;
+      html.lang = this.#lang;
+      html.dir = this.#lang === "fa" ? "rtl" : "ltr";
+
+      for (const element of document.querySelectorAll("[data-i18n]")) {
+        element.textContent = this.t(element.dataset.i18n);
+      }
+      for (const element of document.querySelectorAll(
+        "[data-i18n-placeholder]",
+      )) {
+        element.placeholder = this.t(element.dataset.i18nPlaceholder);
+      }
+
+      const titleKey = document.querySelector("title")?.dataset.i18n;
+      if (titleKey) document.title = this.t(titleKey);
+    }
+  }
+
+  class Toast {
+    #element;
+    #timer = 0;
+
+    constructor(element) {
+      this.#element = element;
+    }
+
+    show(message, duration = TOAST_DURATION_MS) {
+      clearTimeout(this.#timer);
+      this.#element.textContent = message;
+      this.#element.hidden = false;
+      this.#timer = setTimeout(() => {
+        this.#element.hidden = true;
+      }, duration);
+    }
+  }
+
+  const copyText = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fallback for insecure contexts and older WebViews
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+      document.body.append(area);
+      area.select();
+      const isCopied = document.execCommand("copy");
+      area.remove();
+      return isCopied;
+    }
+  };
+
+  /* ---------- Application ---------- */
+
+  const ICON_TRASH =
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+
+  class PaletteApp {
+    #i18n = new I18n();
+    #store = new PaletteStore();
+    #toast;
+    #dom;
+    #palette = [];
+
+    async init() {
+      this.#cacheDom();
+      this.#toast = new Toast(this.#dom.toast);
+      await this.#i18n.load();
+
+      this.#bindEvents();
+      this.#setBaseColor(Color.random());
+      this.#renderSaved();
+      window.addEventListener("languageChanged", () =>
+        window.location.reload(),
+      );
+    }
+
+    #cacheDom() {
+      const byId = (id) => document.getElementById(id);
+      this.#dom = {
+        grid: byId("paletteDisplay"),
+        randomize: byId("randomizeBtn"),
+        copyCss: byId("copyCssBtn"),
+        picker: byId("colorPicker"),
+        code: byId("colorCode"),
+        scheme: byId("schemeSelect"),
+        range: byId("countRange"),
+        count: byId("countIndicator"),
+        name: byId("paletteName"),
+        save: byId("savePaletteBtn"),
+        saved: byId("savedPalettes"),
+        emptySaved: byId("emptySaved"),
+        toast: byId("toast"),
+      };
+    }
+
+    #bindEvents() {
+      const dom = this.#dom;
+
+      dom.randomize.addEventListener("click", () =>
+        this.#setBaseColor(Color.random()),
+      );
+      dom.picker.addEventListener("input", () =>
+        this.#setBaseColor(dom.picker.value),
+      );
+      dom.code.addEventListener("input", () => this.#onCodeInput());
+      dom.scheme.addEventListener("change", () => this.#refresh());
+      dom.range.addEventListener("input", () => this.#refresh());
+
+      dom.save.addEventListener("click", () => this.#savePalette());
+      dom.copyCss.addEventListener("click", () =>
+        this.#copy(this.#toCss(), "toast_css_copied"),
+      );
+
+      dom.grid.addEventListener("click", (event) => {
+        const tile = event.target.closest("[data-color]");
+        if (tile)
+          this.#copy(tile.dataset.color, "toast_color_copied", {
+            color: tile.dataset.color,
+          });
+      });
+
+      dom.saved.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+
+        const index = Number(button.closest("[data-index]").dataset.index);
+        if (button.dataset.action === "load") this.#loadSaved(index);
+        else this.#deleteSaved(index);
+      });
+    }
+
+    /* ----- actions ----- */
+
+    #onCodeInput() {
+      const hex = Color.normalize(this.#dom.code.value);
+      this.#dom.code.setAttribute("aria-invalid", String(hex === null));
+      if (hex) {
+        this.#dom.picker.value = hex;
+        this.#refresh();
+      }
+    }
+
+    #setBaseColor(hex) {
+      this.#dom.picker.value = hex;
+      this.#dom.code.value = hex;
+      this.#dom.code.setAttribute("aria-invalid", "false");
+      this.#refresh();
+    }
+
+    #refresh() {
+      const count = Number.parseInt(this.#dom.range.value, 10);
+      this.#dom.count.textContent = count;
+      this.#palette = PaletteGenerator.generate(
+        this.#dom.picker.value,
+        count,
+        this.#dom.scheme.value,
+      );
+      this.#renderPalette();
+    }
+
+    #savePalette() {
+      const fallbackName = this.#i18n.t("saved_default_name", {
+        n: this.#store.list().length + 1,
+      });
+      this.#store.add(
+        this.#dom.name.value.trim() || fallbackName,
+        this.#palette,
+      );
+      this.#dom.name.value = "";
+      this.#renderSaved();
+      this.#toast.show(this.#i18n.t("toast_saved"));
+    }
+
+    #loadSaved(index) {
+      const item = this.#store.list()[index];
+      if (!item) return;
+
+      this.#palette = item.colors;
+      this.#renderPalette();
+      this.#toast.show(this.#i18n.t("toast_loaded"));
+    }
+
+    #deleteSaved(index) {
+      this.#store.remove(index);
+      this.#renderSaved();
+      this.#toast.show(this.#i18n.t("toast_deleted"));
+    }
+
+    async #copy(text, successKey, params) {
+      const isCopied = await copyText(text);
+      this.#toast.show(
+        this.#i18n.t(isCopied ? successKey : "toast_copy_failed", params),
+      );
+    }
+
+    #toCss() {
+      const variables = this.#palette.map(
+        (color, index) => `  --accent-color-${index + 1}: ${color};`,
+      );
+      return `:root {\n${variables.join("\n")}\n}`;
+    }
+
+    /* ----- rendering ----- */
+
+    #renderPalette() {
+      this.#dom.grid.replaceChildren(
+        ...this.#palette.map((color) => {
+          const tile = document.createElement("button");
+          tile.type = "button";
+          tile.className = "swatch-tile";
+          tile.dataset.color = color;
+          tile.setAttribute(
+            "aria-label",
+            this.#i18n.t("copy_color_aria", { color }),
+          );
+
+          const fill = document.createElement("span");
+          fill.className = "swatch-color";
+          fill.style.backgroundColor = color;
+
+          const label = document.createElement("span");
+          label.className = "swatch-label";
+          label.textContent = color.toUpperCase();
+
+          tile.append(fill, label);
+          return tile;
+        }),
+      );
+    }
+
+    #renderSaved() {
+      const items = this.#store.list();
+      this.#dom.emptySaved.hidden = items.length > 0;
+      this.#dom.saved.replaceChildren(
+        ...items.map((item, index) => this.#createSavedCard(item, index)),
+      );
+    }
+
+    #createSavedCard(item, index) {
+      const card = document.createElement("article");
+      card.className = "card saved-card";
+      card.dataset.index = String(index);
+
+      const head = document.createElement("div");
+      head.className = "saved-head";
+
+      const title = document.createElement("strong");
+      title.className = "saved-name";
+      title.textContent = item.name;
+
+      const actions = document.createElement("div");
+      actions.className = "row saved-actions";
+      actions.append(
+        this.#createButton(
+          "btn btn--secondary btn--sm",
+          "load",
+          this.#i18n.t("button_load"),
+        ),
+        this.#createIconButton(
+          "delete",
+          ICON_TRASH,
+          this.#i18n.t("button_delete"),
+        ),
+      );
+      head.append(title, actions);
+
+      const swatches = document.createElement("div");
+      swatches.className = "swatches";
+      swatches.append(
+        ...item.colors.map((color) => {
+          const swatch = document.createElement("span");
+          swatch.className = "swatch";
+          swatch.style.backgroundColor = color;
+          swatch.title = color.toUpperCase();
+          return swatch;
+        }),
+      );
+
+      card.append(head, swatches);
+      return card;
+    }
+
+    #createButton(className, action, text) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = className;
+      button.dataset.action = action;
+      button.textContent = text;
+      return button;
+    }
+
+    #createIconButton(action, icon, label) {
+      const button = this.#createButton("btn btn--ghost btn--icon", action, "");
+      button.title = label;
+      button.setAttribute("aria-label", label);
+      button.innerHTML = icon;
+      return button;
+    }
+  }
+
+  new PaletteApp().init();
+})();

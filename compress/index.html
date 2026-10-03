@@ -1,78 +1,102 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="fa" dir="rtl">
 
-<html lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title data-i18n="title">فشرده‌ساز تصاویر</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<!-- JSZip via CDN for ZIP creation on client-side -->
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<!-- FileSaver for saveAs fallback (optional, but helpful for Safari) -->
-<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title data-i18n="title">فشرده‌ساز تصاویر</title>
+	<meta name="description" content="فشرده‌سازی و تغییر اندازهٔ تصاویر مستقیم در مرورگر، بدون ارسال فایل به سرور">
+	<link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+	<!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+	<script>
+		try {
+			var savedTheme = localStorage.getItem('theme');
+			if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+		} catch (e) { }
+	</script>
+
+	<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+	<link rel="stylesheet" href="../assets/tools.css">
+	<link rel="stylesheet" href="assets/style.css">
+	<link rel="stylesheet" href="../assets/tool-wrapper.css">
+	<script src="assets/app.js" defer></script>
+	<script src="../assets/tool-wrapper.js" defer></script>
 </head>
+
 <body>
-<div class="app" id="app">
-<div class="header">
-<div>
-<div class="title">فشرده‌ساز تصاویر در مرورگر</div>
-</div>
-<div style="display:flex; gap:8px;">
-<button class="btn" data-i18n="button_0" id="resetBtn">ریست</button>
-<button class="btn btn-danger" data-i18n="button_1" id="clearBtn">حذف همه</button>
-</div>
-</div>
-<div class="controls">
-<div class="card">
-<label class="small muted" data-i18n="label_0">انتخاب فایل‌ها</label>
-<input accept="image/*" class="input" id="fileInput" multiple="" type="file"/>
-</div>
-<div class="card">
-<label class="small muted" data-i18n="label_1">کیفیت JPEG/WebP (%): <span id="qualityVal">80</span></label>
-<input class="range" id="quality" max="95" min="40" type="range" value="80"/>
-</div>
-<div class="card">
-<label class="small muted" data-i18n="label_2">حداکثر عرض/ارتفاع (px؛ 0 = بدون تغییر)</label>
-<input class="input" id="maxDim" min="0" step="1" type="number" value="0"/>
-</div>
-<div class="card">
-<label class="small muted" data-i18n="label_3">فرمت خروجی</label>
-<select class="input" id="format">
-<option value="jpeg">JPEG</option>
-<option value="webp">WebP</option>
-<option value="png">PNG (بدون افت کیفیت، حجم بیشتر)</option>
-</select>
-</div>
-</div>
-<div class="card" style="margin-top:12px;">
-<div class="dropzone" id="dropzone">
-<div>
-<div>فایل‌ها را اینجا رها کنید یا از بالا انتخاب کنید</div>
-<div class="muted small">فرمت‌های پشتیبانی‌شده: JPG، PNG، WebP، HEIC (در مرورگرهای سازگار)</div>
-</div>
-</div>
-</div>
-<div class="card" style="margin-top:12px;">
-<div class="footer">
-<div style="display:flex; gap:8px;">
-<button class="btn btn-primary" data-i18n="button_2" id="compressBtn">فشرده‌سازی</button>
-<button class="btn btn-accent" data-i18n="button_3" disabled="" id="zipBtn">دانلود ZIP</button>
-</div>
-<div class="muted small" id="summary">۰ فایل انتخاب شده</div>
-</div>
-</div>
-<div class="card" style="margin-top:12px;">
-<div class="grid" id="preview"></div>
-</div>
-<div class="small muted" style="margin-top:10px; text-align:center;">
-			تمام پردازش‌ها در دستگاه کاربر انجام می‌شود. داده‌ای ارسال نمی‌گردد.
+	<main class="page">
+		<header class="page-header">
+			<h2 class="page-title" data-i18n="heading_0">فشرده‌ساز تصاویر در مرورگر</h2>
+			<p class="page-lead" data-i18n="text_privacy">تمام پردازش‌ها در دستگاه کاربر انجام می‌شود. داده‌ای ارسال
+				نمی‌گردد.</p>
+		</header>
+
+		<div class="stack">
+			<label class="dropzone" id="dropzone" for="fileInput">
+				<svg class="dropzone-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+					<path d="M12 16V4" />
+					<path d="m7 9 5-5 5 5" />
+					<path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+				</svg>
+				<strong data-i18n="drop_title">فایل‌ها را اینجا رها کنید یا برای انتخاب بزنید</strong>
+				<span class="muted" data-i18n="drop_hint">JPG، PNG، WebP، HEIC (در مرورگرهای سازگار)</span>
+				<input class="sr-only" id="fileInput" type="file" accept="image/*" multiple>
+			</label>
+
+			<section class="card stack" aria-labelledby="settingsTitle">
+				<h3 class="card-title" id="settingsTitle" data-i18n="heading_1">تنظیمات</h3>
+
+				<div class="settings-grid">
+					<div>
+						<label class="label range-label" for="quality">
+							<span data-i18n="label_1">کیفیت JPEG/WebP (%)</span>
+							<output id="qualityVal" for="quality">80</output>
+						</label>
+						<input class="range" id="quality" type="range" min="40" max="95" value="80">
+						<p class="hint" id="qualityHint" data-i18n="hint_png_quality" hidden>PNG بدون افت کیفیت ذخیره
+							می‌شود و تنظیم کیفیت روی آن اثر ندارد.</p>
+					</div>
+
+					<div>
+						<label class="label" for="maxDim" data-i18n="label_2">حداکثر عرض/ارتفاع (px؛ 0 = بدون
+							تغییر)</label>
+						<input class="field" id="maxDim" type="number" min="0" step="1" value="0" inputmode="numeric"
+							dir="ltr">
+					</div>
+
+					<div>
+						<label class="label" for="format" data-i18n="label_3">فرمت خروجی</label>
+						<select class="field" id="format">
+							<option value="jpeg">JPEG</option>
+							<option value="webp">WebP</option>
+							<option value="png" data-i18n="format_png">PNG (بدون افت کیفیت، حجم بیشتر)</option>
+						</select>
+					</div>
+				</div>
+			</section>
+
+			<div class="card actions-bar">
+				<div class="row">
+					<button class="btn btn--primary" id="compressBtn" type="button" data-i18n="button_2"
+						disabled>فشرده‌سازی</button>
+					<button class="btn btn--secondary" id="zipBtn" type="button" data-i18n="button_3" disabled>دانلود
+						ZIP</button>
+					<button class="btn btn--ghost" id="clearBtn" type="button" data-i18n="button_1" disabled>حذف
+						همه</button>
+				</div>
+				<p class="muted actions-summary" id="summary" aria-live="polite"></p>
+			</div>
+
+			<p class="alert alert--warning" id="staleHint" data-i18n="text_stale" role="status" hidden>تنظیمات تغییر
+				کرده؛ برای اعمال، دوباره فشرده‌سازی کنید.</p>
+
+			<div class="thumb-grid" id="preview"></div>
+			<p class="empty" id="emptyState" data-i18n="empty_state">هنوز تصویری انتخاب نشده است.</p>
 		</div>
-</div>
-<script src="assets/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+	</main>
+
+	<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 </body>
+
 </html>
