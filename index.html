@@ -4,7 +4,6 @@
 <head>
     <title>Web Tools</title>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -41,7 +40,7 @@
             <div class="header-content">
                 <h1>ابزارهای کاربردی</h1>
             </div>
-            <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="header-actions">
                 <div class="search-box">
                     <span class="search-icon">🔍</span>
                     <input type="text" class="search-input" id="searchInput" placeholder="جستجوی ابزار..." />
@@ -61,7 +60,7 @@
                 <span>تعداد ابزارها: <span class="count" id="totalCount">0</span></span>
                 <span id="filteredInfo"></span>
             </div>
-            <nav aria-label="Tools">
+            <div class="list-area">
                 <nav id="tabs" class="tabs" role="tablist" aria-label="دسته‌بندی"></nav>
                 <ul id="toolsList">
                 </ul>
@@ -72,7 +71,7 @@
                     <p>هیچ ابزاری یافت نشد</p>
                     <p style="font-size: 13px;">لطفاً کلمات دیگری را امتحان کنید</p>
                 </div>
-            </nav>
+            </div>
         </section>
 
         <footer>
