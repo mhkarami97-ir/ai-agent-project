@@ -1,115 +1,181 @@
-﻿const elements = {
-  textInput: document.querySelector('[data-text-input]'),
-  textOutput: document.querySelector('[data-text-output]'),
-  encodeBtn: document.querySelector('[data-encode]'),
-  decodeBtn: document.querySelector('[data-decode]'),
-  copyTextBtn: document.querySelector('[data-copy-output]'),
-  fileInput: document.getElementById('image-file'),
-  imageOutput: document.querySelector('[data-image-output]'),
-  previewImage: document.querySelector('[data-preview]'),
-  copyImageBtn: document.querySelector('[data-copy-image]'),
-  clearImageBtn: document.querySelector('[data-clear-image]'),
-  statusText: document.querySelector('[data-status-text]'),
-  statusImage: document.querySelector('[data-status-image]'),
-};
-
-const appState = {
-  lastImageBase64: '',
-};
-
-const updateStatus = (element, message, isError = false) => {
-  element.textContent = message;
-  element.style.color = isError ? '#f87171' : '#5eead4';
-};
-
-const encodeText = () => {
-  const value = elements.textInput.value.trim();
-  if (!value) {
-    updateStatus(elements.statusText, 'متنی برای تبدیل وجود ندارد.', true);
-    elements.textOutput.value = '';
-    return;
+(function () {
+  "use strict";
+  /* @logic-start */
+  function bytesToB64(b) {
+    let s = "";
+    for (let i = 0; i < b.length; i += 0x8000)
+      s += String.fromCharCode(...b.subarray(i, i + 0x8000));
+    return btoa(s);
   }
-  const encoded = btoa(unescape(encodeURIComponent(value)));
-  elements.textOutput.value = encoded;
-  updateStatus(elements.statusText, 'متن با موفقیت رمزنگاری شد.');
-};
-
-const decodeText = () => {
-  const value = elements.textInput.value.trim();
-  if (!value) {
-    updateStatus(elements.statusText, 'رشته‌ای برای رمزگشایی وارد نشده.', true);
-    elements.textOutput.value = '';
-    return;
+  function b64ToBytes(s) {
+    let x = atob(s),
+      b = new Uint8Array(x.length);
+    for (let i = 0; i < x.length; i++) b[i] = x.charCodeAt(i);
+    return b;
   }
+  function encodeText(s) {
+    return bytesToB64(new TextEncoder().encode(s));
+  }
+  function decodeText(s) {
+    let v = String(s).replace(/\s/g, "");
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(v) || v.length % 4 === 1)
+      throw Error("bad");
+    let b = b64ToBytes(v);
+    return new TextDecoder("utf-8", { fatal: true }).decode(b);
+  }
+  function dataUrl(s) {
+    let m =
+      /^data:(image\/(?:png|jpe?g|gif|webp));base64,([A-Za-z0-9+/]+={0,2})$/i.exec(
+        String(s).replace(/\s/g, ""),
+      );
+    if (!m) return null;
+    try {
+      return { mime: m[1].toLowerCase(), bytes: b64ToBytes(m[2]) };
+    } catch (e) {
+      return null;
+    }
+  }
+  function sniff(b) {
+    if (
+      b.length > 8 &&
+      b[0] === 137 &&
+      b[1] === 80 &&
+      b[2] === 78 &&
+      b[3] === 71
+    )
+      return "image/png";
+    if (b.length >= 3 && b[0] === 255 && b[1] === 216 && b[2] === 255)
+      return "image/jpeg";
+    if (
+      b.length > 12 &&
+      String.fromCharCode(...b.subarray(0, 4)) === "RIFF" &&
+      String.fromCharCode(...b.subarray(8, 12)) === "WEBP"
+    )
+      return "image/webp";
+    if (
+      b.length >= 6 &&
+      (String.fromCharCode(...b.subarray(0, 6)) === "GIF87a" ||
+        String.fromCharCode(...b.subarray(0, 6)) === "GIF89a")
+    )
+      return "image/gif";
+    return null;
+  }
+  /* @logic-end */
+  let lang = "fa",
+    dict = {};
   try {
-    const decoded = decodeURIComponent(escape(atob(value)));
-    elements.textOutput.value = decoded;
-    updateStatus(elements.statusText, 'متن با موفقیت بازگشایی شد.');
-  } catch (error) {
-    updateStatus(elements.statusText, 'رشته معتبر Base64 وارد کنید.', true);
-    elements.textOutput.value = '';
+    lang = localStorage.getItem("lang") === "en" ? "en" : "fa";
+  } catch (e) {}
+  const $ = (id) => document.getElementById(id),
+    t = (k) => (dict[lang] || dict.fa || {})[k] || k;
+  function msg(id, x, b) {
+    let e = $(id);
+    e.textContent = x;
+    e.style.color = b ? "#b91c1c" : "";
   }
-};
-
-const copyToClipboard = (value, element, successMsg) => {
-  if (!value) {
-    updateStatus(element, 'خروجی برای کپی کردن موجود نیست.', true);
-    return;
+  async function copy(x) {
+    try {
+      await navigator.clipboard.writeText(x);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
-  navigator.clipboard.writeText(value)
-    .then(() => updateStatus(element, successMsg))
-    .catch(() => updateStatus(element, 'کپی انجام نشد.'));
-};
-
-const handleFile = (file) => {
-  if (!file) {
-    updateStatus(elements.statusImage, 'فایلی انتخاب نشده.', true);
-    elements.imageOutput.value = '';
-    elements.previewImage.hidden = true;
-    return;
+  function apply() {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
+    document
+      .querySelectorAll("[data-i18n]")
+      .forEach((e) => (e.textContent = t(e.dataset.i18n)));
+    document.title = t("title");
   }
-  const reader = new FileReader();
-  reader.onload = () => {
-    const base64 = reader.result.split(',')[1];
-    elements.imageOutput.value = base64;
-    elements.previewImage.src = reader.result;
-    elements.previewImage.hidden = false;
-    appState.lastImageBase64 = base64;
-    updateStatus(elements.statusImage, 'تصویر به Base64 تبدیل شد.');
-  };
-  reader.onerror = () => updateStatus(elements.statusImage, 'در بارگذاری تصویر خطا رخ داد.', true);
-  reader.readAsDataURL(file);
-};
-
-const clearImage = () => {
-  elements.fileInput.value = '';
-  elements.imageOutput.value = '';
-  elements.previewImage.hidden = true;
-  elements.previewImage.src = '';
-  appState.lastImageBase64 = '';
-  updateStatus(elements.statusImage, 'ورودی تصویر پاک شد.');
-};
-
-const buildImagePreviewFromBase64 = (base64) => {
-  if (!base64) {
-    updateStatus(elements.statusImage, 'رشته Base64 برای پیش‌نمایش وجود ندارد.', true);
-    return;
+  async function file(f) {
+    if (!f || !/^image\//.test(f.type) || f.size > 10 * 1024 * 1024) {
+      msg("imgStatus", t("badfile"), true);
+      return;
+    }
+    let b = new Uint8Array(await f.arrayBuffer()),
+      m = sniff(b);
+    if (!m) {
+      msg("imgStatus", t("badfile"), true);
+      return;
+    }
+    $("imgOut").value = "data:" + m + ";base64," + bytesToB64(b);
+    preview();
   }
-  elements.previewImage.src = `data:image/*;base64,${base64}`;
-  elements.previewImage.hidden = false;
-};
-
-elements.encodeBtn.addEventListener('click', encodeText);
-elements.decodeBtn.addEventListener('click', decodeText);
-elements.copyTextBtn.addEventListener('click', () =>
-  copyToClipboard(elements.textOutput.value.trim(), elements.statusText, 'متن کپی شد.')
-);
-elements.copyImageBtn.addEventListener('click', () =>
-  copyToClipboard(elements.imageOutput.value.trim(), elements.statusImage, 'رشته تصویر کپی شد.')
-);
-elements.clearImageBtn.addEventListener('click', clearImage);
-elements.fileInput.addEventListener('change', (event) => handleFile(event.target.files[0]));
-
-// Restore preview when page reloads with a Base64 string present
-elements.imageOutput.addEventListener('input', (event) => buildImagePreviewFromBase64(event.target.value.trim()));
-
+  function preview() {
+    let x = dataUrl($("imgOut").value);
+    if (!x || sniff(x.bytes) !== x.mime) {
+      $("preview").hidden = true;
+      msg("imgStatus", t("badbase"), true);
+      return;
+    }
+    $("preview").src = $("imgOut").value.replace(/\s/g, "");
+    $("preview").hidden = false;
+    msg("imgStatus", t("imgok"));
+  }
+  async function boot() {
+    try {
+      dict = await (await fetch("assets/translations.json")).json();
+    } catch (e) {}
+    apply();
+    $("encode").onclick = () => {
+      try {
+        $("textOut").value = encodeText($("textIn").value);
+        msg("textStatus", t("encoded"));
+      } catch (e) {
+        msg("textStatus", t("bad"), true);
+      }
+    };
+    $("decode").onclick = () => {
+      try {
+        $("textOut").value = decodeText($("textIn").value);
+        msg("textStatus", t("decoded"));
+      } catch (e) {
+        msg("textStatus", t("bad"), true);
+      }
+    };
+    $("copyText").onclick = async () =>
+      msg(
+        "textStatus",
+        (await copy($("textOut").value)) ? t("copied") : t("copyfail"),
+        false,
+      );
+    $("copyImg").onclick = async () =>
+      msg(
+        "imgStatus",
+        (await copy($("imgOut").value)) ? t("copied") : t("copyfail"),
+        false,
+      );
+    $("clear").onclick = () => {
+      $("file").value = "";
+      $("imgOut").value = "";
+      $("preview").hidden = true;
+      msg("imgStatus", t("cleared"));
+    };
+    $("file").onchange = (e) => file(e.target.files[0]);
+    $("imgOut").oninput = () => {
+      clearTimeout(window.x);
+      window.x = setTimeout(preview, 250);
+    };
+    let d = $("drop");
+    ["dragover", "dragenter"].forEach((q) =>
+      d.addEventListener(q, (e) => {
+        e.preventDefault();
+        d.classList.add("over");
+      }),
+    );
+    ["dragleave", "drop"].forEach((q) =>
+      d.addEventListener(q, (e) => {
+        e.preventDefault();
+        d.classList.remove("over");
+      }),
+    );
+    d.addEventListener("drop", (e) => file(e.dataTransfer.files[0]));
+    window.addEventListener("languageChanged", (e) => {
+      lang = e.detail === "en" ? "en" : "fa";
+      apply();
+    });
+  }
+  document.addEventListener("DOMContentLoaded", boot);
+})();

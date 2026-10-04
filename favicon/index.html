@@ -1,96 +1,61 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html dir="rtl" lang="fa">
+
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta content="ایجاد آیکون‌های Favicon و PWA با سایزهای مختلف" name="description"/>
-<title data-i18n="title">سازنده آیکون</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">سازنده آیکون</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
+
 <body>
-<div class="container">
-<header class="header">
-<h1 data-i18n="heading_0">🎨 سازنده آیکون</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">تصویر خود را آپلود کنید و آیکون‌های مورد نیاز را دریافت کنید</p>
-</header>
-<main class="main-content">
-<!-- Upload Section -->
-<section class="upload-section">
-<div class="upload-area" id="uploadArea">
-<div class="upload-placeholder" id="uploadPlaceholder">
-<svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
-<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-<polyline points="17 8 12 3 7 8"></polyline>
-<line x1="12" x2="12" y1="3" y2="15"></line>
-</svg>
-<h3 data-i18n="heading_1">تصویر خود را اینجا رها کنید</h3>
-<p>یا روی دکمه زیر کلیک کنید</p>
-<button class="btn btn-primary" data-i18n="button_0" id="selectFileBtn" type="button">انتخاب تصویر</button>
-</div>
-<input accept="image/*" hidden="" id="fileInput" type="file"/>
-</div>
-<!-- Preview Section -->
-<div class="preview-section" id="previewSection" style="display: none;">
-<div class="preview-container">
-<img alt="پیش‌نمایش" id="previewImage" src=""/>
-<button class="btn btn-secondary btn-small" data-i18n="button_1" id="changeImageBtn" type="button">تغییر تصویر</button>
-</div>
-<div class="options-container">
-<h3 data-i18n="heading_2">تنظیمات</h3>
-<div class="option-group">
-<label data-i18n="label_0" for="backgroundColorInput">رنگ پس‌زمینه:</label>
-<div class="color-input-group">
-<input id="backgroundColorInput" type="color" value="#ffffff"/>
-<input aria-label="کد رنگ پس‌زمینه" id="backgroundColorText" maxlength="7" type="text" value="#ffffff"/>
-<label class="checkbox-label" data-i18n="label_1">
-<input checked="" id="transparentBg" type="checkbox"/>
-<span>شفاف</span>
-</label>
-</div>
-</div>
-<div class="option-group">
-<label data-i18n="label_2" for="paddingInput">فاصله از حاشیه (%):</label>
-<input id="paddingInput" max="30" min="0" type="range" value="10"/>
-<span id="paddingValue">10%</span>
-</div>
-<button class="btn btn-success btn-large" data-i18n="button_2" id="generateBtn" type="button">
-<span>تولید آیکون‌ها</span>
-</button>
-</div>
-</div>
-</section>
-<!-- Results Section -->
-<section class="results-section" id="resultsSection" style="display: none;">
-<h2 data-i18n="heading_3">آیکون‌های تولید شده</h2>
-<div class="results-actions">
-<button class="btn btn-primary" data-i18n="button_3" id="downloadAllBtn" type="button">دانلود همه</button>
-<button class="btn btn-secondary" data-i18n="button_4" id="resetBtn" type="button">شروع دوباره</button>
-</div>
-<div class="results-grid" id="resultsGrid">
-<!-- Generated icons will be inserted here -->
-</div>
-<!-- History Section -->
-<div class="history-section">
-<div class="history-header">
-<h3 data-i18n="heading_4">تاریخچه</h3>
-<button class="btn btn-small btn-danger" data-i18n="button_5" id="clearHistoryBtn" type="button">پاک کردن تاریخچه</button>
-</div>
-<div class="history-grid" id="historyGrid">
-<!-- History items will be inserted here -->
-</div>
-</div>
-</section>
-</main>
-<footer class="footer">
-<p>ساخته شده با ❤️ برای توسعه‌دهندگان</p>
-</footer>
-</div>
-<script src="assets/script.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="ic page">
+        <header>
+            <h1 data-i18n="heading_0">سازنده آیکون</h1>
+            <p class="muted" data-i18n="subtitle">تصویر خود را آپلود کنید و آیکون‌های favicon و PWA را به‌صورت محلی
+                دریافت کنید.</p>
+        </header>
+        <section class="ic-card"><input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden><label
+                for="file" id="drop" class="drop"><b data-i18n="heading_1">تصویر خود را اینجا رها کنید</b><span
+                    class="muted" data-i18n="hint">یا برای انتخاب تصویر لمس کنید — JPEG، PNG و WebP</span></label>
+        </section>
+        <section id="work" hidden>
+            <div class="ic-grid">
+                <section class="ic-card"><img id="preview"><button id="change" class="btn" data-i18n="button_1">تغییر
+                        تصویر</button></section>
+                <section class="ic-card">
+                    <h2 data-i18n="heading_2">تنظیمات</h2><label class="check"><input id="transparent" type="checkbox"
+                            checked><span data-i18n="label_1">شفاف</span></label><label data-i18n="label_0">رنگ
+                        پس‌زمینه</label>
+                    <div class="colors"><input id="color" type="color" value="#ffffff"><input id="colorText"
+                            class="input" dir="ltr" value="#ffffff"></div><label data-i18n="label_2">فاصله از حاشیه
+                        (%)</label>
+                    <div class="range"><input id="padding" type="range" min="0" max="30" value="10"><output
+                            id="padVal">10%</output></div><label class="check"><input id="contain" type="checkbox"
+                            checked><span data-i18n="fit">نمایش کامل تصویر (بدون برش)</span></label><button
+                        id="generate" class="btn primary" data-i18n="button_2">تولید آیکون‌ها</button>
+                </section>
+            </div>
+        </section>
+        <section id="results" class="ic-card" hidden>
+            <div class="row">
+                <h2 data-i18n="heading_3">آیکون‌های تولید شده</h2>
+                <div><button id="all" class="btn primary" data-i18n="button_3">دانلود همه</button><button id="reset"
+                        class="btn" data-i18n="button_4">شروع دوباره</button></div>
+            </div>
+            <p class="muted" data-i18n="zip_note">برای سازگاری، دانلود همه فایل‌ها را جداگانه دانلود می‌کند؛ فایل ZIP
+                نیازمند کتابخانهٔ اضافی است.</p>
+            <div id="icons" class="icons"></div>
+        </section>
+    </main>
+    <div id="toast" role="status" hidden></div>
+    <script src="assets/script.js"></script>
+    <script src="../assets/tool-wrapper.js"></script>
 </body>
+
 </html>

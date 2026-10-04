@@ -1,69 +1,49 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html dir="rtl" lang="fa">
+
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">دیکدر base64</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/css/styles.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">Base64</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
+
 <body>
-<main class="page">
-<header class="hero">
-<p class="hero-label" data-i18n="text_hero_label_0">تبدیل متن و تصویر به Base64 و بالعکس</p>
-<h1 data-i18n="heading_0">Base64 Encoder/Decoder</h1>
-<p class="hero-description" data-i18n="text_hero_description_1">
-        با یک ابزار ساده تمام متن‌ها و تصویرهای کوچک را روی مرورگر به شکل امن و فوری تبدیل کنید.
-      </p>
-</header>
-<section aria-labelledby="text-panel-title" class="panel">
-<div class="panel-header">
-<h2 data-i18n="heading_1" id="text-panel-title">متن</h2>
-<p>متن را وارد کرده و با یک کلیک تبدیل یا بازگشایی کنید.</p>
-</div>
-<label class="field" data-i18n="label_0">
-<span>ورودی متن</span>
-<textarea data-text-input="" placeholder="متن خود را اینجا وارد کنید..."></textarea>
-</label>
-<div class="actions">
-<button data-encode="" data-i18n="button_0" type="button">رمزنگاری</button>
-<button data-decode="" data-i18n="button_1" type="button">بازگشایی</button>
-<button data-copy-output="" data-i18n="button_2" type="button">کپی خروجی</button>
-</div>
-<label class="field" data-i18n="label_1">
-<span>خروجی</span>
-<textarea data-text-output="" placeholder="نتیجه اینجا ظاهر می‌شود..." readonly=""></textarea>
-</label>
-<p aria-live="polite" class="status" data-status-text=""></p>
-</section>
-<section aria-labelledby="image-panel-title" class="panel">
-<div class="panel-header">
-<h2 data-i18n="heading_2" id="image-panel-title">تصویر</h2>
-<p>تصویر را انتخاب کنید تا به Base64 تبدیل شود یا از رشته Base64، پیش‌نمایش را ببینید.</p>
-</div>
-<div class="field file-field">
-<label data-i18n="label_2" for="image-file">انتخاب تصویر</label>
-<input accept="image/*" id="image-file" type="file"/>
-</div>
-<div aria-live="polite" class="image-preview">
-<img alt="پیش‌نمایش تصویر" data-preview="" hidden=""/>
-</div>
-<div class="actions">
-<button data-copy-image="" data-i18n="button_3" type="button">کپی Base64</button>
-<button data-clear-image="" data-i18n="button_4" type="button">پاک کردن</button>
-</div>
-<label class="field" data-i18n="label_3">
-<span>خروجی تصویر</span>
-<textarea data-image-output="" placeholder="پس از انتخاب تصویر، رشته Base64 اینجا می‌آید..." readonly=""></textarea>
-</label>
-<p aria-live="polite" class="status" data-status-image=""></p>
-</section>
-</main>
-<script src="assets/js/encoder.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="en page">
+        <header>
+            <p class="eyebrow" data-i18n="eyebrow">تبدیل متن و تصویر به Base64 و بالعکس</p>
+            <h1 data-i18n="heading_0">Base64 Encoder/Decoder</h1>
+            <p class="muted" data-i18n="lead">Base64 رمزنگاری نیست؛ فقط تبدیل نمایش داده است. همه‌چیز روی دستگاه شما
+                پردازش می‌شود.</p>
+        </header>
+        <section class="en-card">
+            <h2 data-i18n="heading_1">متن</h2><label data-i18n="label_0">ورودی متن</label><textarea id="textIn"
+                class="input" dir="auto"></textarea>
+            <div class="actions"><button id="encode" class="btn primary" data-i18n="button_0">رمزنگاری</button><button
+                    id="decode" class="btn" data-i18n="button_1">بازگشایی</button><button id="copyText" class="btn"
+                    data-i18n="button_2">کپی خروجی</button></div><label data-i18n="label_1">خروجی</label><textarea
+                id="textOut" class="input" dir="auto" readonly></textarea>
+            <p id="textStatus" role="status"></p>
+        </section>
+        <section class="en-card">
+            <h2 data-i18n="heading_2">تصویر</h2><input id="file" type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif">
+            <div id="drop" class="drop" data-i18n="drop">تصویر را بکشید و رها کنید</div><img id="preview" hidden>
+            <div class="actions"><button id="copyImg" class="btn" data-i18n="button_3">کپی Base64</button><button
+                    id="clear" class="btn danger" data-i18n="button_4">پاک کردن</button></div><label
+                data-i18n="label_3">خروجی تصویر</label><textarea id="imgOut" class="input" dir="ltr" spellcheck="false"
+                placeholder="data:image/png;base64,..."></textarea>
+            <p id="imgStatus" role="status"></p>
+        </section>
+    </main>
+    <div id="toast" role="status" hidden></div>
+    <script src="assets/js/encoder.js"></script>
+    <script src="../assets/tool-wrapper.js"></script>
 </body>
+
 </html>

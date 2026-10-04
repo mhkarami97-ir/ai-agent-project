@@ -1,73 +1,53 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html dir="rtl" lang="fa">
+
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">فرمت Json</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/css/styles.css" rel="stylesheet">
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
-</link></head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">فرمت‌دهی JSON</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+</head>
+
 <body>
-<div class="page">
-<header class="hero">
-<div>
-<p class="hero__eyebrow" data-i18n="text_hero__eyebrow_0">JSON Formatter و Validator</p>
-<h1 data-i18n="heading_0">فرمت‌دهی، اعتبارسنجی و نمایش درختی JSON در مرورگر</h1>
-<p class="hero__lead" data-i18n="text_hero__lead_1">
-          همه چیز بدون بک‌اند، فقط با مرورگر شما انجام می‌شود؛ متن را وارد کنید، فرمت
-          کنید، درخت را ببینید و نتیجه را در حافظه مرورگر نگه دارید.
-        </p>
-</div>
-<div class="hero__badge">Cache در localStorage</div>
-</header>
-<main class="app-shell">
-<section class="panel">
-<div class="panel__header">
-<div>
-<p class="panel__eyebrow" data-i18n="text_panel__eyebrow_2">ورودی JSON</p>
-<h2 data-i18n="heading_1">متن یا فایل JSON خود را وارد کنید</h2>
-</div>
-<p class="panel__side-note" data-i18n="text_panel__side_note_3">بر اساس داده‌های شما در همان مرورگر می‌ماند.</p>
-</div>
-<textarea 2,="" 3]\n}"="" [1,="" \"items\":="" \"سرویس="" aria-label="ورودی JSON" id="json-input" name\":="" placeholder="{\n  \" من\",\n=""></textarea>
-<div class="panel__actions">
-<button class="btn btn--primary" data-i18n="button_0" id="format-btn">فرمت کردن</button>
-<button class="btn btn--ghost" data-i18n="button_1" id="validate-btn">اعتبارسنجی</button>
-<button class="btn btn--ghost" data-i18n="button_2" id="clear-btn">پاک کردن</button>
-</div>
-<p class="status" id="status" role="status"></p>
-<div class="examples">
-<span>مثال‌ها:</span>
-<div class="examples__list">
-<button class="chip sample" data-i18n="button_3" data-sample='{ "title": "آرشیو", "tags": ["json", "validator"], "meta": { "version": 1 } }' type="button">آبجکت
-              ساده</button>
-<button class="chip sample" data-i18n="button_4" data-sample='[ { "id": 1, "done": false }, { "id": 2, "done": true } ]' type="button">آرایه</button>
-<button class="chip sample" data-i18n="button_5" data-sample='{ "name": "فروشگاه", "products": [ { "id": "a1", "price": 9900 }, { "id": "b2", "price": 12500 } ], "meta": { "owner": null, "opened": true } }' type="button">چند
-              لایه</button>
-</div>
-</div>
-</section>
-<section class="panel panel--tree">
-<div class="panel__header">
-<div>
-<p class="panel__eyebrow" data-i18n="text_panel__eyebrow_5">درخت JSON</p>
-<h2 data-i18n="heading_2">ساختار را از نزدیک ببینید</h2>
-</div>
-<button class="btn btn--ghost" data-i18n="button_6" id="toggle-tree">نمایش/پنهان ساختار</button>
-</div>
-<div aria-live="polite" class="tree" id="json-tree"></div>
-</section>
-</main>
-<footer class="footer">
-<p>تمام داده‌ها داخل مرورگر شما ذخیره می‌شود و برای استفاده در هر بار باز کردن صفحه
-        بازیابی می‌شود.</p>
-</footer>
-</div>
-<script src="assets/js/main.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="jf page">
+        <header>
+            <p class="eyebrow" data-i18n="eyebrow">JSON Formatter و Validator</p>
+            <h1 data-i18n="heading_0">فرمت‌دهی، اعتبارسنجی و نمایش درختی JSON در مرورگر</h1>
+            <p class="muted" data-i18n="lead">متن فقط در مرورگر شما پردازش و ذخیره می‌شود.</p>
+        </header>
+        <section class="jf-card">
+            <div class="row">
+                <h2 data-i18n="heading_1">متن JSON</h2><span id="counts" class="muted"></span>
+            </div><textarea id="input" class="jf-input" dir="ltr" spellcheck="false" placeholder='{"hello":"world"}'
+                data-i18n-placeholder="ph"></textarea>
+            <div class="actions"><button id="format" class="btn primary" data-i18n="button_0">فرمت کردن</button><button
+                    id="validate" class="btn" data-i18n="button_1">اعتبارسنجی</button><button id="minify" class="btn"
+                    data-i18n="minify">فشرده‌سازی</button><button id="copy" class="btn" data-i18n="copy"
+                    disabled>کپی</button><button id="clear" class="btn danger" data-i18n="button_2">پاک کردن</button>
+            </div>
+            <p id="status" role="status" aria-live="polite"></p>
+            <div class="samples"><span data-i18n="examples">مثال‌ها:</span><button class="chip" data-sample="object"
+                    data-i18n="button_3">آبجکت ساده</button><button class="chip" data-sample="array"
+                    data-i18n="button_4">آرایه</button><button class="chip" data-sample="nested"
+                    data-i18n="button_5">چندلایه</button></div>
+        </section>
+        <section class="jf-card">
+            <div class="row">
+                <h2 data-i18n="heading_2">ساختار JSON</h2>
+                <div><button id="expand" class="btn small" data-i18n="expand">باز کردن همه</button><button id="collapse"
+                        class="btn small" data-i18n="collapse">بستن همه</button></div>
+            </div>
+            <div id="tree" class="tree" aria-live="polite"></div>
+        </section>
+    </main>
+    <div id="toast" role="status" hidden></div>
+    <script src="assets/js/main.js"></script>
+    <script src="../assets/tool-wrapper.js"></script>
 </body>
+
 </html>

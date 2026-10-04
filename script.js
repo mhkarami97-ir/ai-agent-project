@@ -378,15 +378,6 @@
     icon: "🔍",
   },
   {
-    path: "compare",
-    category: "dev",
-    faName: "مقایسه متن",
-    enName: "Text Compare",
-    faDesc: "مقایسه متن‌ها",
-    enDesc: "Compare texts",
-    icon: "🔀",
-  },
-  {
     path: "meta-data",
     category: "media",
     faName: "متادیتا",
