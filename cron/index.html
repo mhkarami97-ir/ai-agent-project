@@ -1,147 +1,66 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html dir="rtl" lang="fa">
+
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">مدیریت کرون جاب‌ها</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/css/styles.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">مدیریت کرون جاب‌ها</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
+
 <body>
-<div class="container">
-<header class="header">
-<h1 data-i18n="heading_0">⏰ مدیریت کرون جاب‌ها</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">ایجاد، مدیریت و نظارت بر کرون جاب‌های شما</p>
-</header>
-<main class="main">
-<!-- فرم ایجاد کرون جاب جدید -->
-<section class="create-job-section">
-<div class="card">
-<h2 data-i18n="heading_1">ایجاد کرون جاب جدید</h2>
-<form class="job-form" id="jobForm">
-<div class="form-group">
-<label data-i18n="label_0" for="jobName">نام جاب:</label>
-<input id="jobName" placeholder="نام جاب را وارد کنید" required="" type="text"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_1" for="cronExpression">عبارت کرون:</label>
-<input id="cronExpression" pattern="^(\*|([0-5]?\d))( (\*|([01]?\d|2[0-3]))( (\*|([12]?\d|3[01]))( (\*|([1-9]|1[0-2]))( (\*|[0-6]))?)?)?)?$" placeholder="* * * * *" required="" type="text"/>
-<small class="help-text">فرمت: دقیقه ساعت روز ماه روز_هفته (مثال: 0 9 * * 1 = هر دوشنبه ساعت 9 صبح)</small>
-</div>
-<div class="form-group">
-<label data-i18n="label_2" for="jobDescription">توضیحات:</label>
-<textarea id="jobDescription" placeholder="توضیحات جاب (اختیاری)" rows="3"></textarea>
-</div>
-<div class="form-group">
-<label data-i18n="label_3">
-<input checked="" id="isActive" type="checkbox"/>
-                                فعال
-                            </label>
-</div>
-<div class="form-actions">
-<button class="btn btn-primary" data-i18n="button_0" type="submit">ایجاد جاب</button>
-<button class="btn btn-secondary" data-i18n="button_1" id="resetForm" type="button">پاک کردن</button>
-</div>
-</form>
-</div>
-</section>
-<!-- پیش‌نمایش کرون -->
-<section class="preview-section" id="previewSection" style="display: none;">
-<div class="card">
-<h3 data-i18n="heading_2">پیش‌نمایش اجرای بعدی</h3>
-<div class="next-runs" id="nextRuns">
-<!-- اجراهای بعدی اینجا نمایش داده می‌شود -->
-</div>
-<div class="show-more-container">
-<button class="btn btn-outline" data-i18n="button_2" id="showMoreRuns">نمایش بیشتر</button>
-</div>
-</div>
-</section>
-<!-- لیست کرون جاب‌ها -->
-<section class="jobs-section">
-<div class="card">
-<div class="section-header">
-<h2 data-i18n="heading_3">کرون جاب‌های موجود</h2>
-<div class="section-actions">
-<button class="btn btn-outline" data-i18n="button_3" id="clearAllJobs">پاک کردن همه</button>
-<button class="btn btn-secondary" data-i18n="button_4" id="exportJobs">خروجی</button>
-<input accept=".json" id="importJobs" style="display: none;" type="file"/>
-<button class="btn btn-secondary" data-i18n="button_5" id="importJobsBtn">ورودی</button>
-</div>
-</div>
-<div class="jobs-list" id="jobsList">
-<div class="empty-state" id="emptyState">
-<div class="empty-icon">📝</div>
-<p>هنوز هیچ کرون جابی ایجاد نکرده‌اید</p>
-<small>با استفاده از فرم بالا، اولین کرون جاب خود را ایجاد کنید</small>
-</div>
-</div>
-</div>
-</section>
-<!-- تاریخچه اجرا -->
-<section class="history-section">
-<div class="card">
-<div class="section-header">
-<h2 data-i18n="heading_4">تاریخچه اجرا</h2>
-<button class="btn btn-outline" data-i18n="button_6" id="clearHistory">پاک کردن تاریخچه</button>
-</div>
-<div class="history-list" id="historyList">
-<div class="empty-state">
-<div class="empty-icon">📋</div>
-<p>تاریخچه‌ای موجود نیست</p>
-</div>
-</div>
-</div>
-</section>
-</main>
-</div>
-<!-- مودال ویرایش -->
-<div class="modal" id="editModal">
-<div class="modal-content">
-<div class="modal-header">
-<h3 data-i18n="heading_5">ویرایش کرون جاب</h3>
-<button class="btn-close" data-i18n="button_7" id="closeEditModal">×</button>
-</div>
-<div class="modal-body">
-<form id="editJobForm">
-<div class="form-group">
-<label data-i18n="label_4" for="editJobName">نام جاب:</label>
-<input id="editJobName" required="" type="text"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_5" for="editCronExpression">عبارت کرون:</label>
-<input id="editCronExpression" required="" type="text"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_6" for="editJobDescription">توضیحات:</label>
-<textarea id="editJobDescription" rows="3"></textarea>
-</div>
-<div class="form-group">
-<label data-i18n="label_7">
-<input id="editIsActive" type="checkbox"/>
-                            فعال
-                        </label>
-</div>
-</form>
-</div>
-<div class="modal-footer">
-<button class="btn btn-primary" data-i18n="button_8" id="saveEditJob">ذخیره تغییرات</button>
-<button class="btn btn-secondary" data-i18n="button_9" id="cancelEdit">لغو</button>
-</div>
-</div>
-</div>
-<!-- Toast برای نمایش پیام‌ها -->
-<div class="toast" id="toast">
-<div class="toast-content">
-<span class="toast-message" id="toastMessage"></span>
-<button class="toast-close" data-i18n="button_10" id="toastClose">×</button>
-</div>
-</div>
-<script src="assets/js/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="cr page">
+        <header>
+            <h1 data-i18n="heading_0">مدیریت کرون جاب‌ها</h1>
+            <p class="muted" data-i18n="subtitle">ذخیره، اعتبارسنجی و پیش‌نمایش زمان اجرای کرون جاب‌ها — این ابزار
+                جاب‌ها را اجرا نمی‌کند.</p>
+        </header>
+        <section class="cr-card">
+            <h2 id="formtitle" data-i18n="heading_1">ایجاد کرون جاب جدید</h2>
+            <form id="form"><label data-i18n="label_0">نام جاب</label><input id="name" class="input" required
+                    maxlength="80"><label data-i18n="label_1">عبارت کرون</label><input id="expr" class="input mono"
+                    dir="ltr" required placeholder="0 9 * * 1">
+                <p id="desc" class="hint"></p>
+                <div id="runs" class="runs"></div><label data-i18n="label_2">توضیحات</label><textarea id="note"
+                    class="input" rows="2" maxlength="300"></textarea><label class="check"><input id="active"
+                        type="checkbox" checked><span data-i18n="label_3">فعال</span></label>
+                <div class="actions"><button class="btn primary" data-i18n="button_0">ایجاد جاب</button><button
+                        type="button" id="reset" class="btn" data-i18n="button_1">پاک کردن</button></div>
+            </form>
+        </section>
+        <section class="cr-card">
+            <div class="row">
+                <h2 data-i18n="heading_3">کرون جاب‌های موجود</h2>
+                <div><button id="export" class="btn small" data-i18n="button_4">خروجی</button><button id="import"
+                        class="btn small" data-i18n="button_5">ورودی</button><button id="clear" class="btn danger small"
+                        data-i18n="button_3">پاک کردن همه</button><input id="file" type="file" accept=".json" hidden>
+                </div>
+            </div>
+            <div id="jobs" class="list"></div>
+        </section>
+        <section class="cr-card">
+            <div class="row">
+                <h2 data-i18n="heading_4">تاریخچه تغییرات</h2><button id="clearhist" class="btn danger small"
+                    data-i18n="button_6">پاک کردن تاریخچه</button>
+            </div>
+            <div id="hist" class="list"></div>
+        </section>
+    </main>
+    <dialog id="confirm">
+        <form method="dialog">
+            <p id="confirmtext"></p>
+            <div class="actions"><button value="yes" class="btn danger" data-i18n="yes">بله</button><button
+                    value="cancel" class="btn" data-i18n="cancel">انصراف</button></div>
+        </form>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+    <script src="assets/js/app.js"></script>
+    <script src="../assets/tool-wrapper.js"></script>
 </body>
+
 </html>

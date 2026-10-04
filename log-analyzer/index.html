@@ -1,121 +1,73 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html dir="rtl" lang="fa">
+
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">تحلیلگر لاگ</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/css/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">تحلیلگر لاگ</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
+
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">📊 تحلیلگر لاگ</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">بارگذاری و تحلیل فایل‌های لاگ</p>
-</header>
-<main>
-<!-- Upload Section -->
-<section class="upload-section">
-<div class="upload-area" id="uploadArea">
-<div class="upload-icon">📁</div>
-<p>فایل لاگ خود را اینجا بکشید یا کلیک کنید</p>
-<p class="upload-hint" data-i18n="text_upload_hint_1">فرمت‌های پشتیبانی شده: TXT, JSON</p>
-<input accept=".txt,.json,.log" hidden="" id="fileInput" type="file"/>
-</div>
-<div class="file-info" id="fileInfo" style="display: none;">
-<div class="file-details">
-<span class="file-name" id="fileName"></span>
-<span class="file-size" id="fileSize"></span>
-</div>
-<button class="btn-secondary" data-i18n="button_0" id="clearFile">پاک کردن</button>
-</div>
-</section>
-<!-- Controls Section -->
-<section class="controls-section" id="controlsSection" style="display: none;">
-<div class="control-group">
-<label data-i18n="label_0" for="searchInput">جستجو:</label>
-<input id="searchInput" placeholder="جستجوی متن..." type="text"/>
-</div>
-<div class="control-group">
-<label data-i18n="label_1" for="regexInput">الگوی Regex:</label>
-<div class="regex-group">
-<input id="regexInput" placeholder="مثال: ERROR|WARN" type="text"/>
-<button class="btn-secondary" data-i18n="button_1" id="applyRegex">اعمال</button>
-</div>
-</div>
-<div class="control-group">
-<label data-i18n="label_2" for="levelFilter">فیلتر سطح:</label>
-<select id="levelFilter">
-<option value="all">همه</option>
-<option value="error">ERROR</option>
-<option value="warn">WARN</option>
-<option value="info">INFO</option>
-<option value="debug">DEBUG</option>
-</select>
-</div>
-<div class="control-group">
-<label data-i18n="label_3" for="groupBy">گروه‌بندی بر اساس:</label>
-<select id="groupBy">
-<option value="none">بدون گروه‌بندی</option>
-<option value="level">سطح لاگ</option>
-<option value="date">تاریخ</option>
-<option value="source">منبع</option>
-</select>
-</div>
-<div class="action-buttons">
-<button class="btn-primary" data-i18n="button_2" id="exportBtn">📥 خروجی JSON</button>
-<button class="btn-secondary" data-i18n="button_3" id="saveAnalysisBtn">💾 ذخیره تحلیل</button>
-<button class="btn-secondary" data-i18n="button_4" id="loadAnalysisBtn">📂 بارگذاری تحلیل</button>
-</div>
-</section>
-<!-- Statistics Section -->
-<section class="stats-section" id="statsSection" style="display: none;">
-<h2 data-i18n="heading_1">آمار کلی</h2>
-<div class="stats-grid">
-<div class="stat-card">
-<div class="stat-value" id="totalLines">0</div>
-<div class="stat-label">کل خطوط</div>
-</div>
-<div class="stat-card error">
-<div class="stat-value" id="errorCount">0</div>
-<div class="stat-label">خطاها</div>
-</div>
-<div class="stat-card warn">
-<div class="stat-value" id="warnCount">0</div>
-<div class="stat-label">هشدارها</div>
-</div>
-<div class="stat-card info">
-<div class="stat-value" id="infoCount">0</div>
-<div class="stat-label">اطلاعات</div>
-</div>
-</div>
-</section>
-<!-- Log Display Section -->
-<section class="log-section" id="logSection" style="display: none;">
-<div class="log-header">
-<h2 data-i18n="heading_2">محتوای لاگ</h2>
-<div class="log-controls">
-<button class="btn-icon" data-i18n="button_5" id="copyBtn" title="کپی">📋</button>
-<button class="btn-icon" data-i18n="button_6" id="toggleWrapBtn" title="تغییر حالت شکستن خط">↔️</button>
-</div>
-</div>
-<div class="log-display" id="logDisplay"></div>
-</section>
-<!-- Saved Analyses Section -->
-<section class="saved-section" id="savedSection" style="display: none;">
-<h2 data-i18n="heading_3">تحلیل‌های ذخیره شده</h2>
-<div class="saved-list" id="savedList"></div>
-</section>
-</main>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
-</div>
-<script src="assets/js/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="la page">
+        <header>
+            <h1 data-i18n="heading_0">تحلیلگر لاگ</h1>
+            <p class="muted" data-i18n="subtitle">فایل‌های لاگ را روی دستگاه خود بارگذاری، فیلتر و تحلیل کنید.</p>
+        </header>
+        <section class="la-card"><input id="file" type="file" accept=".txt,.log,.json,text/plain,application/json"
+                hidden><label id="drop" for="file" class="drop"><b data-i18n="drop">فایل لاگ خود را اینجا بکشید یا لمس
+                    کنید</b><span class="muted" data-i18n="hint">TXT، LOG و JSON تا ۱۰ مگابایت</span></label>
+            <p id="fileInfo"></p>
+        </section>
+        <section id="work" hidden>
+            <section class="la-card">
+                <div class="filters"><input id="search" class="input" data-i18n-placeholder="ph_search"
+                        placeholder="جستجوی متن..."><input id="regex" class="input mono" dir="ltr"
+                        placeholder="ERROR|WARN"><select id="level" class="input">
+                        <option value="all" data-i18n="all">همه</option>
+                        <option value="error">ERROR</option>
+                        <option value="warn">WARN</option>
+                        <option value="info">INFO</option>
+                        <option value="debug">DEBUG</option>
+                        <option value="other" data-i18n="other">سایر</option>
+                    </select><select id="group" class="input">
+                        <option value="none" data-i18n="group_none">بدون گروه‌بندی</option>
+                        <option value="level" data-i18n="group_level">سطح لاگ</option>
+                        <option value="date" data-i18n="group_date">تاریخ</option>
+                        <option value="source" data-i18n="group_source">منبع</option>
+                    </select></div>
+                <div class="actions"><button id="export" class="btn primary" data-i18n="button_2">خروجی
+                        JSON</button><button id="save" class="btn" data-i18n="button_3">ذخیره تحلیل</button><button
+                        id="load" class="btn" data-i18n="button_4">بارگذاری تحلیل</button><button id="copy" class="btn"
+                        data-i18n="copy">کپی</button><button id="wrap" class="btn" data-i18n="wrap">شکستن خط</button>
+                </div>
+                <p id="status" role="status"></p>
+            </section>
+            <section class="la-stats">
+                <div><b id="total">0</b><span data-i18n="total_lines">کل خطوط</span></div>
+                <div><b id="errors">0</b><span>ERROR</span></div>
+                <div><b id="warns">0</b><span>WARN</span></div>
+                <div><b id="infos">0</b><span>INFO</span></div>
+                <div><b id="debugs">0</b><span>DEBUG</span></div>
+            </section>
+            <section class="la-card">
+                <h2 data-i18n="heading_2">محتوای لاگ</h2>
+                <div id="log" class="log"></div>
+            </section>
+            <section id="saved" class="la-card" hidden>
+                <h2 data-i18n="heading_3">تحلیل‌های ذخیره شده</h2>
+                <div id="savedList"></div>
+            </section>
+        </section>
+    </main>
+    <div id="toast" role="status" hidden></div>
+    <script src="assets/js/app.js"></script>
+    <script src="../assets/tool-wrapper.js"></script>
 </body>
+
 </html>
