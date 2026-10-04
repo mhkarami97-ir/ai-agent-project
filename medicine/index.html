@@ -1,72 +1,103 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title data-i18n="title">مدیریت دارو</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/styles.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="app-shell">
-<header class="hero-card">
-<div>
-<p class="eyebrow" data-i18n="text_eyebrow_0">برنامه روزانه</p>
-<h1 data-i18n="heading_0">در زمان مناسب، داروی مناسب</h1>
-</div>
-<p class="hero-note" data-i18n="text_hero_note_1">یادآوری‌ها، وضعیت دارو و گزارش مصرف در یک نگاه.</p>
-</header>
-<section aria-label="آمار مصرف" class="grid two-col">
-<article class="summary-card">
-<p class="label" data-i18n="text_label_2">کل داروهای ثبت‌شده</p>
-<strong id="total-count">۰</strong>
-<p class="subtext" data-i18n="text_subtext_3">برای مشاهده، اضافه کنید یا وضعیت را به‌روزرسانی نمایید.</p>
-</article>
-<article class="summary-card">
-<p class="label" data-i18n="text_label_4">یادآورهای نزدیک</p>
-<strong id="upcoming-count">۰</strong>
-<p class="subtext" data-i18n="text_subtext_5">داروهایی که در ۳۰ دقیقه آینده موعد دارند.</p>
-</article>
-</section>
-<section aria-label="ثبت دارو" class="form-card">
-<h2 data-i18n="heading_1">افزودن یادآور جدید</h2>
-<form id="medicine-form">
-<div class="form-row">
-<label data-i18n="label_0" for="medicine-name">نام دارو</label>
-<input id="medicine-name" name="name" placeholder="مثلاً: متفورمین" required="" type="text"/>
-</div>
-<div class="form-row">
-<label data-i18n="label_1" for="medicine-dose">دوز / مقدار</label>
-<input id="medicine-dose" name="dose" placeholder="۱ قرص صبحانه" required="" type="text"/>
-</div>
-<div class="form-row">
-<label data-i18n="label_2" for="medicine-time">ساعت مصرف</label>
-<input id="medicine-time" name="time" required="" type="time"/>
-</div>
-<div class="form-row">
-<label data-i18n="label_3" for="medicine-note">یادداشت</label>
-<input id="medicine-note" name="note" placeholder="مثلاً: همراه غذا" type="text"/>
-</div>
-<button class="primary-btn" data-i18n="button_0" type="submit">ثبت یادآور</button>
-</form>
-</section>
-<section aria-label="لیست داروها" class="list-card">
-<header>
-<h2 data-i18n="heading_2">وضعیت داروها</h2>
-<p id="list-empty">فعلاً هیچ یادآوری ثبت نشده است.</p>
-</header>
-<ul id="medicine-list"></ul>
-</section>
-<section aria-label="هشدار نزدیک" class="alerts-card">
-<h2 data-i18n="heading_3">هشدار ضروری</h2>
-<p class="alerts-note" data-i18n="text_alerts_note_6">اگر مصرف دارویی در بازه زمان مشخص نشده، وضعیت آن را سریع ثبت کنید.</p>
-<ul id="alert-list"></ul>
-</section>
-</div>
+<main class="page md">
+  <header class="md-head">
+    <p class="md-eyebrow" data-i18n="text_eyebrow_0">برنامه روزانه</p>
+    <h1 data-i18n="heading_0">در زمان مناسب، داروی مناسب</h1>
+    <p class="md-muted" data-i18n="text_hero_note_1">یادآوری‌ها، وضعیت دارو و گزارش مصرف در یک نگاه.</p>
+  </header>
+
+  <section class="md-alerts" id="alertsBox" aria-live="polite" hidden>
+    <h2 data-i18n="heading_3">هشدار ضروری</h2>
+    <ul id="alertList"></ul>
+  </section>
+
+  <section class="md-stats" aria-labelledby="statsTitle">
+    <h2 id="statsTitle" class="md-sr" data-i18n="stats_title">آمار امروز</h2>
+    <div class="md-stat"><strong id="statTotal">0</strong><span data-i18n="text_label_2">کل داروهای ثبت‌شده</span></div>
+    <div class="md-stat md-stat--ok"><strong id="statTaken">0</strong><span data-i18n="stat_taken">مصرف‌شده امروز</span></div>
+    <div class="md-stat md-stat--warn"><strong id="statUpcoming">0</strong><span data-i18n="text_label_4">یادآورهای نزدیک</span></div>
+    <div class="md-stat md-stat--bad"><strong id="statOverdue">0</strong><span data-i18n="stat_overdue">عقب‌افتاده</span></div>
+    <div class="md-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="progressFill"></span></div>
+  </section>
+
+  <section class="md-card" aria-labelledby="addTitle">
+    <h2 id="addTitle" data-i18n="heading_1">افزودن یادآور جدید</h2>
+    <form id="medForm" autocomplete="off">
+      <div class="md-grid">
+        <div class="md-field">
+          <label for="medName" data-i18n="label_0">نام دارو</label>
+          <input id="medName" type="text" required maxlength="80" data-i18n-placeholder="ph_name" placeholder="مثلاً: متفورمین">
+        </div>
+        <div class="md-field">
+          <label for="medDose" data-i18n="label_1">دوز / مقدار</label>
+          <input id="medDose" type="text" required maxlength="80" data-i18n-placeholder="ph_dose" placeholder="۱ قرص بعد از صبحانه">
+        </div>
+        <div class="md-field">
+          <label for="medTime" data-i18n="label_2">ساعت مصرف</label>
+          <input id="medTime" type="time" required>
+        </div>
+        <div class="md-field">
+          <label for="medNote" data-i18n="label_3">یادداشت</label>
+          <input id="medNote" type="text" maxlength="160" data-i18n-placeholder="ph_note" placeholder="مثلاً: همراه غذا">
+        </div>
+      </div>
+      <div class="md-actions"><button type="submit" class="md-btn md-btn--primary" data-i18n="button_0">ثبت یادآور</button></div>
+    </form>
+  </section>
+
+  <section class="md-card" aria-labelledby="listTitle">
+    <h2 id="listTitle" data-i18n="heading_2">وضعیت داروها</h2>
+    <p class="md-muted" id="todayLabel"></p>
+    <ul class="md-list" id="medList"></ul>
+    <p class="md-empty" id="emptyMsg" data-i18n="empty_none" hidden>فعلاً هیچ یادآوری ثبت نشده است.</p>
+  </section>
+
+  <p class="md-disclaimer" data-i18n="disclaimer">این ابزار فقط یادآور است و جایگزین توصیهٔ پزشک یا داروساز نیست. یادآوری‌ها فقط وقتی صفحه باز است نمایش داده می‌شوند.</p>
+</main>
+
+<dialog id="editDialog" class="md-dialog" aria-labelledby="editTitle">
+  <form id="editForm" method="dialog">
+    <h2 id="editTitle" data-i18n="heading_edit">ویرایش دارو</h2>
+    <input type="hidden" id="editId">
+    <div class="md-grid">
+      <div class="md-field"><label for="editName" data-i18n="label_0">نام دارو</label><input id="editName" type="text" required maxlength="80"></div>
+      <div class="md-field"><label for="editDose" data-i18n="label_1">دوز / مقدار</label><input id="editDose" type="text" required maxlength="80"></div>
+      <div class="md-field"><label for="editTime" data-i18n="label_2">ساعت مصرف</label><input id="editTime" type="time" required></div>
+      <div class="md-field"><label for="editNote" data-i18n="label_3">یادداشت</label><input id="editNote" type="text" maxlength="160"></div>
+    </div>
+    <div class="md-actions">
+      <button type="submit" class="md-btn md-btn--primary" data-i18n="btn_save_changes">ذخیره تغییرات</button>
+      <button type="button" class="md-btn" id="editCancel" data-i18n="btn_cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirmDialog" class="md-dialog md-dialog--sm" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="md-actions">
+      <button type="submit" value="ok" class="md-btn md-btn--danger" data-i18n="btn_confirm">بله، حذف شود</button>
+      <button type="submit" value="cancel" class="md-btn" data-i18n="btn_cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="md-toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="assets/scripts.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

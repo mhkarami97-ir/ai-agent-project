@@ -1,126 +1,69 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title data-i18n="title">ماشین‌حساب تبدیل ارز</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">ماشین‌حساب تبدیل ارز</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">تبدیل ارزهای معمولی و دیجیتال با آخرین قیمت‌ها</p>
-</header>
-<main>
-<div class="converter-card">
-<div class="input-group">
-<label data-i18n="label_0" for="amount">مقدار:</label>
-<input id="amount" min="0" placeholder="مقدار را وارد کنید" step="any" type="number" value="1"/>
-</div>
-<div class="currency-group">
-<div class="currency-select-wrapper">
-<label data-i18n="label_1" for="fromCurrency">از:</label>
-<select class="currency-select" id="fromCurrency">
-<optgroup label="ارزهای معمولی">
-<option selected="" value="USD">دلار آمریکا (USD)</option>
-<option value="EUR">یورو (EUR)</option>
-<option value="GBP">پوند انگلیس (GBP)</option>
-<option value="JPY">ین ژاپن (JPY)</option>
-<option value="AUD">دلار استرالیا (AUD)</option>
-<option value="CAD">دلار کانادا (CAD)</option>
-<option value="CHF">فرانک سوئیس (CHF)</option>
-<option value="CNY">یوان چین (CNY)</option>
-<option value="TRY">لیر ترکیه (TRY)</option>
-<option value="AED">درهم امارات (AED)</option>
-</optgroup>
-<optgroup label="ارزهای دیجیتال">
-<option value="BTC">بیت‌کوین (BTC)</option>
-<option value="ETH">اتریوم (ETH)</option>
-<option value="BNB">بایننس کوین (BNB)</option>
-<option value="XRP">ریپل (XRP)</option>
-<option value="ADA">کاردانو (ADA)</option>
-<option value="SOL">سولانا (SOL)</option>
-<option value="DOGE">دوج‌کوین (DOGE)</option>
-<option value="DOT">پولکادات (DOT)</option>
-<option value="MATIC">پالیگان (MATIC)</option>
-<option value="LTC">لایت‌کوین (LTC)</option>
-</optgroup>
-</select>
-</div>
-<button class="swap-button" id="swapBtn" title="تبادل ارزها">
-<svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-<line x1="12" x2="12" y1="5" y2="19"></line>
-<polyline points="19 12 12 19 5 12"></polyline>
-</svg>
-</button>
-<div class="currency-select-wrapper">
-<label data-i18n="label_2" for="toCurrency">به:</label>
-<select class="currency-select" id="toCurrency">
-<optgroup label="ارزهای معمولی">
-<option value="USD">دلار آمریکا (USD)</option>
-<option selected="" value="EUR">یورو (EUR)</option>
-<option value="GBP">پوند انگلیس (GBP)</option>
-<option value="JPY">ین ژاپن (JPY)</option>
-<option value="AUD">دلار استرالیا (AUD)</option>
-<option value="CAD">دلار کانادا (CAD)</option>
-<option value="CHF">فرانک سوئیس (CHF)</option>
-<option value="CNY">یوان چین (CNY)</option>
-<option value="TRY">لیر ترکیه (TRY)</option>
-<option value="AED">درهم امارات (AED)</option>
-</optgroup>
-<optgroup label="ارزهای دیجیتال">
-<option value="BTC">بیت‌کوین (BTC)</option>
-<option value="ETH">اتریوم (ETH)</option>
-<option value="BNB">بایننس کوین (BNB)</option>
-<option value="XRP">ریپل (XRP)</option>
-<option value="ADA">کاردانو (ADA)</option>
-<option value="SOL">سولانا (SOL)</option>
-<option value="DOGE">دوج‌کوین (DOGE)</option>
-<option value="DOT">پولکادات (DOT)</option>
-<option value="MATIC">پالیگان (MATIC)</option>
-<option value="LTC">لایت‌کوین (LTC)</option>
-</optgroup>
-</select>
-</div>
-</div>
-<button class="convert-button" data-i18n="button_1" id="convertBtn">تبدیل کن</button>
-<div class="result-container" id="resultContainer">
-<div class="result-value" id="resultValue">0</div>
-<div class="exchange-rate" id="exchangeRate"></div>
-<div class="last-update" id="lastUpdate"></div>
-</div>
-<div class="loading" id="loading">
-<div class="spinner"></div>
-<p>در حال دریافت اطلاعات...</p>
-</div>
-<div class="error-message" id="errorMessage"></div>
-</div>
-<div class="history-section">
-<div class="history-header">
-<h2 data-i18n="heading_1">تاریخچه تبدیل‌ها</h2>
-<button class="clear-history-btn" data-i18n="button_2" id="clearHistoryBtn">پاک کردن همه</button>
-</div>
-<div class="history-list" id="historyList">
-<p class="empty-history" data-i18n="text_empty_history_1">هنوز تبدیلی انجام نشده است</p>
-</div>
-</div>
-<div class="popular-rates" id="popularRates">
-<h2 data-i18n="heading_2">نرخ‌های محبوب</h2>
-<div class="rates-grid" id="ratesGrid">
-<!-- نرخ‌ها به صورت داینامیک اضافه می‌شوند -->
-</div>
-</div>
+<main class="page fx">
+  <header class="fx-head">
+    <h1 data-i18n="heading_0">ماشین‌حساب تبدیل ارز</h1>
+    <p class="fx-muted" data-i18n="text_subtitle_0">تبدیل ارزهای معمولی و دیجیتال با آخرین قیمت‌ها</p>
+  </header>
+
+  <section class="fx-card" aria-labelledby="convTitle">
+    <h2 id="convTitle" class="fx-sr" data-i18n="conv_title">تبدیل</h2>
+    <div class="fx-field">
+      <label for="amount" data-i18n="label_0">مقدار:</label>
+      <input id="amount" class="fx-input fx-amount" type="text" inputmode="decimal" value="1" autocomplete="off" dir="ltr" data-i18n-placeholder="ph_amount" placeholder="مقدار را وارد کنید">
+    </div>
+    <div class="fx-pair">
+      <div class="fx-field"><label for="fromCur" data-i18n="label_1">از:</label><select id="fromCur" class="fx-input"></select></div>
+      <button type="button" class="fx-swap" id="swapBtn" data-i18n-aria="swap" aria-label="تعویض ارزها"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg></button>
+      <div class="fx-field"><label for="toCur" data-i18n="label_2">به:</label><select id="toCur" class="fx-input"></select></div>
+    </div>
+    <button type="button" class="fx-btn fx-btn--primary fx-btn--block" id="convertBtn" data-i18n="button_1">تبدیل کن</button>
+
+    <div class="fx-result" id="result" aria-live="polite" hidden>
+      <div class="fx-result-value" id="resultValue" dir="ltr"></div>
+      <div class="fx-result-rate" id="resultRate" dir="ltr"></div>
+    </div>
+    <p class="fx-status" id="status" aria-live="polite"></p>
+    <div class="fx-error" id="error" role="alert" hidden></div>
+  </section>
+
+  <section class="fx-card" aria-labelledby="popTitle">
+    <h2 id="popTitle" data-i18n="heading_2">نرخ‌های محبوب</h2>
+    <div class="fx-rates" id="rates"></div>
+  </section>
+
+  <section class="fx-card" aria-labelledby="histTitle">
+    <div class="fx-row">
+      <h2 id="histTitle" data-i18n="heading_1">تاریخچه تبدیل‌ها</h2>
+      <button type="button" class="fx-btn fx-btn--danger fx-btn--sm" id="clearBtn" data-i18n="button_2" hidden>پاک کردن همه</button>
+    </div>
+    <div class="fx-hist" id="hist"></div>
+  </section>
 </main>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
-</div>
+
+<dialog id="confirmDialog" class="fx-dialog" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="fx-actions">
+      <button type="submit" value="ok" class="fx-btn fx-btn--danger" data-i18n="confirm_yes">بله، پاک شود</button>
+      <button type="submit" value="cancel" class="fx-btn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
 <script src="assets/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

@@ -1,94 +1,85 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta content="ابزار پاک‌سازی و بهینه‌سازی متن فارسی و انگلیسی" name="description"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="ابزار پاک‌سازی و بهینه‌سازی متن فارسی و انگلیسی">
 <title data-i18n="title">پاک‌سازی متن</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/css/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">پاک‌سازی متن</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">ابزار بهینه‌سازی متن‌های فارسی و انگلیسی</p>
-</header>
-<main>
-<section class="text-area-section">
-<div class="input-wrapper">
-<label data-i18n="label_0" for="inputText">متن ورودی:</label>
-<textarea id="inputText" placeholder="متن خود را اینجا بنویسید یا بچسبانید..." rows="10"></textarea>
-<div class="char-count" id="inputCount">0 کاراکتر</div>
-</div>
-<div class="output-wrapper">
-<label data-i18n="label_1" for="outputText">متن پاک‌شده:</label>
-<textarea id="outputText" placeholder="نتیجه اینجا نمایش داده می‌شود..." readonly="" rows="10"></textarea>
-<div class="char-count" id="outputCount">0 کاراکتر</div>
-</div>
-</section>
-<section class="controls">
-<div class="button-group">
-<button class="btn btn-primary" data-i18n="button_0" id="cleanAllBtn">
-<span class="icon">✨</span>
-                        پاک‌سازی کامل
-                    </button>
-<button class="btn btn-secondary" data-i18n="button_1" id="removeZWNJBtn">
-<span class="icon">🔧</span>
-                        حذف نیم‌فاصله‌های خراب
-                    </button>
-<button class="btn btn-secondary" data-i18n="button_2" id="toEnglishNumberBtn">
-<span class="icon">🔢</span>
-                        تبدیل به اعداد انگلیسی
-                    </button>
-<button class="btn btn-secondary" data-i18n="button_3" id="toPersianNumberBtn">
-<span class="icon">۱۲۳</span>
-                        تبدیل به اعداد فارسی
-                    </button>
-<button class="btn btn-secondary" data-i18n="button_4" id="removeInvisibleBtn">
-<span class="icon">👁️</span>
-                        حذف کاراکترهای نامرئی
-                    </button>
-<button class="btn btn-secondary" data-i18n="button_5" id="smartTrimBtn">
-<span class="icon">✂️</span>
-                        حذف فضاهای اضافی
-                    </button>
-</div>
-<div class="button-group action-buttons">
-<button class="btn btn-success" data-i18n="button_6" id="copyBtn">
-<span class="icon">📋</span>
-                        کپی نتیجه
-                    </button>
-<button class="btn btn-info" data-i18n="button_7" id="replaceBtn">
-<span class="icon">🔄</span>
-                        جایگزینی متن ورودی
-                    </button>
-<button class="btn btn-danger" data-i18n="button_8" id="clearBtn">
-<span class="icon">🗑️</span>
-                        پاک کردن همه
-                    </button>
-</div>
-</section>
-<section class="info-box">
-<h3 data-i18n="heading_1">قابلیت‌ها:</h3>
-<ul>
-<li>حذف و اصلاح نیم‌فاصله‌های (ZWNJ) نادرست در متن فارسی</li>
-<li>تبدیل اعداد فارسی به انگلیسی و بالعکس</li>
-<li>حذف کاراکترهای نامرئی و مشکل‌ساز</li>
-<li>حذف هوشمند فضاهای خالی اضافی، خط‌های خالی و فاصله‌های ابتدا و انتهای متن</li>
-<li>ذخیره خودکار متن در مرورگر</li>
-</ul>
-</section>
+<main class="page tf">
+  <header class="tf-head">
+    <h1 data-i18n="heading_0">پاک‌سازی متن</h1>
+    <p class="tf-muted" data-i18n="text_subtitle_0">ابزار بهینه‌سازی متن‌های فارسی و انگلیسی</p>
+  </header>
+
+  <section class="tf-card" aria-labelledby="optTitle">
+    <h2 id="optTitle" data-i18n="options_title">گزینه‌های پاک‌سازی</h2>
+    <div class="tf-opts" id="opts"></div>
+    <fieldset class="tf-digits">
+      <legend data-i18n="digits_title">تبدیل ارقام</legend>
+      <div class="tf-seg" role="radiogroup" id="digitSeg">
+        <button type="button" role="radio" class="tf-seg-btn is-active" aria-checked="true" data-digits="none" data-i18n="digits_none">بدون تغییر</button>
+        <button type="button" role="radio" class="tf-seg-btn" aria-checked="false" data-digits="fa" data-i18n="digits_fa">فارسی ۱۲۳</button>
+        <button type="button" role="radio" class="tf-seg-btn" aria-checked="false" data-digits="en" data-i18n="digits_en">انگلیسی 123</button>
+      </div>
+    </fieldset>
+  </section>
+
+  <section class="tf-cols">
+    <div class="tf-card">
+      <label for="inputText" class="tf-label" data-i18n="label_0">متن ورودی:</label>
+      <textarea id="inputText" class="tf-input" rows="10" spellcheck="false" data-i18n-placeholder="ph_in" placeholder="متن خود را اینجا بنویسید یا بچسبانید..."></textarea>
+      <div class="tf-count" id="inputCount"></div>
+    </div>
+    <div class="tf-card">
+      <label for="outputText" class="tf-label" data-i18n="label_1">متن پاک‌شده:</label>
+      <textarea id="outputText" class="tf-input" rows="10" readonly spellcheck="false" data-i18n-placeholder="ph_out" placeholder="نتیجه اینجا نمایش داده می‌شود..."></textarea>
+      <div class="tf-count" id="outputCount"></div>
+    </div>
+  </section>
+
+  <section class="tf-card" aria-labelledby="repTitle">
+    <h2 id="repTitle" data-i18n="report_title">گزارش تغییرات</h2>
+    <ul class="tf-report" id="report" aria-live="polite"></ul>
+    <div class="tf-actions">
+      <button type="button" class="tf-btn tf-btn--primary" id="copyBtn" data-i18n="button_6">کپی نتیجه</button>
+      <button type="button" class="tf-btn" id="replaceBtn" data-i18n="button_7">جایگزینی متن ورودی</button>
+      <button type="button" class="tf-btn" id="undoBtn" data-i18n="undo" hidden>واگرد</button>
+      <button type="button" class="tf-btn tf-btn--danger" id="clearBtn" data-i18n="button_8">پاک کردن همه</button>
+    </div>
+  </section>
+
+  <section class="tf-card tf-info">
+    <h2 data-i18n="heading_1">قابلیت‌ها:</h2>
+    <ul>
+      <li data-i18n="feat_1">اصلاح نیم‌فاصله‌های اضافه یا نابجا و افزودن نیم‌فاصلهٔ «می‌»، «نمی‌»، «ها»</li>
+      <li data-i18n="feat_2">تبدیل ارقام فارسی، عربی و انگلیسی به یکدیگر</li>
+      <li data-i18n="feat_3">حذف کاراکترهای نامرئی و جهت‌دهی (مثل RLM و صفر-عرض)</li>
+      <li data-i18n="feat_4">یکسان‌سازی «ك/ي» عربی، حذف کشیده و اصلاح فاصله‌ها و نشانه‌گذاری فارسی</li>
+      <li data-i18n="feat_5">ذخیرهٔ خودکار متن در مرورگر</li>
+    </ul>
+  </section>
 </main>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
-</div>
-<div class="notification" id="notification"></div>
+
+<dialog id="confirmDialog" class="tf-dialog" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="tf-actions">
+      <button type="submit" value="ok" class="tf-btn tf-btn--danger" data-i18n="confirm_yes">بله</button>
+      <button type="submit" value="cancel" class="tf-btn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<div class="tf-toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="assets/js/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

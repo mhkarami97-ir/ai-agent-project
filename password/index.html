@@ -1,125 +1,68 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta content="تولید کننده رمز عبور امن و قابل تنظیم" name="description"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="تولید رمز عبور امن و قابل تنظیم، کاملاً روی دستگاه شما">
 <title data-i18n="title">تولید کننده رمز عبور</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">🔐 تولید کننده رمز عبور</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">رمز عبورهای قوی و امن بسازید</p>
-</header>
-<main>
-<div class="password-display-section">
-<div class="password-output" id="passwordOutput">
-<span class="placeholder" data-i18n="text_placeholder_1">رمز عبور اینجا نمایش داده می‌شود</span>
-</div>
-<div class="action-buttons">
-<button class="btn btn-primary" data-i18n="button_0" id="generateBtn">
-<span class="icon">⚡</span>
-                        تولید رمز عبور
-                    </button>
-<button class="btn btn-secondary" data-i18n="button_1" disabled="" id="copyBtn">
-<span class="icon">📋</span>
-                        کپی
-                    </button>
-</div>
-<div class="copy-notification" id="copyNotification">رمز عبور کپی شد!</div>
-</div>
-<div class="settings-section">
-<h2 data-i18n="heading_1">⚙️ تنظیمات</h2>
-<div class="setting-item">
-<div class="setting-header">
-<label data-i18n="label_0" for="lengthSlider">طول رمز عبور:</label>
-<span class="value-display" id="lengthValue">16</span>
-</div>
-<input class="slider" id="lengthSlider" max="64" min="4" type="range" value="16"/>
-</div>
-<div class="setting-item">
-<div class="checkbox-group">
-<label class="checkbox-label" data-i18n="label_1">
-<input checked="" id="uppercaseCheck" type="checkbox"/>
-<span class="checkmark"></span>
-                            حروف بزرگ (A-Z)
-                        </label>
-</div>
-</div>
-<div class="setting-item">
-<div class="checkbox-group">
-<label class="checkbox-label" data-i18n="label_2">
-<input checked="" id="lowercaseCheck" type="checkbox"/>
-<span class="checkmark"></span>
-                            حروف کوچک (a-z)
-                        </label>
-</div>
-</div>
-<div class="setting-item">
-<div class="checkbox-group">
-<label class="checkbox-label" data-i18n="label_3">
-<input checked="" id="numbersCheck" type="checkbox"/>
-<span class="checkmark"></span>
-                            اعداد (0-9)
-                        </label>
-</div>
-</div>
-<div class="setting-item">
-<div class="checkbox-group">
-<label class="checkbox-label" data-i18n="label_4">
-<input checked="" id="symbolsCheck" type="checkbox"/>
-<span class="checkmark"></span>
-                            نمادها (!@#$%^&amp;*)
-                        </label>
-</div>
-</div>
-<div class="setting-item">
-<div class="checkbox-group">
-<label class="checkbox-label" data-i18n="label_5">
-<input id="excludeSimilarCheck" type="checkbox"/>
-<span class="checkmark"></span>
-                            حذف کاراکترهای مشابه (i, l, 1, L, o, 0, O)
-                        </label>
-</div>
-</div>
-<div class="setting-item">
-<div class="checkbox-group">
-<label class="checkbox-label" data-i18n="label_6">
-<input id="excludeAmbiguousCheck" type="checkbox"/>
-<span class="checkmark"></span>
-                            حذف نمادهای مبهم ({}[]()/\'"~,;:.&lt;&gt;)
-                        </label>
-</div>
-</div>
-</div>
-<div class="strength-section">
-<h3 data-i18n="heading_2">قدرت رمز عبور</h3>
-<div class="strength-meter">
-<div class="strength-bar" id="strengthBar"></div>
-</div>
-<p class="strength-text" data-i18n="text_strength_text_11" id="strengthText">رمز عبوری تولید نشده است</p>
-</div>
-<div class="history-section">
-<div class="history-header">
-<h2 data-i18n="heading_3">📜 تاریخچه</h2>
-<button class="btn btn-danger btn-small" data-i18n="button_2" id="clearHistoryBtn">پاک کردن تاریخچه</button>
-</div>
-<div class="history-list" id="historyList">
-<p class="empty-history" data-i18n="text_empty_history_12">هنوز رمز عبوری تولید نشده است</p>
-</div>
-</div>
+<main class="page pg">
+  <header class="pg-head">
+    <h1 data-i18n="heading_0">تولید کننده رمز عبور</h1>
+    <p class="pg-muted" data-i18n="text_subtitle_0">رمز عبورهای قوی و امن بسازید. همه‌چیز روی دستگاه شما انجام می‌شود و رمزها هیچ‌جا ذخیره یا ارسال نمی‌شوند.</p>
+  </header>
+
+  <section class="pg-card" aria-labelledby="outTitle">
+    <h2 id="outTitle" class="pg-sr" data-i18n="out_title">رمز عبور تولیدشده</h2>
+    <div class="pg-out" id="out" dir="ltr" aria-live="polite" tabindex="0"></div>
+    <div class="pg-actions">
+      <button type="button" class="pg-btn pg-btn--primary" id="generateBtn" data-i18n="button_0">تولید رمز عبور</button>
+      <button type="button" class="pg-btn" id="copyBtn" data-i18n="button_1" disabled>کپی</button>
+      <button type="button" class="pg-btn pg-btn--icon" id="eyeBtn" aria-pressed="false" data-i18n-aria="hide_pw" aria-label="پنهان کردن">👁</button>
+    </div>
+
+    <div class="pg-strength">
+      <div class="pg-meter" role="meter" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" id="meter"><span id="strengthBar"></span></div>
+      <p class="pg-strength-text" id="strengthText" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="pg-card" aria-labelledby="setTitle">
+    <h2 id="setTitle" data-i18n="heading_1">تنظیمات</h2>
+    <div class="pg-field">
+      <div class="pg-lh"><label for="length" data-i18n="label_0">طول رمز عبور:</label><output id="lengthVal" for="length" dir="ltr">16</output></div>
+      <input id="length" type="range" min="4" max="64" step="1" value="16">
+    </div>
+    <div class="pg-checks">
+      <label class="pg-check"><input type="checkbox" id="upper" checked><span data-i18n="label_1">حروف بزرگ (A-Z)</span></label>
+      <label class="pg-check"><input type="checkbox" id="lower" checked><span data-i18n="label_2">حروف کوچک (a-z)</span></label>
+      <label class="pg-check"><input type="checkbox" id="digits" checked><span data-i18n="label_3">اعداد (0-9)</span></label>
+      <label class="pg-check"><input type="checkbox" id="symbols" checked><span data-i18n="label_4">نمادها (!@#$%^&amp;*)</span></label>
+      <label class="pg-check"><input type="checkbox" id="noSimilar"><span data-i18n="label_5">حذف کاراکترهای مشابه (i, l, 1, L, o, 0, O)</span></label>
+      <label class="pg-check"><input type="checkbox" id="noAmbiguous"><span data-i18n="label_6">حذف نمادهای مبهم ({}[]()/\'"~,;:.&lt;&gt;)</span></label>
+    </div>
+    <p class="pg-hint" id="setHint" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="pg-card" aria-labelledby="histTitle">
+    <div class="pg-row">
+      <h2 id="histTitle" data-i18n="heading_3">تاریخچهٔ همین صفحه</h2>
+      <button type="button" class="pg-btn pg-btn--danger pg-btn--sm" id="clearBtn" data-i18n="button_2" hidden>پاک کردن تاریخچه</button>
+    </div>
+    <p class="pg-hint" data-i18n="hist_note">برای امنیت، رمزها فقط در حافظهٔ همین صفحه می‌مانند و با بستن یا رفرش پاک می‌شوند.</p>
+    <div class="pg-hist" id="hist"></div>
+  </section>
 </main>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
-</div>
+<div class="pg-toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="assets/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

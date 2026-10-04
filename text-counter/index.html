@@ -1,102 +1,75 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title data-i18n="title">ابزار شمارش و تحلیل متن</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">ابزار شمارش و تحلیل متن</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">متن خود را وارد کنید و آمار کامل آن را مشاهده کنید</p>
-</header>
-<main>
-<div class="input-section">
-<textarea id="textInput" placeholder="متن خود را اینجا وارد کنید..."></textarea>
-<div class="action-buttons">
-<button class="btn btn-secondary" data-i18n="button_0" id="clearBtn">پاک کردن</button>
-<button class="btn btn-primary" data-i18n="button_1" id="saveBtn">ذخیره متن</button>
-</div>
-</div>
-<div class="stats-section">
-<h2 data-i18n="heading_1">آمار متن</h2>
-<div class="stats-grid">
-<div class="stat-card">
-<div class="stat-icon">📝</div>
-<div class="stat-content">
-<div class="stat-value" id="charCount">0</div>
-<div class="stat-label">تعداد کاراکتر</div>
-</div>
-</div>
-<div class="stat-card">
-<div class="stat-icon">📄</div>
-<div class="stat-content">
-<div class="stat-value" id="charCountNoSpace">0</div>
-<div class="stat-label">کاراکتر بدون فاصله</div>
-</div>
-</div>
-<div class="stat-card">
-<div class="stat-icon">🔤</div>
-<div class="stat-content">
-<div class="stat-value" id="wordCount">0</div>
-<div class="stat-label">تعداد کلمات</div>
-</div>
-</div>
-<div class="stat-card">
-<div class="stat-icon">📋</div>
-<div class="stat-content">
-<div class="stat-value" id="sentenceCount">0</div>
-<div class="stat-label">تعداد جملات</div>
-</div>
-</div>
-<div class="stat-card">
-<div class="stat-icon">📖</div>
-<div class="stat-content">
-<div class="stat-value" id="paragraphCount">0</div>
-<div class="stat-label">تعداد پاراگراف</div>
-</div>
-</div>
-<div class="stat-card">
-<div class="stat-icon">⏱️</div>
-<div class="stat-content">
-<div class="stat-value" id="readTime">0</div>
-<div class="stat-label">زمان مطالعه (دقیقه)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="analysis-section">
-<h2 data-i18n="heading_2">تحلیل تکرار کلمات</h2>
-<div class="analysis-controls">
-<label data-i18n="label_0" for="minOccurrence">حداقل تکرار:</label>
-<input id="minOccurrence" max="100" min="1" type="number" value="2"/>
-<button class="btn btn-primary" data-i18n="button_2" id="analyzeBtn">تحلیل</button>
-</div>
-<div class="word-frequency" id="wordFrequency">
-<p class="empty-message" data-i18n="text_empty_message_1">متن خود را وارد کنید و دکمه تحلیل را بزنید</p>
-</div>
-</div>
-<div class="history-section">
-<div class="history-header">
-<h2 data-i18n="heading_3">متن‌های ذخیره شده</h2>
-<button class="btn btn-secondary btn-small" data-i18n="button_3" id="clearHistoryBtn">پاک کردن همه</button>
-</div>
-<div class="history-list" id="historyList">
-<p class="empty-message" data-i18n="text_empty_message_2">هنوز متنی ذخیره نشده است</p>
-</div>
-</div>
+<main class="page tc">
+  <header class="tc-head">
+    <h1 data-i18n="heading_0">ابزار شمارش و تحلیل متن</h1>
+    <p class="tc-muted" data-i18n="text_subtitle_0">متن خود را وارد کنید و آمار کامل آن را مشاهده کنید</p>
+  </header>
+
+  <section class="tc-card">
+    <label for="textInput" class="tc-sr" data-i18n="input_label">متن</label>
+    <textarea id="textInput" class="tc-input tc-text" rows="8" spellcheck="false" data-i18n-placeholder="ph_text" placeholder="متن خود را اینجا وارد کنید..."></textarea>
+    <div class="tc-actions">
+      <button type="button" class="tc-btn tc-btn--primary" id="saveBtn" data-i18n="button_1">ذخیره متن</button>
+      <button type="button" class="tc-btn" id="clearBtn" data-i18n="button_0">پاک کردن</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="statsTitle">
+    <h2 id="statsTitle" data-i18n="heading_1">آمار متن</h2>
+    <div class="tc-stats">
+      <div class="tc-stat"><strong id="sChars">0</strong><span data-i18n="st_chars">تعداد کاراکتر</span></div>
+      <div class="tc-stat"><strong id="sCharsNo">0</strong><span data-i18n="st_chars_no">کاراکتر بدون فاصله</span></div>
+      <div class="tc-stat"><strong id="sWords">0</strong><span data-i18n="st_words">تعداد کلمات</span></div>
+      <div class="tc-stat"><strong id="sSentences">0</strong><span data-i18n="st_sentences">تعداد جملات</span></div>
+      <div class="tc-stat"><strong id="sParas">0</strong><span data-i18n="st_paras">تعداد پاراگراف</span></div>
+      <div class="tc-stat"><strong id="sRead">–</strong><span data-i18n="st_read">زمان مطالعه</span></div>
+      <div class="tc-stat"><strong id="sSpeak">–</strong><span data-i18n="st_speak">زمان سخنرانی</span></div>
+    </div>
+  </section>
+
+  <section class="tc-card" aria-labelledby="freqTitle">
+    <h2 id="freqTitle" data-i18n="heading_2">تحلیل تکرار کلمات</h2>
+    <div class="tc-ctrl">
+      <label for="minOcc" data-i18n="label_0">حداقل تکرار:</label>
+      <input id="minOcc" class="tc-input tc-min" type="text" inputmode="numeric" maxlength="3" value="2" dir="ltr">
+    </div>
+    <div id="freq" class="tc-freq" aria-live="polite"></div>
+  </section>
+
+  <section class="tc-card" aria-labelledby="histTitle">
+    <div class="tc-row">
+      <h2 id="histTitle" data-i18n="heading_3">متن‌های ذخیره شده</h2>
+      <button type="button" class="tc-btn tc-btn--danger tc-btn--sm" id="clearHistBtn" data-i18n="button_3" hidden>پاک کردن همه</button>
+    </div>
+    <div id="hist" class="tc-hist"></div>
+  </section>
 </main>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
-</div>
+
+<dialog id="confirmDialog" class="tc-dialog" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="tc-actions">
+      <button type="submit" value="ok" class="tc-btn tc-btn--danger" data-i18n="confirm_yes">بله</button>
+      <button type="submit" value="cancel" class="tc-btn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<div class="tc-toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="assets/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

@@ -1,29 +1,103 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title data-i18n="title">تقسیم‌کننده هزینه گروهی</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="app-root" id="app"><div id="app-loading">درحال بارگذاری...</div></div>
-<div id="app-error" role="alert"></div>
-<script>
-    // Show runtime errors in the page (helpful when opening via file://)
-    function showError(message){
-      var el = document.getElementById('app-error');
-      el.style.display = 'block';
-      el.innerText = 'خطا: ' + message + '\n\nاگر خطا ادامه پیدا کند، لطفاً متن خطا را اینجا قرار دهید.';
-    }
-    window.addEventListener('error', function(ev){ showError(ev.message || String(ev.error)); });
-    window.addEventListener('unhandledrejection', function(ev){ showError('Promise rejection: ' + (ev.reason && ev.reason.message ? ev.reason.message : String(ev.reason))); });
-  </script>
+<main class="page cd">
+  <header class="cd-head">
+    <div>
+      <h1 data-i18n="title">تقسیم‌کننده هزینه گروهی</h1>
+      <p class="cd-muted" data-i18n="subtitle">هزینه‌های سفر یا مهمانی را ثبت کنید و ببینید چه کسی به چه کسی چقدر بدهکار است.</p>
+    </div>
+    <button type="button" class="cd-btn cd-btn--primary" id="newExpenseBtn" data-i18n="new_expense">هزینه جدید</button>
+  </header>
+
+  <section class="cd-card" aria-labelledby="membersTitle">
+    <h2 id="membersTitle" data-i18n="members">اعضا</h2>
+    <form id="memberForm" class="cd-inline" autocomplete="off">
+      <input id="memberName" class="cd-input" type="text" maxlength="40" required enterkeyhint="done" data-i18n-placeholder="member_ph" placeholder="نام عضو">
+      <button type="submit" class="cd-btn cd-btn--primary" data-i18n="add">افزودن</button>
+    </form>
+    <div id="memberList" class="cd-chips"></div>
+  </section>
+
+  <section class="cd-card" aria-labelledby="expTitle">
+    <h2 id="expTitle" data-i18n="expenses">هزینه‌ها</h2>
+    <div id="expenseList" class="cd-list"></div>
+  </section>
+
+  <section class="cd-card" aria-labelledby="sumTitle">
+    <div class="cd-row">
+      <h2 id="sumTitle" data-i18n="summary">خلاصه و تسویه</h2>
+      <div class="cd-field cd-round">
+        <label for="roundSel" data-i18n="rounding">گرد کردن به:</label>
+        <select id="roundSel" class="cd-input"></select>
+      </div>
+    </div>
+    <div class="cd-total"><span data-i18n="total_spent">مجموع هزینه‌ها</span><strong id="totalSpent">0</strong></div>
+    <h3 data-i18n="balances">تراز اعضا</h3>
+    <div id="balances" class="cd-list"></div>
+    <h3 data-i18n="settlement">تسویه پیشنهادی</h3>
+    <div id="settlements" class="cd-list" aria-live="polite"></div>
+    <div class="cd-actions">
+      <button type="button" class="cd-btn" id="copyBtn" data-i18n="copy_summary">کپی خلاصه</button>
+    </div>
+  </section>
+
+  <section class="cd-danger">
+    <p data-i18n="danger_text">پاک کردن همهٔ اعضا و هزینه‌ها (قابل بازگشت نیست)</p>
+    <button type="button" class="cd-btn cd-btn--danger" id="clearBtn" data-i18n="clear_all">پاک کردن همه داده‌ها</button>
+  </section>
+</main>
+
+<dialog id="expDialog" class="cd-dialog" aria-labelledby="expDialogTitle">
+  <form id="expForm" method="dialog" autocomplete="off">
+    <h2 id="expDialogTitle" data-i18n="expense_new">ثبت هزینهٔ جدید</h2>
+    <div class="cd-field"><label for="eTitle" data-i18n="title_label">عنوان</label><input id="eTitle" class="cd-input" type="text" required maxlength="100" data-i18n-placeholder="title_ph" placeholder="مثلاً شام"></div>
+    <div class="cd-field"><label for="eAmount" data-i18n="amount_label">مبلغ (ریال)</label><input id="eAmount" class="cd-input" type="text" inputmode="numeric" required dir="ltr" placeholder="0"><small class="cd-hint" id="amountHint"></small></div>
+    <div class="cd-two">
+      <div class="cd-field"><label for="eDate" data-i18n="date_label">تاریخ</label><input id="eDate" class="cd-input" type="date" required></div>
+      <div class="cd-field"><label for="ePayer" data-i18n="payer_label">پرداخت‌کننده</label><select id="ePayer" class="cd-input" required></select></div>
+    </div>
+    <fieldset class="cd-fs">
+      <legend data-i18n="split_mode">روش تقسیم</legend>
+      <div class="cd-seg" role="radiogroup">
+        <button type="button" role="radio" class="cd-seg-btn is-active" aria-checked="true" data-mode="equal" data-i18n="mode_equal">مساوی</button>
+        <button type="button" role="radio" class="cd-seg-btn" aria-checked="false" data-mode="custom" data-i18n="mode_custom">مبلغ دلخواه</button>
+      </div>
+    </fieldset>
+    <fieldset class="cd-fs">
+      <legend data-i18n="participants">شرکت‌کنندگان</legend>
+      <div id="partList" class="cd-parts"></div>
+      <small class="cd-hint" id="customHint" aria-live="polite"></small>
+    </fieldset>
+    <div class="cd-actions">
+      <button type="submit" class="cd-btn cd-btn--primary" data-i18n="save">ذخیره</button>
+      <button type="button" class="cd-btn" id="expCancel" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="confirmDialog" class="cd-dialog cd-dialog--sm" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="cd-actions">
+      <button type="submit" value="ok" class="cd-btn cd-btn--danger" data-i18n="confirm_yes">بله</button>
+      <button type="submit" value="cancel" class="cd-btn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<div class="cd-toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="assets/app.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

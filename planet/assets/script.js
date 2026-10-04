@@ -1,1264 +1,555 @@
-﻿// ===== Data Storage Manager =====
-class StorageManager {
-    static KEYS = {
-        PLANTS: 'plants',
-        REMINDERS: 'reminders',
-        COMPLETED_TASKS: 'completedTasks',
-        THEME: 'theme',
-        LANG: 'lang'
+(function () {
+'use strict';
+
+/* @logic-start */
+var P = '۰۱۲۳۴۵۶۷۸۹', A = '٠١٢٣٤٥٦٧٨٩';
+var LEVELS = ['low', 'medium', 'high'];
+var DEFAULT_WATER = { low: 10, medium: 4, high: 2 };
+
+function normDigits(s) {
+  return String(s == null ? '' : s).replace(/[۰-۹]/g, function (d) { return P.indexOf(d); }).replace(/[٠-٩]/g, function (d) { return A.indexOf(d); });
+}
+function foldText(s) { return normDigits(s).replace(/ي/g, 'ی').replace(/ك/g, 'ک').toLowerCase(); }
+function parseInterval(s, min, max) {
+  var v = normDigits(s).trim();
+  if (!/^\d+$/.test(v)) return null;
+  var n = parseInt(v, 10);
+  return n >= min && n <= max ? n : null;
+}
+function dayNum(d) { return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000); }
+function validISO(s) { if (typeof s !== 'string') return null; var d = new Date(s); return isNaN(d.getTime()) ? null : d.toISOString(); }
+function parseTags(s) {
+  var seen = {}, out = [];
+  String(s == null ? '' : s).split(/[,،]/).forEach(function (x) {
+    x = x.trim().slice(0, 30);
+    var k = foldText(x);
+    if (x && !seen[k] && out.length < 10) { seen[k] = 1; out.push(x); }
+  });
+  return out;
+}
+function normalizePlant(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  var name = String(raw.name == null ? '' : raw.name).trim();
+  if (!name) return null;
+  var water = LEVELS.indexOf(raw.waterNeeds) >= 0 ? raw.waterNeeds : 'medium';
+  var light = LEVELS.indexOf(raw.lightNeeds) >= 0 ? raw.lightNeeds : 'medium';
+  var wi = parseInterval(raw.waterInterval, 1, 30);
+  var fi = raw.fertilizeInterval === '' || raw.fertilizeInterval == null ? null : parseInterval(raw.fertilizeInterval, 1, 90);
+  var tags = Array.isArray(raw.tags) ? parseTags(raw.tags.join(',')) : parseTags(raw.tags);
+  return {
+    id: typeof raw.id === 'string' && raw.id ? raw.id : (raw.id != null ? String(raw.id) : null),
+    name: name.slice(0, 80),
+    scientificName: String(raw.scientificName == null ? '' : raw.scientificName).trim().slice(0, 80),
+    waterNeeds: water,
+    lightNeeds: light,
+    waterInterval: wi === null ? DEFAULT_WATER[water] : wi,
+    fertilizeInterval: fi,
+    location: String(raw.location == null ? '' : raw.location).trim().slice(0, 60),
+    tags: tags,
+    notes: String(raw.notes == null ? '' : raw.notes).trim().slice(0, 500),
+    image: typeof raw.image === 'string' && /^data:image\/(jpeg|png|webp|gif);base64,/.test(raw.image) ? raw.image : '',
+    lastWatered: validISO(raw.lastWatered),
+    lastFertilized: validISO(raw.lastFertilized),
+    createdAt: validISO(raw.createdAt) || new Date(0).toISOString()
+  };
+}
+/* روز سررسید (شمارهٔ روز محلی). بدون ثبت قبلی: امروز */
+function nextDue(plant, kind, today) {
+  var interval = kind === 'water' ? plant.waterInterval : plant.fertilizeInterval;
+  if (!interval) return null;
+  var last = kind === 'water' ? plant.lastWatered : plant.lastFertilized;
+  return last ? dayNum(new Date(last)) + interval : today;
+}
+function reminders(plants, today) {
+  var out = [];
+  plants.forEach(function (p) {
+    ['water', 'fertilize'].forEach(function (k) {
+      var due = nextDue(p, k, today);
+      if (due !== null) out.push({ plantId: p.id, name: p.name, type: k, due: due, diff: due - today });
+    });
+  });
+  return out.sort(function (a, b) { return a.diff - b.diff || a.name.localeCompare(b.name, 'fa') || (a.type === b.type ? 0 : a.type === 'water' ? -1 : 1); });
+}
+function splitReminders(list) {
+  return { today: list.filter(function (r) { return r.diff <= 0; }), upcoming: list.filter(function (r) { return r.diff > 0; }) };
+}
+function filterTokens(plants) {
+  var seen = { all: 1 }, out = ['all'];
+  function add(t) { if (!seen[t]) { seen[t] = 1; out.push(t); } }
+  plants.forEach(function (p) { if (p.location) add('loc:' + p.location); });
+  LEVELS.forEach(function (l) { if (plants.some(function (p) { return p.waterNeeds === l; })) add('water:' + l); });
+  LEVELS.forEach(function (l) { if (plants.some(function (p) { return p.lightNeeds === l; })) add('light:' + l); });
+  plants.forEach(function (p) { p.tags.forEach(function (t) { add('tag:' + t); }); });
+  return out;
+}
+function matchesToken(p, token) {
+  if (token === 'all') return true;
+  var i = token.indexOf(':'), kind = token.slice(0, i), val = token.slice(i + 1);
+  if (kind === 'loc') return p.location === val;
+  if (kind === 'water') return p.waterNeeds === val;
+  if (kind === 'light') return p.lightNeeds === val;
+  if (kind === 'tag') return p.tags.indexOf(val) >= 0;
+  return false;
+}
+function filterPlants(plants, search, token) {
+  var q = foldText(search || '').trim();
+  return plants.filter(function (p) {
+    if (!matchesToken(p, token)) return false;
+    return !q || foldText(p.name).indexOf(q) >= 0 || foldText(p.scientificName).indexOf(q) >= 0;
+  });
+}
+function distribution(plants, field) {
+  var d = {};
+  plants.forEach(function (p) { var k = p[field]; if (k) d[k] = (d[k] || 0) + 1; });
+  return d;
+}
+function normalizeCompleted(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(function (c) {
+    if (!c || typeof c !== 'object') return null;
+    var at = validISO(c.completedAt);
+    if (!at || (c.type !== 'water' && c.type !== 'fertilize')) return null;
+    return { reminderId: String(c.reminderId || ''), plantId: String(c.plantId || ''), type: c.type, completedAt: at };
+  }).filter(Boolean);
+}
+function pruneCompleted(list, now) {
+  var cutoff = new Date(now.getFullYear(), now.getMonth() - 12, now.getDate()).getTime();
+  return list.filter(function (c) { return new Date(c.completedAt).getTime() >= cutoff; }).slice(-2000);
+}
+function completedThisMonth(list, now) {
+  return list.filter(function (c) { var d = new Date(c.completedAt); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth(); }).length;
+}
+/* ورودی: آرایهٔ گیاهان (قدیمی) یا {plants, completedTasks} */
+function parseImport(text) {
+  var data;
+  try { data = JSON.parse(text); } catch (e) { return null; }
+  var arr = Array.isArray(data) ? data : (data && Array.isArray(data.plants) ? data.plants : null);
+  if (!arr) return null;
+  var seen = {}, plants = [];
+  arr.forEach(function (r) {
+    var p = normalizePlant(r);
+    if (!p || (p.id && seen[p.id])) return;
+    if (p.id) seen[p.id] = 1;
+    plants.push(p);
+  });
+  return { plants: plants, skipped: arr.length - plants.length, completed: Array.isArray(data) ? [] : normalizeCompleted(data.completedTasks) };
+}
+/* @logic-end */
+
+var KEYS = { plants: 'plants', completed: 'completedTasks' };
+var lang = 'fa', dict = {};
+try { lang = String(localStorage.getItem('lang') || '').replace(/"/g, '') === 'en' ? 'en' : 'fa'; } catch (e) {}
+function t(key, vars) {
+  var s = (dict[lang] && dict[lang][key]) || (dict.fa && dict.fa[key]) || key;
+  if (vars) Object.keys(vars).forEach(function (k) { s = s.replace('{' + k + '}', vars[k]); });
+  return s;
+}
+function nf(n) { return new Intl.NumberFormat(lang === 'fa' ? 'fa-IR' : 'en-US').format(n); }
+function loc() { return lang === 'fa' ? 'fa-IR' : 'en-US'; }
+function $(id) { return document.getElementById(id); }
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function newId() { return window.crypto && crypto.randomUUID ? crypto.randomUUID() : 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+var plants = [], completed = [], view = 'plants', search = '', activeFilter = 'all', editingId = null, pendingImage = '', detailsId = null;
+
+function readJSON(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
+function load() {
+  var raw = readJSON(KEYS.plants), seen = {}, changed = false;
+  plants = (Array.isArray(raw) ? raw : []).map(normalizePlant).filter(function (p) {
+    if (!p) { changed = true; return false; }
+    if (!p.id || seen[p.id]) { p.id = newId(); changed = true; }
+    seen[p.id] = 1; return true;
+  });
+  completed = normalizeCompleted(readJSON(KEYS.completed));
+  if (changed) save();
+}
+function save() {
+  completed = pruneCompleted(completed, new Date());
+  try {
+    localStorage.setItem(KEYS.plants, JSON.stringify(plants));
+    localStorage.setItem(KEYS.completed, JSON.stringify(completed));
+    return true;
+  } catch (e) { toast(t('err_save'), 'error'); return false; }
+}
+
+var toastTimer;
+function toast(msg, kind) {
+  var n = $('toast'); n.textContent = msg; n.className = 'pl-toast' + (kind === 'error' ? ' is-error' : kind === 'warn' ? ' is-warn' : ''); n.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(function () { n.hidden = true; }, 3000);
+}
+function confirmDialog(message, okKey) {
+  return new Promise(function (resolve) {
+    var d = $('confirmDialog'); $('confirmText').textContent = message; $('confirmOk').textContent = t(okKey || 'confirm_yes');
+    var done = function () { d.removeEventListener('close', done); resolve(d.returnValue === 'ok'); };
+    d.returnValue = ''; d.addEventListener('close', done); d.showModal();
+  });
+}
+
+function levelLabel(kind, v) { return t(kind + '_' + v); }
+function fillLevels(sel, kind) {
+  var cur = sel.value; sel.textContent = '';
+  var o = el('option', '', t('select_option')); o.value = ''; sel.appendChild(o);
+  LEVELS.forEach(function (l) { var x = el('option', '', levelLabel(kind, l)); x.value = l; sel.appendChild(x); });
+  sel.value = cur;
+}
+function applyI18n() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(function (e) { e.textContent = t(e.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function (e) { e.placeholder = t(e.getAttribute('data-i18n-placeholder')); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function (e) { e.setAttribute('aria-label', t(e.getAttribute('data-i18n-aria'))); });
+  document.title = t('title');
+  fillLevels($('fWater'), 'water'); fillLevels($('fLight'), 'light');
+  $('plantDialogTitle').textContent = t(editingId ? 'edit_plant' : 'add_new_plant');
+}
+
+/* ---------- نمایش ---------- */
+function careText(diff) {
+  if (diff < 0) return t('d_ago', { n: nf(-diff) });
+  if (diff === 0) return t('today');
+  if (diff === 1) return t('tomorrow');
+  return t('d_later', { n: nf(diff) });
+}
+function dateText(r) {
+  if (r.diff === 0) return t('today');
+  if (r.diff === 1) return t('tomorrow');
+  if (r.diff === -1) return t('yesterday');
+  if (r.diff < 0) return t('d_ago', { n: nf(-r.diff) });
+  if (r.diff < 7) return t('d_later', { n: nf(r.diff) });
+  return new Date(r.due * 86400000).toLocaleDateString(loc(), { timeZone: 'UTC', month: 'long', day: 'numeric' });
+}
+function filterLabel(tok) {
+  if (tok === 'all') return t('all');
+  var i = tok.indexOf(':'), k = tok.slice(0, i), v = tok.slice(i + 1);
+  if (k === 'loc') return '📍 ' + v;
+  if (k === 'water') return '💧 ' + t(v);
+  if (k === 'light') return '☀️ ' + t(v);
+  return '# ' + v;
+}
+function todayNum() { return dayNum(new Date()); }
+
+function renderPlants() {
+  var tokens = filterTokens(plants);
+  if (tokens.indexOf(activeFilter) < 0) activeFilter = 'all';
+  var fbox = $('filterTags'); fbox.textContent = '';
+  tokens.forEach(function (tok) {
+    var b = el('button', 'pl-chip' + (tok === activeFilter ? ' is-active' : ''), filterLabel(tok));
+    b.type = 'button'; b.dataset.filter = tok; b.setAttribute('aria-pressed', tok === activeFilter ? 'true' : 'false'); fbox.appendChild(b);
+  });
+  fbox.hidden = tokens.length < 2;
+
+  var list = filterPlants(plants, search, activeFilter), grid = $('plantsGrid'), td = todayNum();
+  grid.textContent = '';
+  var empty = $('emptyState'); empty.hidden = list.length > 0;
+  if (!list.length) {
+    var none = !plants.length;
+    $('emptyTitle').textContent = t(none ? 'no_plants' : 'no_match');
+    $('emptyDesc').textContent = t(none ? 'no_plants_desc' : 'no_match_desc');
+    $('emptyAddBtn').hidden = !none;
+    return;
+  }
+  list.forEach(function (p) {
+    var card = el('article', 'pl-plant'); card.dataset.id = p.id;
+    var ph = el('div', 'pl-photo');
+    if (p.image) { var im = document.createElement('img'); im.src = p.image; im.alt = p.name; im.loading = 'lazy'; ph.appendChild(im); } else ph.textContent = '🌿';
+    card.appendChild(ph);
+    var body = el('div', 'pl-body');
+    var top = el('div', 'pl-top'), tl = el('div');
+    var nb = el('button', 'pl-name-btn', p.name); nb.type = 'button'; nb.dataset.action = 'details'; tl.appendChild(nb);
+    if (p.scientificName) tl.appendChild(el('p', 'pl-sci', p.scientificName));
+    top.appendChild(tl);
+    var ic = el('div', 'pl-icons');
+    var eb = el('button', 'pl-btn pl-btn--icon', '✏️'); eb.type = 'button'; eb.dataset.action = 'edit'; eb.setAttribute('aria-label', t('edit')); ic.appendChild(eb);
+    var db = el('button', 'pl-btn pl-btn--icon', '🗑️'); db.type = 'button'; db.dataset.action = 'delete'; db.setAttribute('aria-label', t('delete')); ic.appendChild(db);
+    top.appendChild(ic); body.appendChild(top);
+    var meta = el('div', 'pl-meta');
+    meta.appendChild(el('span', '', '💧 ' + levelLabel('water', p.waterNeeds)));
+    meta.appendChild(el('span', '', '☀️ ' + levelLabel('light', p.lightNeeds)));
+    if (p.location) meta.appendChild(el('span', '', '📍 ' + p.location));
+    body.appendChild(meta);
+    if (p.tags.length) { var tg = el('div', 'pl-tags'); p.tags.forEach(function (x) { tg.appendChild(el('span', 'pl-tag', x)); }); body.appendChild(tg); }
+    var cares = el('div', 'pl-cares');
+    [['water', '💧'], ['fertilize', '🌱']].forEach(function (k) {
+      var due = nextDue(p, k[0], td); if (due === null) return;
+      var diff = due - td;
+      var b = el('button', 'pl-care' + (diff <= 0 ? ' is-due' : '')); b.type = 'button'; b.dataset.action = 'care'; b.dataset.type = k[0];
+      b.appendChild(el('span', '', k[1])); b.appendChild(el('span', '', careText(diff)));
+      b.setAttribute('aria-label', t(k[0] === 'water' ? 'watering' : 'fertilizing_task') + ': ' + careText(diff));
+      cares.appendChild(b);
+    });
+    body.appendChild(cares); card.appendChild(body); grid.appendChild(card);
+  });
+}
+function reminderCard(r) {
+  var card = el('article', 'pl-rem' + (r.diff < 0 ? ' is-overdue' : '')); card.dataset.id = r.plantId; card.dataset.type = r.type;
+  var b = el('button', 'pl-done', '✓'); b.type = 'button'; b.dataset.action = 'care'; b.dataset.type = r.type;
+  b.setAttribute('aria-label', t('mark_done') + ': ' + r.name);
+  card.appendChild(b);
+  var main = el('div', 'pl-rem-main');
+  main.appendChild(el('p', 'pl-rem-title', (r.type === 'water' ? '💧 ' + t('watering') : '🌱 ' + t('fertilizing_task')) + ' - ' + r.name));
+  var p = plants.find(function (x) { return x.id === r.plantId; });
+  var n = p ? (r.type === 'water' ? p.waterInterval : p.fertilizeInterval) : '';
+  main.appendChild(el('p', 'pl-rem-sub', t('every_n_days', { n: nf(n) })));
+  card.appendChild(main);
+  card.appendChild(el('span', 'pl-rem-date', dateText(r)));
+  return card;
+}
+function renderReminders() {
+  var sp = splitReminders(reminders(plants, todayNum()));
+  [['todayReminders', sp.today, 'no_reminders_today'], ['upcomingReminders', sp.upcoming, 'no_reminders_upcoming']].forEach(function (x) {
+    var box = $(x[0]); box.textContent = '';
+    if (!x[1].length) box.appendChild(el('p', 'pl-none', t(x[2])));
+    else x[1].forEach(function (r) { box.appendChild(reminderCard(r)); });
+  });
+}
+var GUIDE = [
+  ['💧', 'watering_correct', [['watering_low', 'watering_low_desc'], ['watering_medium', 'watering_medium_desc'], ['watering_high', 'watering_high_desc'], ['watering_note', 'watering_note_desc']]],
+  ['☀️', 'light_suitable', [['g_light_low', 'light_low_desc'], ['g_light_medium', 'light_medium_desc'], ['g_light_high', 'light_high_desc'], ['watering_note', 'light_note_desc']]],
+  ['🌡️', 'temp_humidity', [['temp_suitable', 'temp_suitable_desc'], ['humidity', 'humidity_desc'], ['watering_note', 'temp_note_desc']]],
+  ['🌿', 'fertilizing', [['fertilizing_time', 'fertilizing_time_desc'], ['fertilizer_type', 'fertilizer_type_desc'], ['watering_note', 'fertilizing_note_desc']]],
+  ['✂️', 'pruning_care', [['pruning_leaves', 'pruning_leaves_desc'], ['cleaning_leaves', 'cleaning_leaves_desc'], ['pot_change', 'pot_change_desc']]],
+  ['🐛', 'pests_diseases', [['aphids', 'aphids_desc'], ['mites', 'mites_desc'], ['root_rot', 'root_rot_desc'], ['watering_note', 'pest_note_desc']]],
+  ['🌱', 'beginner_plants', [['pothos', 'pothos_desc'], ['sansevieria', 'sansevieria_desc'], ['rubber_plant', 'rubber_plant_desc'], ['cactus', 'cactus_desc'], ['peace_lily', 'peace_lily_desc']]]
+];
+function renderGuide() {
+  var box = $('guideBox'); box.textContent = '';
+  GUIDE.forEach(function (g) {
+    var sec = el('section', 'pl-card pl-guide-sec');
+    sec.appendChild(el('h3', '', g[0] + ' ' + t(g[1])));
+    g[2].forEach(function (row) {
+      var p = el('p'); p.appendChild(el('strong', '', t(row[0]) + ' ')); p.appendChild(document.createTextNode(t(row[1]))); sec.appendChild(p);
+    });
+    box.appendChild(sec);
+  });
+}
+function chart(id, data, labelFn) {
+  var box = $(id); box.textContent = '';
+  var keys = Object.keys(data), total = keys.reduce(function (s, k) { return s + data[k]; }, 0);
+  if (!total) { box.appendChild(el('p', 'pl-none', t('no_data'))); return; }
+  var max = Math.max.apply(null, keys.map(function (k) { return data[k]; }));
+  keys.forEach(function (k) {
+    var row = el('div', 'pl-bar');
+    row.appendChild(el('span', 'pl-bar-label', labelFn(k)));
+    var tr = el('div', 'pl-bar-track'), f = el('span'); f.style.width = Math.round(data[k] / max * 100) + '%'; tr.appendChild(f); row.appendChild(tr);
+    row.appendChild(el('span', 'pl-bar-val', nf(data[k])));
+    box.appendChild(row);
+  });
+}
+function renderStats() {
+  var sp = splitReminders(reminders(plants, todayNum())), locs = distribution(plants.filter(function (p) { return p.location; }), 'location');
+  $('sTotal').textContent = nf(plants.length);
+  $('sToday').textContent = nf(sp.today.length);
+  $('sDone').textContent = nf(completedThisMonth(completed, new Date()));
+  $('sLoc').textContent = nf(Object.keys(locs).length);
+  chart('chartLoc', locs, function (k) { return k; });
+  var w = distribution(plants, 'waterNeeds'), l = distribution(plants, 'lightNeeds'), wo = {}, lo = {};
+  LEVELS.forEach(function (x) { if (w[x]) wo[x] = w[x]; if (l[x]) lo[x] = l[x]; });
+  chart('chartWater', wo, function (k) { return t(k); });
+  chart('chartLight', lo, function (k) { return t(k); });
+}
+function updateBadge() {
+  var n = splitReminders(reminders(plants, todayNum())).today.length, b = $('navCount');
+  b.textContent = nf(n); b.hidden = n === 0;
+}
+function render() {
+  updateBadge();
+  if (view === 'plants') renderPlants();
+  else if (view === 'reminders') renderReminders();
+  else if (view === 'guide') renderGuide();
+  else renderStats();
+}
+function switchView(v) {
+  view = v;
+  document.querySelectorAll('.pl-tab').forEach(function (b) { var on = b.dataset.view === v; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+  ['plants', 'reminders', 'guide', 'statistics'].forEach(function (x) { $('view-' + x).hidden = x !== v; });
+  render();
+}
+
+/* ---------- عملیات ---------- */
+function completeTask(id, type) {
+  var p = plants.find(function (x) { return x.id === id; }); if (!p) return;
+  var now = new Date().toISOString();
+  if (type === 'water') p.lastWatered = now; else p.lastFertilized = now;
+  completed.push({ reminderId: id + '-' + type, plantId: id, type: type, completedAt: now });
+  if (save()) toast(t(type === 'water' ? 'watering' : 'fertilizing_task') + ': ' + t('task_completed'));
+  render();
+}
+function fillLocations() {
+  var dl = $('locList'); dl.textContent = '';
+  var seen = {};
+  plants.forEach(function (p) { if (p.location && !seen[p.location]) { seen[p.location] = 1; var o = document.createElement('option'); o.value = p.location; dl.appendChild(o); } });
+}
+function showPreview(src) {
+  var box = $('imgPreview');
+  box.hidden = !src;
+  if (src) box.querySelector('img').src = src;
+}
+function openPlantDialog(id) {
+  editingId = id || null; pendingImage = '';
+  $('plantForm').reset();
+  var p = id ? plants.find(function (x) { return x.id === id; }) : null;
+  if (id && !p) return;
+  $('plantDialogTitle').textContent = t(p ? 'edit_plant' : 'add_new_plant');
+  fillLocations();
+  if (p) {
+    $('fName').value = p.name; $('fSci').value = p.scientificName; $('fWater').value = p.waterNeeds; $('fLight').value = p.lightNeeds;
+    $('fWInt').value = String(p.waterInterval); $('fFInt').value = p.fertilizeInterval ? String(p.fertilizeInterval) : '';
+    $('fLoc').value = p.location; $('fTags').value = p.tags.join(', '); $('fNotes').value = p.notes; pendingImage = p.image;
+  }
+  showPreview(pendingImage);
+  $('plantDialog').showModal();
+}
+function onPlantSubmit(e) {
+  e.preventDefault();
+  var old = editingId ? plants.find(function (x) { return x.id === editingId; }) : null;
+  var wi = parseInterval($('fWInt').value, 1, 30);
+  var fiRaw = $('fFInt').value.trim(), fi = fiRaw ? parseInterval(fiRaw, 1, 90) : null;
+  if (wi === null || (fiRaw && fi === null)) { toast(t('err_interval'), 'error'); return; }
+  var p = normalizePlant({
+    name: $('fName').value, scientificName: $('fSci').value, waterNeeds: $('fWater').value, lightNeeds: $('fLight').value,
+    waterInterval: wi, fertilizeInterval: fi, location: $('fLoc').value, tags: $('fTags').value, notes: $('fNotes').value, image: pendingImage,
+    lastWatered: old && old.lastWatered, lastFertilized: old && old.lastFertilized, createdAt: old ? old.createdAt : new Date().toISOString()
+  });
+  if (!p || !p.location) { toast(t('err_required'), 'error'); return; }
+  if (old) { p.id = old.id; plants = plants.map(function (x) { return x.id === old.id ? p : x; }); }
+  else { p.id = newId(); plants.push(p); }
+  if (save()) toast(t(old ? 'plant_saved' : 'plant_added'));
+  $('plantDialog').close(); render();
+}
+function resizeImage(file) {
+  return new Promise(function (resolve, reject) {
+    var MAX = 640;
+    var draw = function (src, w, h) {
+      var s = Math.min(1, MAX / Math.max(w, h)), c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(w * s)); c.height = Math.max(1, Math.round(h * s));
+      var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(src, 0, 0, c.width, c.height);
+      resolve(c.toDataURL('image/jpeg', 0.8));
     };
-
-    static save(key, data) {
-        try {
-            localStorage.setItem(key, JSON.stringify(data));
-            return true;
-        } catch (e) {
-            console.error('خطا در ذخیره‌سازی:', e);
-            return false;
-        }
+    if (window.createImageBitmap) {
+      createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (b) { draw(b, b.width, b.height); }, reject);
+    } else {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () { URL.revokeObjectURL(url); draw(im, im.naturalWidth, im.naturalHeight); };
+      im.onerror = function () { URL.revokeObjectURL(url); reject(new Error('img')); };
+      im.src = url;
     }
-
-    static load(key, defaultValue = null) {
-        try {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : defaultValue;
-        } catch (e) {
-            console.error('خطا در بارگذاری:', e);
-            return defaultValue;
-        }
-    }
-
-    static remove(key) {
-        localStorage.removeItem(key);
-    }
-
-    static clear() {
-        localStorage.clear();
-    }
+  });
+}
+async function onImageChange(e) {
+  var f = e.target.files[0]; if (!f) return;
+  if (!/^image\//.test(f.type) || f.size > 20 * 1024 * 1024) { toast(t('err_image'), 'error'); e.target.value = ''; return; }
+  try { pendingImage = await resizeImage(f); showPreview(pendingImage); }
+  catch (err) { console.error(err); toast(t('err_image'), 'error'); }
+  e.target.value = '';
+}
+async function onDelete(id) {
+  var p = plants.find(function (x) { return x.id === id; }); if (!p) return;
+  if (!(await confirmDialog(t('delete_confirm') + ' (' + p.name + ')', 'delete'))) return;
+  plants = plants.filter(function (x) { return x.id !== id; });
+  completed = completed.filter(function (c) { return c.plantId !== id; });
+  if (save()) toast(t('plant_deleted'));
+  render();
+}
+function dl(parent, rows) {
+  var d = el('dl', 'pl-dl');
+  rows.forEach(function (r) { if (r[1]) { d.appendChild(el('dt', '', r[0])); d.appendChild(el('dd', '', r[1])); } });
+  parent.appendChild(d);
+}
+function openDetails(id) {
+  var p = plants.find(function (x) { return x.id === id; }); if (!p) return;
+  detailsId = id;
+  $('detailsTitle').textContent = p.name;
+  var body = $('detailsBody'); body.textContent = '';
+  var fd = function (iso) { return iso ? new Date(iso).toLocaleDateString(loc(), { year: 'numeric', month: 'long', day: 'numeric' }) : ''; };
+  if (p.image) { var im = document.createElement('img'); im.className = 'pl-d-img'; im.src = p.image; im.alt = p.name; body.appendChild(im); }
+  var s1 = el('div', 'pl-d-sec'); s1.appendChild(el('h3', '', t('main_info')));
+  dl(s1, [[t('scientific_name'), p.scientificName], [t('location'), p.location], [t('date_added'), p.createdAt === new Date(0).toISOString() ? '' : fd(p.createdAt)]]);
+  body.appendChild(s1);
+  var s2 = el('div', 'pl-d-sec'); s2.appendChild(el('h3', '', t('plant_needs')));
+  dl(s2, [[t('water_needs'), levelLabel('water', p.waterNeeds)], [t('light_needs'), levelLabel('light', p.lightNeeds)],
+    [t('water_interval'), t('every_n_days', { n: nf(p.waterInterval) })],
+    [t('fertilize_interval'), p.fertilizeInterval ? t('every_n_days', { n: nf(p.fertilizeInterval) }) : '']]);
+  body.appendChild(s2);
+  var s3 = el('div', 'pl-d-sec'); s3.appendChild(el('h3', '', t('last_care')));
+  dl(s3, [[t('last_watering'), p.lastWatered ? fd(p.lastWatered) : t('not_watered_yet')], [t('last_fertilizing'), p.fertilizeInterval ? (p.lastFertilized ? fd(p.lastFertilized) : t('not_fertilized_yet')) : '']]);
+  body.appendChild(s3);
+  if (p.tags.length) { var s4 = el('div', 'pl-d-sec'); s4.appendChild(el('h3', '', t('tags'))); var tg = el('div', 'pl-tags'); p.tags.forEach(function (x) { tg.appendChild(el('span', 'pl-tag', x)); }); s4.appendChild(tg); body.appendChild(s4); }
+  if (p.notes) { var s5 = el('div', 'pl-d-sec'); s5.appendChild(el('h3', '', t('notes'))); s5.appendChild(el('p', '', p.notes)); body.appendChild(s5); }
+  $('detailsDialog').showModal();
+}
+function exportData() {
+  var data = JSON.stringify({ version: 1, plants: plants, completedTasks: completed }, null, 2);
+  var url = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+  var a = document.createElement('a'); a.href = url; a.download = 'plants-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  toast(t('export_success'));
+}
+function onImportFile(e) {
+  var f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  if (f.size > 25 * 1024 * 1024) { toast(t('import_error'), 'error'); return; }
+  var r = new FileReader();
+  r.onload = async function () {
+    var res = parseImport(String(r.result));
+    if (!res || !res.plants.length) { toast(t('import_error'), 'error'); return; }
+    if (!(await confirmDialog(t('import_confirm', { n: nf(res.plants.length), m: nf(plants.length) }), 'import_replace'))) return;
+    var seen = {};
+    plants = res.plants.map(function (p) { if (!p.id || seen[p.id]) p.id = newId(); seen[p.id] = 1; return p; });
+    completed = res.completed;
+    if (save()) toast(res.skipped ? t('import_partial', { n: nf(res.skipped) }) : t('import_success'), res.skipped ? 'warn' : '');
+    activeFilter = 'all'; render();
+  };
+  r.onerror = function () { toast(t('import_error'), 'error'); };
+  r.readAsText(f);
 }
 
-// ===== Theme Manager =====
-class ThemeManager {
-    constructor() {
-        this.currentTheme = StorageManager.load(StorageManager.KEYS.THEME, 'light');
-        this.applyTheme(this.currentTheme);
-    }
-
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        this.applyTheme(this.currentTheme);
-        StorageManager.save(StorageManager.KEYS.THEME, this.currentTheme);
-    }
-
-    applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        const themeIcon = document.getElementById('themeIcon');
-        if (themeIcon) {
-            themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
-        }
-    }
-
-    getCurrentTheme() {
-        return this.currentTheme;
-    }
+function bind() {
+  document.querySelectorAll('.pl-tab').forEach(function (b) { b.addEventListener('click', function () { switchView(b.dataset.view); }); });
+  document.querySelector('.pl-nav').addEventListener('keydown', function (e) {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.pl-tab')), i = tabs.indexOf(document.activeElement);
+    if (i < 0) return;
+    var step = (e.key === 'ArrowLeft' ? 1 : e.key === 'ArrowRight' ? -1 : 0) * (document.documentElement.dir === 'rtl' ? 1 : -1);
+    if (e.key === 'Home') i = 0; else if (e.key === 'End') i = tabs.length - 1; else if (step) i = (i + step + tabs.length) % tabs.length; else return;
+    e.preventDefault(); tabs[i].focus(); switchView(tabs[i].dataset.view);
+  });
+  $('addPlantBtn').addEventListener('click', function () { openPlantDialog(); });
+  $('emptyAddBtn').addEventListener('click', function () { openPlantDialog(); });
+  $('plantForm').addEventListener('submit', onPlantSubmit);
+  $('plantCancel').addEventListener('click', function () { $('plantDialog').close(); });
+  $('fImage').addEventListener('change', onImageChange);
+  $('imgRemove').addEventListener('click', function () { pendingImage = ''; showPreview(''); });
+  $('fWater').addEventListener('change', function () { if (!$('fWInt').value.trim() && DEFAULT_WATER[this.value]) $('fWInt').value = String(DEFAULT_WATER[this.value]); });
+  $('searchInput').addEventListener('input', function (e) { search = e.target.value; renderPlants(); });
+  $('filterTags').addEventListener('click', function (e) { var b = e.target.closest('.pl-chip'); if (!b) return; activeFilter = b.dataset.filter; renderPlants(); });
+  var onAction = function (e) {
+    var b = e.target.closest('button[data-action]'), c = e.target.closest('[data-id]'); if (!b || !c) return;
+    var id = c.dataset.id, a = b.dataset.action;
+    if (a === 'details') openDetails(id); else if (a === 'edit') openPlantDialog(id); else if (a === 'delete') onDelete(id); else if (a === 'care') completeTask(id, b.dataset.type);
+  };
+  $('plantsGrid').addEventListener('click', onAction);
+  $('todayReminders').addEventListener('click', onAction);
+  $('upcomingReminders').addEventListener('click', onAction);
+  $('clearCompletedBtn').addEventListener('click', async function () {
+    if (!completed.length) { toast(t('nothing_to_clear')); return; }
+    if (!(await confirmDialog(t('clear_history_confirm'), 'confirm_yes'))) return;
+    completed = []; if (save()) toast(t('tasks_cleared')); render();
+  });
+  $('exportBtn').addEventListener('click', exportData);
+  $('importBtn').addEventListener('click', function () { $('importFile').click(); });
+  $('importFile').addEventListener('change', onImportFile);
+  $('detailsClose').addEventListener('click', function () { $('detailsDialog').close(); });
+  $('detailsEdit').addEventListener('click', function () { var id = detailsId; $('detailsDialog').close(); openPlantDialog(id); });
+  ['plantDialog', 'detailsDialog', 'confirmDialog'].forEach(function (id) {
+    $(id).addEventListener('click', function (e) { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  });
+  window.addEventListener('languageChanged', function (e) { lang = e.detail === 'en' ? 'en' : 'fa'; applyI18n(); render(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
 }
 
-// ===== Language Manager =====
-class LanguageManager {
-    constructor() {
-        this.currentLang = StorageManager.load(StorageManager.KEYS.LANG, 'fa');
-        this.translations = {};
-        this.loadTranslations();
-    }
-
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyLanguage(this.currentLang);
-        } catch (e) {
-            console.error('خطا در بارگذاری ترجمه‌ها:', e);
-        }
-    }
-
-    toggleLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        this.applyLanguage(this.currentLang);
-        StorageManager.save(StorageManager.KEYS.LANG, this.currentLang);
-    }
-
-    applyLanguage(lang) {
-        document.documentElement.setAttribute('lang', lang);
-        document.documentElement.setAttribute('dir', lang === 'fa' ? 'rtl' : 'ltr');
-        document.body.style.direction = lang === 'fa' ? 'rtl' : 'ltr';
-        
-        const langText = document.getElementById('langText');
-        if (langText) {
-            langText.textContent = lang === 'fa' ? 'EN' : 'FA';
-        }
-
-        this.updateTexts();
-    }
-
-    updateTexts() {
-        if (!this.translations[this.currentLang]) return;
-
-        const elements = document.querySelectorAll('[data-i18n]');
-        elements.forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            if (this.translations[this.currentLang][key]) {
-                element.textContent = this.translations[this.currentLang][key];
-            }
-        });
-
-        const placeholders = document.querySelectorAll('[data-i18n-placeholder]');
-        placeholders.forEach(element => {
-            const key = element.getAttribute('data-i18n-placeholder');
-            if (this.translations[this.currentLang][key]) {
-                element.placeholder = this.translations[this.currentLang][key];
-            }
-        });
-
-        const titles = document.querySelectorAll('[data-i18n-title]');
-        titles.forEach(element => {
-            const key = element.getAttribute('data-i18n-title');
-            if (this.translations[this.currentLang][key]) {
-                element.title = this.translations[this.currentLang][key];
-            }
-        });
-    }
-
-    translate(key) {
-        return this.translations[this.currentLang]?.[key] || key;
-    }
-
-    getCurrentLang() {
-        return this.currentLang;
-    }
+async function boot() {
+  try { dict = await (await fetch('assets/translations.json')).json(); } catch (e) { console.error('translations', e); }
+  load(); applyI18n(); bind(); render();
+  var due = splitReminders(reminders(plants, todayNum())).today.length;
+  if (due > 0) setTimeout(function () { toast(t('reminders_alert', { n: nf(due) }), 'warn'); }, 800);
 }
-
-// ===== Plant Manager =====
-class PlantManager {
-    constructor() {
-        this.plants = StorageManager.load(StorageManager.KEYS.PLANTS, []);
-        this.currentEditId = null;
-    }
-
-    addPlant(plant) {
-        plant.id = Date.now().toString();
-        plant.createdAt = new Date().toISOString();
-        this.plants.push(plant);
-        this.save();
-        return plant;
-    }
-
-    updatePlant(id, updatedData) {
-        const index = this.plants.findIndex(p => p.id === id);
-        if (index !== -1) {
-            this.plants[index] = { ...this.plants[index], ...updatedData, updatedAt: new Date().toISOString() };
-            this.save();
-            return true;
-        }
-        return false;
-    }
-
-    deletePlant(id) {
-        this.plants = this.plants.filter(p => p.id !== id);
-        this.save();
-    }
-
-    getPlant(id) {
-        return this.plants.find(p => p.id === id);
-    }
-
-    getAllPlants() {
-        return this.plants;
-    }
-
-    filterPlants(searchTerm, filterTag) {
-        return this.plants.filter(plant => {
-            const matchesSearch = !searchTerm || 
-                plant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (plant.scientificName && plant.scientificName.toLowerCase().includes(searchTerm.toLowerCase()));
-            
-            const matchesFilter = filterTag === 'all' || 
-                plant.location.toLowerCase() === filterTag.toLowerCase() ||
-                plant.waterNeeds === filterTag ||
-                plant.lightNeeds === filterTag ||
-                (plant.tags && plant.tags.some(tag => tag.toLowerCase() === filterTag.toLowerCase()));
-
-            return matchesSearch && matchesFilter;
-        });
-    }
-
-    save() {
-        StorageManager.save(StorageManager.KEYS.PLANTS, this.plants);
-    }
-
-    exportData() {
-        return JSON.stringify(this.plants, null, 2);
-    }
-
-    importData(jsonData) {
-        try {
-            const data = JSON.parse(jsonData);
-            if (Array.isArray(data)) {
-                this.plants = data;
-                this.save();
-                return true;
-            }
-            return false;
-        } catch (e) {
-            console.error('خطا در import:', e);
-            return false;
-        }
-    }
-
-    getAllTags() {
-        const allTags = new Set(['all']);
-        
-        // Location tags
-        this.plants.forEach(plant => {
-            if (plant.location) allTags.add(plant.location);
-            if (plant.waterNeeds) allTags.add(plant.waterNeeds);
-            if (plant.lightNeeds) allTags.add(plant.lightNeeds);
-            if (plant.tags) {
-                plant.tags.forEach(tag => allTags.add(tag));
-            }
-        });
-
-        return Array.from(allTags);
-    }
-}
-
-// ===== Reminder Manager =====
-class ReminderManager {
-    constructor(plantManager) {
-        this.plantManager = plantManager;
-        this.completedTasks = StorageManager.load(StorageManager.KEYS.COMPLETED_TASKS, []);
-    }
-
-    getReminders() {
-        const reminders = [];
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        this.plantManager.getAllPlants().forEach(plant => {
-            // Water reminder
-            if (plant.lastWatered) {
-                const lastWatered = new Date(plant.lastWatered);
-                const nextWater = new Date(lastWatered);
-                nextWater.setDate(nextWater.getDate() + parseInt(plant.waterInterval));
-                
-                reminders.push({
-                    id: `${plant.id}-water`,
-                    plantId: plant.id,
-                    plantName: plant.name,
-                    type: 'water',
-                    typeLabel: 'آبیاری',
-                    icon: '💧',
-                    dueDate: nextWater,
-                    isCompleted: this.isTaskCompleted(`${plant.id}-water`, nextWater)
-                });
-            } else {
-                // First time watering
-                reminders.push({
-                    id: `${plant.id}-water`,
-                    plantId: plant.id,
-                    plantName: plant.name,
-                    type: 'water',
-                    typeLabel: 'آبیاری',
-                    icon: '💧',
-                    dueDate: today,
-                    isCompleted: this.isTaskCompleted(`${plant.id}-water`, today)
-                });
-            }
-
-            // Fertilize reminder
-            if (plant.fertilizeInterval) {
-                if (plant.lastFertilized) {
-                    const lastFertilized = new Date(plant.lastFertilized);
-                    const nextFertilize = new Date(lastFertilized);
-                    nextFertilize.setDate(nextFertilize.getDate() + parseInt(plant.fertilizeInterval));
-                    
-                    reminders.push({
-                        id: `${plant.id}-fertilize`,
-                        plantId: plant.id,
-                        plantName: plant.name,
-                        type: 'fertilize',
-                        typeLabel: 'کوددهی',
-                        icon: '🌱',
-                        dueDate: nextFertilize,
-                        isCompleted: this.isTaskCompleted(`${plant.id}-fertilize`, nextFertilize)
-                    });
-                } else {
-                    reminders.push({
-                        id: `${plant.id}-fertilize`,
-                        plantId: plant.id,
-                        plantName: plant.name,
-                        type: 'fertilize',
-                        typeLabel: 'کوددهی',
-                        icon: '🌱',
-                        dueDate: today,
-                        isCompleted: this.isTaskCompleted(`${plant.id}-fertilize`, today)
-                    });
-                }
-            }
-        });
-
-        return reminders.sort((a, b) => a.dueDate - b.dueDate);
-    }
-
-    getTodayReminders() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        return this.getReminders().filter(reminder => {
-            const dueDate = new Date(reminder.dueDate);
-            dueDate.setHours(0, 0, 0, 0);
-            return dueDate <= today;
-        });
-    }
-
-    getUpcomingReminders() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        return this.getReminders().filter(reminder => {
-            const dueDate = new Date(reminder.dueDate);
-            dueDate.setHours(0, 0, 0, 0);
-            return dueDate > today;
-        });
-    }
-
-    completeTask(reminderId, plantId, type) {
-        const plant = this.plantManager.getPlant(plantId);
-        if (!plant) return;
-
-        const today = new Date().toISOString();
-        
-        if (type === 'water') {
-            plant.lastWatered = today;
-        } else if (type === 'fertilize') {
-            plant.lastFertilized = today;
-        }
-
-        this.plantManager.updatePlant(plantId, plant);
-        
-        // Record completion
-        this.completedTasks.push({
-            reminderId,
-            plantId,
-            type,
-            completedAt: today
-        });
-        this.saveCompletedTasks();
-    }
-
-    isTaskCompleted(reminderId, dueDate) {
-        const dueDateStr = new Date(dueDate).toDateString();
-        return this.completedTasks.some(task => 
-            task.reminderId === reminderId && 
-            new Date(task.completedAt).toDateString() === dueDateStr
-        );
-    }
-
-    clearCompletedTasks() {
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-        
-        this.completedTasks = this.completedTasks.filter(task => 
-            new Date(task.completedAt) > oneMonthAgo
-        );
-        this.saveCompletedTasks();
-    }
-
-    saveCompletedTasks() {
-        StorageManager.save(StorageManager.KEYS.COMPLETED_TASKS, this.completedTasks);
-    }
-
-    getCompletedTasksThisMonth() {
-        const now = new Date();
-        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        
-        return this.completedTasks.filter(task => 
-            new Date(task.completedAt) >= firstDayOfMonth
-        ).length;
-    }
-}
-
-// ===== Statistics Manager =====
-class StatisticsManager {
-    constructor(plantManager, reminderManager) {
-        this.plantManager = plantManager;
-        this.reminderManager = reminderManager;
-    }
-
-    getTotalPlants() {
-        return this.plantManager.getAllPlants().length;
-    }
-
-    getTodayTasks() {
-        return this.reminderManager.getTodayReminders().length;
-    }
-
-    getCompletedTasksThisMonth() {
-        return this.reminderManager.getCompletedTasksThisMonth();
-    }
-
-    getTotalLocations() {
-        const locations = new Set();
-        this.plantManager.getAllPlants().forEach(plant => {
-            if (plant.location) locations.add(plant.location);
-        });
-        return locations.size;
-    }
-
-    getLocationDistribution() {
-        const distribution = {};
-        this.plantManager.getAllPlants().forEach(plant => {
-            const location = plant.location || 'نامشخص';
-            distribution[location] = (distribution[location] || 0) + 1;
-        });
-        return distribution;
-    }
-
-    getWaterNeedsDistribution() {
-        const distribution = {
-            'low': 0,
-            'medium': 0,
-            'high': 0
-        };
-        this.plantManager.getAllPlants().forEach(plant => {
-            if (plant.waterNeeds) {
-                distribution[plant.waterNeeds]++;
-            }
-        });
-        return {
-            'کم': distribution.low,
-            'متوسط': distribution.medium,
-            'زیاد': distribution.high
-        };
-    }
-
-    getLightNeedsDistribution() {
-        const distribution = {
-            'low': 0,
-            'medium': 0,
-            'high': 0
-        };
-        this.plantManager.getAllPlants().forEach(plant => {
-            if (plant.lightNeeds) {
-                distribution[plant.lightNeeds]++;
-            }
-        });
-        return {
-            'کم': distribution.low,
-            'متوسط': distribution.medium,
-            'زیاد': distribution.high
-        };
-    }
-}
-
-// ===== UI Manager =====
-class UIManager {
-    constructor(plantManager, reminderManager, statisticsManager, themeManager, languageManager) {
-        this.plantManager = plantManager;
-        this.reminderManager = reminderManager;
-        this.statisticsManager = statisticsManager;
-        this.themeManager = themeManager;
-        this.languageManager = languageManager;
-        this.initializeEventListeners();
-        this.currentView = 'plants';
-    }
-
-    initializeEventListeners() {
-        // Navigation
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const view = e.currentTarget.dataset.view;
-                this.switchView(view);
-            });
-        });
-
-        // Add plant button
-        document.getElementById('addPlantBtn').addEventListener('click', () => {
-            this.openPlantModal();
-        });
-
-        // Modal close buttons
-        document.getElementById('closeModal').addEventListener('click', () => {
-            this.closePlantModal();
-        });
-
-        document.getElementById('cancelBtn').addEventListener('click', () => {
-            this.closePlantModal();
-        });
-
-        document.getElementById('closeDetailsModal').addEventListener('click', () => {
-            this.closeDetailsModal();
-        });
-
-        // Form submit
-        document.getElementById('plantForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.savePlant();
-        });
-
-        // Search
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            this.filterAndRenderPlants();
-        });
-
-        // Image preview
-        document.getElementById('plantImage').addEventListener('change', (e) => {
-            this.handleImagePreview(e);
-        });
-
-        // Export/Import
-        document.getElementById('exportBtn').addEventListener('click', () => {
-            this.exportData();
-        });
-
-        document.getElementById('importBtn').addEventListener('click', () => {
-            document.getElementById('importFileInput').click();
-        });
-
-        document.getElementById('importFileInput').addEventListener('change', (e) => {
-            this.importData(e);
-        });
-
-        // Clear completed tasks
-        document.getElementById('clearCompletedBtn').addEventListener('click', () => {
-            this.reminderManager.clearCompletedTasks();
-            this.renderReminders();
-            this.showToast(this.languageManager.translate('tasks_cleared'), 'success');
-        });
-
-        // Close modals on outside click
-        window.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('show');
-            }
-        });
-    }
-
-    switchView(viewName) {
-        // Update navigation
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
-
-        // Update views
-        document.querySelectorAll('.view').forEach(view => {
-            view.classList.remove('active');
-        });
-        document.getElementById(`${viewName}View`).classList.add('active');
-
-        this.currentView = viewName;
-
-        // Render content based on view
-        this.renderCurrentView();
-    }
-
-    renderCurrentView() {
-        if (this.currentView === 'plants') {
-            this.renderPlants();
-        } else if (this.currentView === 'reminders') {
-            this.renderReminders();
-        } else if (this.currentView === 'guide') {
-            // Guide is static, no need to render
-        } else if (this.currentView === 'statistics') {
-            this.renderStatistics();
-        }
-    }
-
-    renderPlants() {
-        this.renderFilterTags();
-        this.filterAndRenderPlants();
-    }
-
-    renderFilterTags() {
-        const tags = this.plantManager.getAllTags();
-        const container = document.getElementById('filterTags');
-        
-        container.innerHTML = tags.map(tag => {
-            const label = this.getTagLabel(tag);
-            const active = tag === 'all' ? 'active' : '';
-            return `<button class="tag-filter ${active}" data-filter="${tag}">${label}</button>`;
-        }).join('');
-
-        // Add click listeners
-        container.querySelectorAll('.tag-filter').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                container.querySelectorAll('.tag-filter').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                this.filterAndRenderPlants();
-            });
-        });
-    }
-
-    filterAndRenderPlants() {
-        const searchTerm = document.getElementById('searchInput').value;
-        const activeFilter = document.querySelector('.tag-filter.active');
-        const filterTag = activeFilter ? activeFilter.dataset.filter : 'all';
-        
-        const plants = this.plantManager.filterPlants(searchTerm, filterTag);
-        
-        const grid = document.getElementById('plantsGrid');
-        const emptyState = document.getElementById('emptyState');
-
-        if (plants.length === 0) {
-            grid.innerHTML = '';
-            emptyState.classList.add('show');
-        } else {
-            emptyState.classList.remove('show');
-            grid.innerHTML = plants.map(plant => this.createPlantCard(plant)).join('');
-
-            // Add event listeners
-            grid.querySelectorAll('.plant-card').forEach(card => {
-                const plantId = card.dataset.plantId;
-                
-                card.querySelector('.plant-info').addEventListener('click', () => {
-                    this.openPlantDetails(plantId);
-                });
-
-                card.querySelector('.edit-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.openPlantModal(plantId);
-                });
-
-                card.querySelector('.delete-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.deletePlant(plantId);
-                });
-
-                const waterBtn = card.querySelector('.water-btn');
-                if (waterBtn) {
-                    waterBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        this.completeTask(plantId, 'water');
-                    });
-                }
-
-                const fertilizeBtn = card.querySelector('.fertilize-btn');
-                if (fertilizeBtn) {
-                    fertilizeBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        this.completeTask(plantId, 'fertilize');
-                    });
-                }
-            });
-        }
-    }
-
-    createPlantCard(plant) {
-        const waterDue = this.getNextWateringDate(plant);
-        const fertilizeDue = plant.fertilizeInterval ? this.getNextFertilizeDate(plant) : null;
-        
-        const imageHtml = plant.image 
-            ? `<img src="${plant.image}" alt="${plant.name}">`
-            : '<div class="plant-image">🌿</div>';
-
-        const tagsHtml = plant.tags && plant.tags.length > 0
-            ? plant.tags.map(tag => `<span class="tag">${tag}</span>`).join('')
-            : '';
-
-        const waterDueClass = waterDue.overdue ? 'due' : '';
-        const fertilizeDueClass = fertilizeDue && fertilizeDue.overdue ? 'due' : '';
-
-        const remindersHtml = `
-            <div class="plant-reminders">
-                <button class="reminder-btn water-btn ${waterDueClass}">
-                    <span class="reminder-icon">💧</span>
-                    <span class="reminder-text">${waterDue.text}</span>
-                </button>
-                ${fertilizeDue ? `
-                    <button class="reminder-btn fertilize-btn ${fertilizeDueClass}">
-                        <span class="reminder-icon">🌱</span>
-                        <span class="reminder-text">${fertilizeDue.text}</span>
-                    </button>
-                ` : ''}
-            </div>
-        `;
-
-        return `
-            <div class="plant-card" data-plant-id="${plant.id}">
-                ${plant.image ? `<div class="plant-image"><img src="${plant.image}" alt="${plant.name}"></div>` : `<div class="plant-image">🌿</div>`}
-                <div class="plant-info">
-                    <div class="plant-header">
-                        <div>
-                            <div class="plant-name">${plant.name}</div>
-                            ${plant.scientificName ? `<div class="plant-scientific">${plant.scientificName}</div>` : ''}
-                        </div>
-                        <div class="plant-actions">
-                            <button class="icon-btn edit-btn" title="ویرایش">✏️</button>
-                            <button class="icon-btn delete-btn" title="حذف">🗑️</button>
-                        </div>
-                    </div>
-                    
-                    <div class="plant-meta">
-                        <div class="meta-item">
-                            <span class="meta-icon">💧</span>
-                            <span>${this.getWaterNeedsLabel(plant.waterNeeds)}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-icon">☀️</span>
-                            <span>${this.getLightNeedsLabel(plant.lightNeeds)}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-icon">📍</span>
-                            <span>${plant.location}</span>
-                        </div>
-                    </div>
-
-                    ${tagsHtml ? `<div class="plant-tags">${tagsHtml}</div>` : ''}
-                    
-                    ${remindersHtml}
-                </div>
-            </div>
-        `;
-    }
-
-    getNextWateringDate(plant) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (!plant.lastWatered) {
-            return { text: this.languageManager.translate('today'), overdue: true };
-        }
-
-        const lastWatered = new Date(plant.lastWatered);
-        const nextWater = new Date(lastWatered);
-        nextWater.setDate(nextWater.getDate() + parseInt(plant.waterInterval));
-        nextWater.setHours(0, 0, 0, 0);
-
-        const diffDays = Math.ceil((nextWater - today) / (1000 * 60 * 60 * 24));
-
-        if (diffDays < 0) {
-            return { text: `${Math.abs(diffDays)} ${this.languageManager.translate('days_ago')}`, overdue: true };
-        } else if (diffDays === 0) {
-            return { text: this.languageManager.translate('today'), overdue: true };
-        } else if (diffDays === 1) {
-            return { text: this.languageManager.translate('tomorrow'), overdue: false };
-        } else {
-            return { text: `${diffDays} ${this.languageManager.translate('days_later')}`, overdue: false };
-        }
-    }
-
-    getNextFertilizeDate(plant) {
-        if (!plant.fertilizeInterval) return null;
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (!plant.lastFertilized) {
-            return { text: this.languageManager.translate('today'), overdue: true };
-        }
-
-        const lastFertilized = new Date(plant.lastFertilized);
-        const nextFertilize = new Date(lastFertilized);
-        nextFertilize.setDate(nextFertilize.getDate() + parseInt(plant.fertilizeInterval));
-        nextFertilize.setHours(0, 0, 0, 0);
-
-        const diffDays = Math.ceil((nextFertilize - today) / (1000 * 60 * 60 * 24));
-
-        if (diffDays < 0) {
-            return { text: `${Math.abs(diffDays)} ${this.languageManager.translate('days_ago')}`, overdue: true };
-        } else if (diffDays === 0) {
-            return { text: this.languageManager.translate('today'), overdue: true };
-        } else if (diffDays === 1) {
-            return { text: this.languageManager.translate('tomorrow'), overdue: false };
-        } else {
-            return { text: `${diffDays} ${this.languageManager.translate('days_later')}`, overdue: false };
-        }
-    }
-
-    renderReminders() {
-        const todayReminders = this.reminderManager.getTodayReminders();
-        const upcomingReminders = this.reminderManager.getUpcomingReminders();
-
-        // Today's reminders
-        const todayContainer = document.getElementById('todayReminders');
-        if (todayReminders.length === 0) {
-            todayContainer.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">${this.languageManager.translate('no_reminders_today')}</p>`;
-        } else {
-            todayContainer.innerHTML = todayReminders.map(reminder => 
-                this.createReminderCard(reminder)
-            ).join('');
-        }
-
-        // Upcoming reminders
-        const upcomingContainer = document.getElementById('upcomingReminders');
-        if (upcomingReminders.length === 0) {
-            upcomingContainer.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">${this.languageManager.translate('no_reminders_upcoming')}</p>`;
-        } else {
-            upcomingContainer.innerHTML = upcomingReminders.map(reminder => 
-                this.createReminderCard(reminder)
-            ).join('');
-        }
-
-        // Add event listeners
-        document.querySelectorAll('.reminder-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const card = e.target.closest('.reminder-card');
-                const reminderId = card.dataset.reminderId;
-                const plantId = card.dataset.plantId;
-                const type = card.dataset.type;
-
-                if (e.target.checked) {
-                    card.classList.add('completed');
-                    this.reminderManager.completeTask(reminderId, plantId, type);
-                    this.showToast(this.languageManager.translate('task_completed'), 'success');
-                    setTimeout(() => this.renderReminders(), 500);
-                }
-            });
-        });
-    }
-
-    createReminderCard(reminder) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const dueDate = new Date(reminder.dueDate);
-        dueDate.setHours(0, 0, 0, 0);
-
-        const isOverdue = dueDate < today;
-        const dateText = this.formatReminderDate(reminder.dueDate);
-        
-        const typeLabel = reminder.type === 'water' ? this.languageManager.translate('watering') : this.languageManager.translate('fertilizing_task');
-
-        return `
-            <div class="reminder-card ${isOverdue ? 'overdue' : ''} ${reminder.isCompleted ? 'completed' : ''}" 
-                 data-reminder-id="${reminder.id}"
-                 data-plant-id="${reminder.plantId}"
-                 data-type="${reminder.type}">
-                <input type="checkbox" class="reminder-checkbox" ${reminder.isCompleted ? 'checked' : ''}>
-                <div class="reminder-content">
-                    <div class="reminder-title">${reminder.icon} ${typeLabel} - ${reminder.plantName}</div>
-                    <div class="reminder-subtitle">${this.languageManager.translate('water_every')} ${this.getIntervalText(reminder)} ${this.languageManager.translate('once')}</div>
-                </div>
-                <div class="reminder-date">${dateText}</div>
-            </div>
-        `;
-    }
-
-    getIntervalText(reminder) {
-        const plant = this.plantManager.getPlant(reminder.plantId);
-        if (!plant) return '';
-        
-        if (reminder.type === 'water') {
-            return `${plant.waterInterval} ${this.languageManager.translate('every_days')}`;
-        } else if (reminder.type === 'fertilize') {
-            return `${plant.fertilizeInterval} ${this.languageManager.translate('every_days')}`;
-        }
-        return '';
-    }
-
-    formatReminderDate(date) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const targetDate = new Date(date);
-        targetDate.setHours(0, 0, 0, 0);
-
-        const diffTime = targetDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 0) return this.languageManager.translate('today');
-        if (diffDays === 1) return this.languageManager.translate('tomorrow');
-        if (diffDays === -1) return this.languageManager.translate('yesterday');
-        if (diffDays < 0) return `${Math.abs(diffDays)} ${this.languageManager.translate('days_ago')}`;
-        if (diffDays < 7) return `${diffDays} ${this.languageManager.translate('days_later')}`;
-        
-        return new Date(date).toLocaleDateString(this.languageManager.getCurrentLang() === 'fa' ? 'fa-IR' : 'en-US');
-    }
-
-    renderStatistics() {
-        // Update stat cards
-        document.getElementById('totalPlants').textContent = this.statisticsManager.getTotalPlants();
-        document.getElementById('todayTasks').textContent = this.statisticsManager.getTodayTasks();
-        document.getElementById('completedTasks').textContent = this.statisticsManager.getCompletedTasksThisMonth();
-        document.getElementById('totalLocations').textContent = this.statisticsManager.getTotalLocations();
-
-        // Render charts with translated labels
-        const waterDist = this.statisticsManager.getWaterNeedsDistribution();
-        const waterDistTranslated = {
-            [this.languageManager.translate('low')]: waterDist['کم'],
-            [this.languageManager.translate('medium')]: waterDist['متوسط'],
-            [this.languageManager.translate('high')]: waterDist['زیاد']
-        };
-
-        const lightDist = this.statisticsManager.getLightNeedsDistribution();
-        const lightDistTranslated = {
-            [this.languageManager.translate('low')]: lightDist['کم'],
-            [this.languageManager.translate('medium')]: lightDist['متوسط'],
-            [this.languageManager.translate('high')]: lightDist['زیاد']
-        };
-
-        this.renderChart('locationChart', this.statisticsManager.getLocationDistribution());
-        this.renderChart('waterChart', waterDistTranslated);
-        this.renderChart('lightChart', lightDistTranslated);
-    }
-
-    renderChart(containerId, data) {
-        const container = document.getElementById(containerId);
-        const total = Object.values(data).reduce((sum, val) => sum + val, 0);
-
-        if (total === 0) {
-            container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">${this.languageManager.translate('no_data')}</p>`;
-            return;
-        }
-
-        container.innerHTML = Object.entries(data).map(([label, value]) => {
-            const percentage = total > 0 ? (value / total * 100).toFixed(1) : 0;
-            return `
-                <div class="chart-bar">
-                    <div class="chart-label">${label}</div>
-                    <div class="chart-bar-container">
-                        <div class="chart-bar-fill" style="width: ${percentage}%">
-                            ${percentage > 10 ? value : ''}
-                        </div>
-                    </div>
-                    <div class="chart-value">${value}</div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    openPlantModal(plantId = null) {
-        const modal = document.getElementById('plantModal');
-        const form = document.getElementById('plantForm');
-        const title = document.getElementById('modalTitle');
-
-        form.reset();
-        document.getElementById('imagePreview').innerHTML = '';
-        document.getElementById('imagePreview').classList.remove('show');
-
-        if (plantId) {
-            // Edit mode
-            const plant = this.plantManager.getPlant(plantId);
-            if (!plant) return;
-
-            title.textContent = this.languageManager.translate('edit_plant');
-            this.plantManager.currentEditId = plantId;
-
-            document.getElementById('plantName').value = plant.name;
-            document.getElementById('scientificName').value = plant.scientificName || '';
-            document.getElementById('waterNeeds').value = plant.waterNeeds;
-            document.getElementById('lightNeeds').value = plant.lightNeeds;
-            document.getElementById('waterInterval').value = plant.waterInterval;
-            document.getElementById('fertilizeInterval').value = plant.fertilizeInterval || '';
-            document.getElementById('location').value = plant.location;
-            document.getElementById('tags').value = plant.tags ? plant.tags.join(', ') : '';
-            document.getElementById('notes').value = plant.notes || '';
-
-            if (plant.image) {
-                const preview = document.getElementById('imagePreview');
-                preview.innerHTML = `<img src="${plant.image}" alt="Preview">`;
-                preview.classList.add('show');
-            }
-        } else {
-            // Add mode
-            title.textContent = this.languageManager.translate('add_new_plant');
-            this.plantManager.currentEditId = null;
-        }
-
-        // Populate location suggestions
-        this.populateLocationSuggestions();
-
-        modal.classList.add('show');
-    }
-
-    closePlantModal() {
-        document.getElementById('plantModal').classList.remove('show');
-        this.plantManager.currentEditId = null;
-    }
-
-    populateLocationSuggestions() {
-        const datalist = document.getElementById('locationSuggestions');
-        const locations = new Set();
-        
-        this.plantManager.getAllPlants().forEach(plant => {
-            if (plant.location) locations.add(plant.location);
-        });
-
-        datalist.innerHTML = Array.from(locations).map(loc => 
-            `<option value="${loc}">`
-        ).join('');
-    }
-
-    handleImagePreview(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const preview = document.getElementById('imagePreview');
-            preview.innerHTML = `<img src="${event.target.result}" alt="Preview">`;
-            preview.classList.add('show');
-        };
-        reader.readAsDataURL(file);
-    }
-
-    savePlant() {
-        const plantData = {
-            name: document.getElementById('plantName').value.trim(),
-            scientificName: document.getElementById('scientificName').value.trim(),
-            waterNeeds: document.getElementById('waterNeeds').value,
-            lightNeeds: document.getElementById('lightNeeds').value,
-            waterInterval: document.getElementById('waterInterval').value,
-            fertilizeInterval: document.getElementById('fertilizeInterval').value,
-            location: document.getElementById('location').value.trim(),
-            tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(t => t),
-            notes: document.getElementById('notes').value.trim()
-        };
-
-        // Handle image
-        const preview = document.getElementById('imagePreview');
-        if (preview.querySelector('img')) {
-            plantData.image = preview.querySelector('img').src;
-        }
-
-        if (this.plantManager.currentEditId) {
-            // Update existing plant
-            const plant = this.plantManager.getPlant(this.plantManager.currentEditId);
-            plantData.lastWatered = plant.lastWatered;
-            plantData.lastFertilized = plant.lastFertilized;
-            
-            this.plantManager.updatePlant(this.plantManager.currentEditId, plantData);
-            this.showToast(this.languageManager.translate('plant_saved'), 'success');
-        } else {
-            // Add new plant
-            this.plantManager.addPlant(plantData);
-            this.showToast(this.languageManager.translate('plant_added'), 'success');
-        }
-
-        this.closePlantModal();
-        this.renderPlants();
-    }
-
-    deletePlant(plantId) {
-        if (confirm(this.languageManager.translate('delete_confirm'))) {
-            this.plantManager.deletePlant(plantId);
-            this.showToast(this.languageManager.translate('plant_deleted'), 'success');
-            this.renderPlants();
-        }
-    }
-
-    completeTask(plantId, type) {
-        const reminderId = `${plantId}-${type}`;
-        this.reminderManager.completeTask(reminderId, plantId, type);
-        
-        const taskLabel = type === 'water' ? this.languageManager.translate('watering') : this.languageManager.translate('fertilizing_task');
-        this.showToast(`${taskLabel} ${this.languageManager.translate('task_completed')}`, 'success');
-        
-        this.renderPlants();
-    }
-
-    openPlantDetails(plantId) {
-        const plant = this.plantManager.getPlant(plantId);
-        if (!plant) return;
-
-        const modal = document.getElementById('plantDetailsModal');
-        const content = document.getElementById('plantDetailsContent');
-        
-        document.getElementById('detailsPlantName').textContent = plant.name;
-
-        const imageHtml = plant.image 
-            ? `<img src="${plant.image}" alt="${plant.name}" class="details-image">`
-            : '';
-
-        const tagsHtml = plant.tags && plant.tags.length > 0
-            ? plant.tags.map(tag => `<span class="tag">${tag}</span>`).join('')
-            : `<span style="color: var(--text-light)">${this.languageManager.translate('no_tags')}</span>`;
-
-        content.innerHTML = `
-            ${imageHtml}
-            
-            <div class="details-section">
-                <h3>${this.languageManager.translate('main_info')}</h3>
-                <div class="details-grid">
-                    <div class="detail-item">
-                        <div class="detail-label">${this.languageManager.translate('plant_name')}</div>
-                        <div class="detail-value">${plant.name}</div>
-                    </div>
-                    ${plant.scientificName ? `
-                        <div class="detail-item">
-                            <div class="detail-label">${this.languageManager.translate('scientific_name')}</div>
-                            <div class="detail-value">${plant.scientificName}</div>
-                        </div>
-                    ` : ''}
-                    <div class="detail-item">
-                        <div class="detail-label">${this.languageManager.translate('location')}</div>
-                        <div class="detail-value">📍 ${plant.location}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">${this.languageManager.translate('date_added')}</div>
-                        <div class="detail-value">${new Date(plant.createdAt).toLocaleDateString(this.languageManager.getCurrentLang() === 'fa' ? 'fa-IR' : 'en-US')}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="details-section">
-                <h3>${this.languageManager.translate('plant_needs')}</h3>
-                <div class="details-grid">
-                    <div class="detail-item">
-                        <div class="detail-label">${this.languageManager.translate('water_needs')}</div>
-                        <div class="detail-value">💧 ${this.getWaterNeedsLabel(plant.waterNeeds)}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">${this.languageManager.translate('light_needs')}</div>
-                        <div class="detail-value">☀️ ${this.getLightNeedsLabel(plant.lightNeeds)}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">${this.languageManager.translate('water_interval')}</div>
-                        <div class="detail-value">${this.languageManager.translate('water_every')} ${plant.waterInterval} ${this.languageManager.translate('every_days')} ${this.languageManager.translate('once')}</div>
-                    </div>
-                    ${plant.fertilizeInterval ? `
-                        <div class="detail-item">
-                            <div class="detail-label">${this.languageManager.translate('fertilize_interval')}</div>
-                            <div class="detail-value">${this.languageManager.translate('water_every')} ${plant.fertilizeInterval} ${this.languageManager.translate('every_days')} ${this.languageManager.translate('once')}</div>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-
-            <div class="details-section">
-                <h3>${this.languageManager.translate('last_care')}</h3>
-                <div class="details-grid">
-                    <div class="detail-item">
-                        <div class="detail-label">${this.languageManager.translate('last_watering')}</div>
-                        <div class="detail-value">${plant.lastWatered ? new Date(plant.lastWatered).toLocaleDateString(this.languageManager.getCurrentLang() === 'fa' ? 'fa-IR' : 'en-US') : this.languageManager.translate('not_watered_yet')}</div>
-                    </div>
-                    ${plant.lastFertilized ? `
-                        <div class="detail-item">
-                            <div class="detail-label">${this.languageManager.translate('last_fertilizing')}</div>
-                            <div class="detail-value">${new Date(plant.lastFertilized).toLocaleDateString(this.languageManager.getCurrentLang() === 'fa' ? 'fa-IR' : 'en-US')}</div>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-
-            ${plant.tags && plant.tags.length > 0 ? `
-                <div class="details-section">
-                    <h3>${this.languageManager.translate('tags')}</h3>
-                    <div class="plant-tags">${tagsHtml}</div>
-                </div>
-            ` : ''}
-
-            ${plant.notes ? `
-                <div class="details-section">
-                    <h3>${this.languageManager.translate('notes')}</h3>
-                    <p style="color: var(--text-secondary); line-height: 1.8;">${plant.notes}</p>
-                </div>
-            ` : ''}
-
-            <div class="details-actions">
-                <button class="btn btn-outline" onclick="ui.closeDetailsModal()">${this.languageManager.translate('close')}</button>
-                <button class="btn btn-primary" onclick="ui.openPlantModal('${plant.id}'); ui.closeDetailsModal();">${this.languageManager.translate('edit')}</button>
-            </div>
-        `;
-
-        modal.classList.add('show');
-    }
-
-    closeDetailsModal() {
-        document.getElementById('plantDetailsModal').classList.remove('show');
-    }
-
-    exportData() {
-        const data = this.plantManager.exportData();
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `plant-data-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        this.showToast(this.languageManager.translate('export_success'), 'success');
-    }
-
-    importData(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const success = this.plantManager.importData(event.target.result);
-            if (success) {
-                this.showToast(this.languageManager.translate('import_success'), 'success');
-                this.renderPlants();
-            } else {
-                this.showToast(this.languageManager.translate('import_error'), 'error');
-            }
-        };
-        reader.readAsText(file);
-        e.target.value = '';
-    }
-
-    showToast(message, type = 'success') {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.className = `toast ${type} show`;
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
-    }
-
-    getWaterNeedsLabel(value) {
-        const labels = {
-            'low': this.languageManager.translate('water_low'),
-            'medium': this.languageManager.translate('water_medium'),
-            'high': this.languageManager.translate('water_high')
-        };
-        return labels[value] || value;
-    }
-
-    getLightNeedsLabel(value) {
-        const labels = {
-            'low': this.languageManager.translate('light_low'),
-            'medium': this.languageManager.translate('light_medium'),
-            'high': this.languageManager.translate('light_high')
-        };
-        return labels[value] || value;
-    }
-
-    getTagLabel(tag) {
-        if (tag === 'all') return this.languageManager.translate('all');
-        if (tag === 'low') return this.languageManager.translate('low_need');
-        if (tag === 'medium') return this.languageManager.translate('medium_need');
-        if (tag === 'high') return this.languageManager.translate('high_need');
-        return tag;
-    }
-}
-
-// ===== Initialize App =====
-let plantManager, reminderManager, statisticsManager, themeManager, languageManager, ui;
-
-document.addEventListener('DOMContentLoaded', async () => {
-    themeManager = new ThemeManager();
-    languageManager = new LanguageManager();
-    
-    // Wait for translations to load
-    await languageManager.loadTranslations();
-    
-    plantManager = new PlantManager();
-    reminderManager = new ReminderManager(plantManager);
-    statisticsManager = new StatisticsManager(plantManager, reminderManager);
-    ui = new UIManager(plantManager, reminderManager, statisticsManager, themeManager, languageManager);
-
-    // Initial render
-    ui.renderPlants();
-
-    // Check for due reminders and show notification
-    const todayReminders = reminderManager.getTodayReminders().filter(r => !r.isCompleted);
-    if (todayReminders.length > 0) {
-        setTimeout(() => {
-            ui.showToast(`${todayReminders.length} ${languageManager.translate('reminders_alert')}`, 'warning');
-        }, 1000);
-    }
-});
-
+document.addEventListener('DOMContentLoaded', boot);
+})();

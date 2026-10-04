@@ -1,72 +1,83 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta content="تمرین تایپ فارسی و انگلیسی - بهبود سرعت و دقت تایپ با نمودار پیشرفت" name="description"/>
-<meta content="تمرین تایپ, تایپ فارسی, تایپ انگلیسی, WPM, سرعت تایپ" name="keywords"/>
-<meta content="Typing Practice" name="author"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="تمرین تایپ فارسی و انگلیسی با سرعت، دقت و نمودار پیشرفت">
 <title data-i18n="title">تمرین تایپ</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">تمرین تایپ</h1>
-<div class="language-toggle">
-<button class="lang-btn active" data-i18n="button_0" data-lang="fa">فارسی</button>
-<button class="lang-btn" data-i18n="button_1" data-lang="en">English</button>
-</div>
-</header>
-<main>
-<section class="stats-section">
-<div class="stat-card">
-<div class="stat-value" id="wpm">0</div>
-<div class="stat-label" id="wpm-label">WPM</div>
-</div>
-<div class="stat-card">
-<div class="stat-value" id="accuracy">100%</div>
-<div class="stat-label" id="accuracy-label">دقت</div>
-</div>
-<div class="stat-card">
-<div class="stat-value" id="timer">0:00</div>
-<div class="stat-label" id="timer-label">زمان</div>
-</div>
-</section>
-<section class="text-selection">
-<label data-i18n="label_0" for="text-select" id="text-select-label">انتخاب متن:</label>
-<select id="text-select">
-<option value="0">متن ۱</option>
-<option value="1">متن ۲</option>
-<option value="2">متن ۳</option>
-<option value="3">متن ۴</option>
-<option value="4">متن ۵</option>
-</select>
-</section>
-<section class="typing-area">
-<div class="reference-text" id="reference-text"></div>
-<div class="current-char-display" id="current-char-display"></div>
-<textarea class="input-area" id="input-text" placeholder="شروع به تایپ کنید..." rows="5"></textarea>
-</section>
-<section class="controls">
-<button class="btn btn-primary" data-i18n="button_2" id="reset-btn">شروع مجدد</button>
-<button class="btn btn-secondary" data-i18n="button_3" id="history-btn">مشاهده تاریخچه</button>
-</section>
-<section class="chart-section">
-<h2 data-i18n="heading_1" id="chart-title">نمودار پیشرفت</h2>
-<canvas id="progress-chart"></canvas>
-</section>
-<section class="history-section" id="history-section" style="display: none;">
-<h2 data-i18n="heading_2" id="history-title">تاریخچه تمرین‌ها</h2>
-<div id="history-list"></div>
-<button class="btn btn-secondary" data-i18n="button_4" id="close-history-btn">بستن</button>
-</section>
+<main class="page ty">
+  <header class="ty-head">
+    <h1 data-i18n="heading_0">تمرین تایپ</h1>
+    <div class="ty-seg" role="radiogroup" aria-label="زبان تمرین" data-i18n-aria="aria_practice_lang">
+      <button type="button" role="radio" class="ty-seg-btn is-active" aria-checked="true" data-lang="fa" data-i18n="lang_fa">فارسی</button>
+      <button type="button" role="radio" class="ty-seg-btn" aria-checked="false" data-lang="en" data-i18n="lang_en">English</button>
+    </div>
+  </header>
+
+  <section class="ty-stats" aria-label="آمار" data-i18n-aria="aria_stats">
+    <div class="ty-stat"><strong id="wpm">0</strong><span>WPM</span></div>
+    <div class="ty-stat"><strong id="accuracy">100%</strong><span data-i18n="accuracy">دقت</span></div>
+    <div class="ty-stat"><strong id="timer" dir="ltr">0:00</strong><span data-i18n="time">زمان</span></div>
+    <div class="ty-stat ty-stat--best"><strong id="best">–</strong><span data-i18n="best">بهترین WPM</span></div>
+  </section>
+
+  <section class="ty-card">
+    <div class="ty-pick">
+      <label for="textSelect" data-i18n="select_text">انتخاب متن:</label>
+      <select id="textSelect" class="ty-input"></select>
+    </div>
+    <div class="ty-ref" id="refText" aria-label="متن تمرین" data-i18n-aria="aria_ref"></div>
+    <div class="ty-next" id="nextChar" aria-live="off"></div>
+    <textarea id="typed" class="ty-input ty-typed" rows="4" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-i18n-placeholder="placeholder"></textarea>
+    <div class="ty-actions">
+      <button type="button" class="ty-btn ty-btn--primary" id="resetBtn" data-i18n="reset">شروع مجدد</button>
+      <button type="button" class="ty-btn" id="historyBtn" aria-expanded="false" aria-controls="historyBox" data-i18n="view_history">مشاهده تاریخچه</button>
+    </div>
+  </section>
+
+  <section class="ty-result" id="resultBox" role="status" hidden>
+    <h2 data-i18n="done_title">تمرین تمام شد!</h2>
+    <p id="resultText"></p>
+    <div class="ty-actions">
+      <button type="button" class="ty-btn ty-btn--primary" id="againBtn" data-i18n="again">دوباره</button>
+      <button type="button" class="ty-btn" id="nextTextBtn" data-i18n="next_text">متن بعدی</button>
+    </div>
+  </section>
+
+  <section class="ty-card">
+    <h2 data-i18n="chart_title">نمودار پیشرفت</h2>
+    <div class="ty-chart-wrap"><canvas id="chart" role="img" aria-label="نمودار پیشرفت"></canvas></div>
+  </section>
+
+  <section class="ty-card" id="historyBox" hidden>
+    <div class="ty-row">
+      <h2 data-i18n="history_title">تاریخچه تمرین‌ها</h2>
+      <button type="button" class="ty-btn ty-btn--danger ty-btn--sm" id="clearHistoryBtn" data-i18n="clear_history">پاک کردن تاریخچه</button>
+    </div>
+    <div id="historyList" class="ty-hist"></div>
+    <button type="button" class="ty-btn" id="closeHistoryBtn" data-i18n="close">بستن</button>
+  </section>
 </main>
-</div>
+
+<dialog id="confirmDialog" class="ty-dialog" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="ty-actions">
+      <button type="submit" value="ok" class="ty-btn ty-btn--danger" data-i18n="confirm_yes">بله، پاک شود</button>
+      <button type="submit" value="cancel" class="ty-btn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
 <script src="assets/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

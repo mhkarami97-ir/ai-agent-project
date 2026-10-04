@@ -1,424 +1,223 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
-    }
+(function () {
+'use strict';
 
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
-    }
+/* @logic-start */
+var ZWNJ = '\u200c';
+/* حروف فارسی/عربی (بدون کشیده U+0640) */
+var PL = '[\\u0621-\\u063A\\u0641-\\u064A\\u067E\\u0686\\u0698\\u06A9\\u06AF\\u06CC\\u06C0]';
+/* حروفی که به حرف بعد نمی‌چسبند: نیم‌فاصله بعد از آن‌ها بی‌اثر است */
+var NONJOIN = '[\\u0627\\u0622\\u0623\\u0625\\u062F\\u0630\\u0631\\u0632\\u0698\\u0648\\u0624]';
+var P = '۰۱۲۳۴۵۶۷۸۹', AR = '٠١٢٣٤٥٦٧٨٩';
+var OPTIONS = ['invisible', 'arabic', 'zwnjClean', 'zwnjAdd', 'punct', 'spaces', 'harakat'];
+var DEFAULTS = { invisible: true, arabic: true, zwnjClean: true, zwnjAdd: true, punct: true, spaces: true, harakat: false, digits: 'none' };
 
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
-    }
-
-    getTheme() {
-        return this.currentTheme;
-    }
+function sub(text, re, rep) {
+  var n = 0;
+  var out = text.replace(re, function () {
+    n++;
+    return rep.apply(null, arguments);
+  });
+  return { text: out, n: n };
 }
+function R(re, flags) { return new RegExp(re, flags); }
 
-const themeManager = new ThemeManager();
-
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
-    }
-
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
-        }
-    }
-
-    t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
-        }
-        
-        return value;
-    }
-
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
-        });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
-        }
-    }
-
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
-    }
+function stepInvisible(text) {
+  var n = 0, t = text;
+  var a = sub(t, /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u00AD\u200B\u200E\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF\uFFF9-\uFFFB]/g, function () { return ''; });
+  t = a.text; n += a.n;
+  /* ZWJ فقط بین دو حرف فارسی حذف می‌شود تا ایموجی‌های مرکب نشکنند */
+  var b = sub(t, R('(?<=' + PL + ')\\u200D(?=' + PL + ')', 'g'), function () { return ''; });
+  return { text: b.text, n: n + b.n };
 }
-
-const i18n = new I18n();
-
-
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-// Text Formatter Application
-// Main application logic for Persian/English text cleanup
-
-// DOM Elements
-const inputText = document.getElementById('inputText');
-const outputText = document.getElementById('outputText');
-const inputCount = document.getElementById('inputCount');
-const outputCount = document.getElementById('outputCount');
-const notification = document.getElementById('notification');
-
-// Buttons
-const cleanAllBtn = document.getElementById('cleanAllBtn');
-const removeZWNJBtn = document.getElementById('removeZWNJBtn');
-const toEnglishNumberBtn = document.getElementById('toEnglishNumberBtn');
-const toPersianNumberBtn = document.getElementById('toPersianNumberBtn');
-const removeInvisibleBtn = document.getElementById('removeInvisibleBtn');
-const smartTrimBtn = document.getElementById('smartTrimBtn');
-const copyBtn = document.getElementById('copyBtn');
-const replaceBtn = document.getElementById('replaceBtn');
-const clearBtn = document.getElementById('clearBtn');
-
-// Constants
-const STORAGE_KEY = 'textFormatterInput';
-const PERSIAN_NUMBERS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-const ENGLISH_NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
-// Initialize application
-function init() {
-    loadFromStorage();
-    updateCharCount();
-    attachEventListeners();
+function stepArabic(text) {
+  return sub(text, /[كيى\u0640]/g, function (c) { return c === 'ك' ? 'ک' : c === '\u0640' ? '' : 'ی'; });
 }
-
-// Event Listeners
-function attachEventListeners() {
-    // Text input events
-    inputText.addEventListener('input', () => {
-        updateCharCount();
-        saveToStorage();
+function stepHarakat(text) {
+  return sub(text, /[\u064B-\u065F\u0670]/g, function () { return ''; });
+}
+function stepZwnjAdd(text) {
+  var n = 0, a;
+  /* پیشوند فعل «می/نمی» + فاصله + حرف */
+  a = sub(text, R('(?<!' + PL + ')(ن?می)[ \\t]+(?=' + PL + ')', 'g'), function (m, p) { return p + ZWNJ; }); text = a.text; n += a.n;
+  /* پسوندهای ها/های/هایی/ترین جدا از کلمه */
+  a = sub(text, R('(?<=' + PL + ')[ \\t]+(ها|های|هایی|ترین)(?!' + PL + ')', 'g'), function (m, s) { return ZWNJ + s; }); text = a.text; n += a.n;
+  return { text: text, n: n };
+}
+function stepZwnjClean(text) {
+  var n = 0, a;
+  a = sub(text, /\u200c{2,}/g, function () { return ZWNJ; }); text = a.text; n += a.n;
+  /* نیم‌فاصله‌ای که کنار غیرحرف (فاصله، رقم، نشانه، لاتین، ابتدا/انتها) است */
+  a = sub(text, R('\\u200c(?!' + PL + ')|(?<!' + PL + ')\\u200c', 'g'), function () { return ''; }); text = a.text; n += a.n;
+  /* بعد از حروف غیرچسبان بی‌اثر است */
+  a = sub(text, R('(?<=' + NONJOIN + ')\\u200c', 'g'), function () { return ''; }); text = a.text; n += a.n;
+  return { text: text, n: n };
+}
+function stepPunct(text) {
+  return sub(text, R('(?<=' + PL + '[ \\t]*)[,;?]', 'g'), function (c) { return c === ',' ? '،' : c === ';' ? '؛' : '؟'; });
+}
+function stepSpaces(text) {
+  var n = 0, a;
+  a = sub(text, /\r\n?/g, function () { return '\n'; }); text = a.text;
+  a = sub(text, /[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\t]/g, function () { return ' '; }); text = a.text; n += a.n;
+  a = sub(text, / {2,}/g, function () { return ' '; }); text = a.text; n += a.n;
+  a = sub(text, /^ +| +$/gm, function () { return ''; }); text = a.text; n += a.n;
+  a = sub(text, / +(?=[،؛؟!.,:;»)\]])/g, function () { return ''; }); text = a.text; n += a.n;
+  a = sub(text, /([«(\[]) +/g, function (m, c) { return c; }); text = a.text; n += a.n;
+  a = sub(text, /([،؛؟!])(?=[\p{L}\p{N}])/gu, function (m, c) { return c + ' '; }); text = a.text; n += a.n;
+  a = sub(text, R('(?<=' + PL + ')([.:,;])(?=' + PL + ')', 'g'), function (m, c) { return c + ' '; }); text = a.text; n += a.n;
+  a = sub(text, /\n{3,}/g, function () { return '\n\n'; }); text = a.text; n += a.n;
+  var trimmed = text.trim();
+  if (trimmed !== text) { n++; text = trimmed; }
+  return { text: text, n: n };
+}
+var ASCII_ONLY_TOKEN = /^(?:[a-z][a-z0-9+.-]*:\/\/|www\.)|@/i;
+function digitsToFa(text) {
+  var n = 0;
+  var out = text.split(/(\s+)/).map(function (tok) {
+    if (ASCII_ONLY_TOKEN.test(tok)) return tok;
+    return tok.replace(/\d+/g, function (run, off, whole) {
+      var before = whole[off - 1], after = whole[off + run.length];
+      if ((before && /[A-Za-z_]/.test(before)) || (after && /[A-Za-z_]/.test(after))) return run;
+      n++;
+      return run.replace(/\d/g, function (d) { return P[d]; });
     });
+  }).join('');
+  out = out.replace(/[٠-٩]/g, function (d) { n++; return P[AR.indexOf(d)]; });
+  return { text: out, n: n };
+}
+function digitsToEn(text) {
+  var n = 0;
+  var out = text.replace(/[۰-۹٠-٩٫٬]/g, function (c) {
+    n++;
+    if (c === '٫') return '.';
+    if (c === '٬') return ',';
+    var i = P.indexOf(c); return String(i >= 0 ? i : AR.indexOf(c));
+  });
+  return { text: out, n: n };
+}
+/* ترتیب: نامرئی → حروف → (اعراب) → افزودن/پاک‌سازی نیم‌فاصله → علائم → فاصله → ارقام */
+function clean(text, opts) {
+  opts = Object.assign({}, DEFAULTS, opts || {});
+  var rep = [], t = String(text == null ? '' : text);
+  function run(key, fn) { var r = fn(t); t = r.text; if (r.n) rep.push({ key: key, n: r.n }); }
+  if (opts.invisible) run('invisible', stepInvisible);
+  if (opts.arabic) run('arabic', stepArabic);
+  if (opts.harakat) run('harakat', stepHarakat);
+  if (opts.zwnjAdd) run('zwnjAdd', stepZwnjAdd);
+  if (opts.zwnjClean) run('zwnjClean', stepZwnjClean);
+  if (opts.punct) run('punct', stepPunct);
+  if (opts.spaces) run('spaces', stepSpaces);
+  if (opts.digits === 'fa') run('digitsFa', digitsToFa);
+  else if (opts.digits === 'en') run('digitsEn', digitsToEn);
+  return { text: t, report: rep };
+}
+function normalizeOptions(raw) {
+  raw = raw && typeof raw === 'object' ? raw : {};
+  var o = Object.assign({}, DEFAULTS);
+  OPTIONS.forEach(function (k) { if (typeof raw[k] === 'boolean') o[k] = raw[k]; });
+  o.digits = raw.digits === 'fa' || raw.digits === 'en' ? raw.digits : 'none';
+  return o;
+}
+/* @logic-end */
 
-    // Button events
-    cleanAllBtn.addEventListener('click', () => processText(cleanAll));
-    removeZWNJBtn.addEventListener('click', () => processText(removeProblematicZWNJ));
-    toEnglishNumberBtn.addEventListener('click', () => processText(convertToEnglishNumbers));
-    toPersianNumberBtn.addEventListener('click', () => processText(convertToPersianNumbers));
-    removeInvisibleBtn.addEventListener('click', () => processText(removeInvisibleCharacters));
-    smartTrimBtn.addEventListener('click', () => processText(smartTrim));
-    
-    copyBtn.addEventListener('click', copyToClipboard);
-    replaceBtn.addEventListener('click', replaceInput);
-    clearBtn.addEventListener('click', clearAll);
+var TEXT_KEY = 'textFormatterInput', OPT_KEY = 'textFormatterOptions', MAX = 500000;
+var lang = 'fa', dict = {};
+try { lang = String(localStorage.getItem('lang') || '').replace(/"/g, '') === 'en' ? 'en' : 'fa'; } catch (e) {}
+function t(key, vars) {
+  var s = (dict[lang] && dict[lang][key]) || (dict.fa && dict.fa[key]) || key;
+  if (vars) Object.keys(vars).forEach(function (k) { s = s.replace('{' + k + '}', vars[k]); });
+  return s;
+}
+function nf(n) { return new Intl.NumberFormat(lang === 'fa' ? 'fa-IR' : 'en-US').format(n); }
+function $(id) { return document.getElementById(id); }
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+var opts = Object.assign({}, DEFAULTS), prevInput = null, timer, saveTimer;
+
+function applyI18n() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(function (e) { e.textContent = t(e.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function (e) { e.placeholder = t(e.getAttribute('data-i18n-placeholder')); });
+  document.title = t('title');
+  buildOpts();
+}
+function buildOpts() {
+  var box = $('opts'); box.textContent = '';
+  OPTIONS.forEach(function (k) {
+    var lab = el('label', 'tf-opt'), cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!opts[k]; cb.dataset.key = k;
+    var d = el('span'); d.appendChild(el('b', '', t('opt_' + k))); d.appendChild(el('small', '', t('opt_' + k + '_d')));
+    lab.appendChild(cb); lab.appendChild(d); box.appendChild(lab);
+  });
+  document.querySelectorAll('.tf-seg-btn').forEach(function (b) { var on = b.dataset.digits === opts.digits; b.classList.toggle('is-active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+}
+function counts() {
+  var i = $('inputText').value.length, o = $('outputText').value.length;
+  $('inputCount').textContent = t('n_chars', { n: nf(i) }); $('outputCount').textContent = t('n_chars', { n: nf(o) });
+}
+function process() {
+  var src = $('inputText').value, r = clean(src, opts);
+  $('outputText').value = r.text; counts();
+  var ul = $('report'); ul.textContent = '';
+  if (!src.trim()) { var e0 = el('li', 'is-none', t('rep_empty')); ul.appendChild(e0); return; }
+  if (!r.report.length) { ul.appendChild(el('li', 'is-none', t('rep_nochange'))); return; }
+  r.report.forEach(function (x) { var li = el('li'); li.appendChild(el('span', '', t('rep_' + x.key))); li.appendChild(el('b', '', nf(x.n))); ul.appendChild(li); });
+}
+function schedule() { clearTimeout(timer); timer = setTimeout(process, 120); }
+function saveText() { clearTimeout(saveTimer); saveTimer = setTimeout(function () { try { var v = $('inputText').value; if (v) localStorage.setItem(TEXT_KEY, v.slice(0, MAX)); else localStorage.removeItem(TEXT_KEY); } catch (e) {} }, 300); }
+function saveOpts() { try { localStorage.setItem(OPT_KEY, JSON.stringify(opts)); } catch (e) {} }
+var toastTimer;
+function toast(msg, isError) {
+  var n = $('toast'); n.textContent = msg; n.className = 'tf-toast' + (isError ? ' is-error' : ''); n.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(function () { n.hidden = true; }, 2500);
+}
+function confirmDialog(message) {
+  return new Promise(function (resolve) {
+    var d = $('confirmDialog'); $('confirmText').textContent = message;
+    var done = function () { d.removeEventListener('close', done); resolve(d.returnValue === 'ok'); };
+    d.returnValue = ''; d.addEventListener('close', done); d.showModal();
+  });
+}
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+  var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select();
+  var ok = false; try { ok = document.execCommand('copy'); } catch (e2) {} ta.remove(); return ok;
 }
 
-// Core Text Processing Functions
-
-/**
- * Clean all issues in text
- */
-function cleanAll(text) {
-    text = removeInvisibleCharacters(text);
-    text = removeProblematicZWNJ(text);
-    text = smartTrim(text);
-    return text;
+function bind() {
+  $('inputText').addEventListener('input', function () { counts(); schedule(); saveText(); });
+  $('opts').addEventListener('change', function (e) { var k = e.target.dataset.key; if (!k) return; opts[k] = e.target.checked; saveOpts(); process(); });
+  document.querySelectorAll('.tf-seg-btn').forEach(function (b) {
+    b.addEventListener('click', function () { opts.digits = b.dataset.digits; saveOpts(); buildOpts(); process(); });
+  });
+  $('copyBtn').addEventListener('click', async function () {
+    var v = $('outputText').value;
+    if (!v) { toast(t('err_nothing_copy'), true); return; }
+    toast(t((await copyText(v)) ? 'ok_copied' : 'err_copy'), false);
+  });
+  $('replaceBtn').addEventListener('click', function () {
+    var v = $('outputText').value;
+    if (!v) { toast(t('err_nothing_replace'), true); return; }
+    prevInput = $('inputText').value; $('inputText').value = v; $('undoBtn').hidden = false; saveText(); process(); toast(t('ok_replaced'));
+  });
+  $('undoBtn').addEventListener('click', function () {
+    if (prevInput === null) return;
+    $('inputText').value = prevInput; prevInput = null; $('undoBtn').hidden = true; saveText(); process();
+  });
+  $('clearBtn').addEventListener('click', async function () {
+    if (!$('inputText').value && !$('outputText').value) { toast(t('err_nothing_clear'), true); return; }
+    if (!(await confirmDialog(t('confirm_clear')))) return;
+    $('inputText').value = ''; prevInput = null; $('undoBtn').hidden = true; saveText(); process(); toast(t('ok_cleared'));
+  });
+  $('confirmDialog').addEventListener('click', function (e) { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  window.addEventListener('languageChanged', function (e) { lang = e.detail === 'en' ? 'en' : 'fa'; applyI18n(); process(); });
 }
 
-/**
- * Remove problematic ZWNJ (Zero-Width Non-Joiner) characters
- * Keeps necessary ZWNJ for Persian compound words but removes excessive ones
- */
-function removeProblematicZWNJ(text) {
-    // Remove ZWNJ
-    text = text.replace(/\u200C/g, '');
-    
-    // Remove ZWJ (Zero-Width Joiner)
-    text = text.replace(/\u200D/g, '');
-    
-    // Add proper ZWNJ between Persian words with می prefix
-    text = text.replace(/\bمی(\s+)([آ-ی])/g, 'می‌$2');
-    
-    // Add proper ZWNJ for common Persian prefixes
-    const prefixes = ['می', 'نمی', 'بی', 'با', 'پیش', 'پس', 'هم', 'غیر', 'نا', 'بر', 'فرو', 'در', 'از'];
-    prefixes.forEach(prefix => {
-        const regex = new RegExp(`\\b${prefix}\\s+([آ-ی])`, 'g');
-        text = text.replace(regex, `${prefix}‌$1`);
-    });
-    
-    return text;
+async function boot() {
+  try { dict = await (await fetch('assets/translations.json')).json(); } catch (e) { console.error('translations', e); }
+  try { opts = normalizeOptions(JSON.parse(localStorage.getItem(OPT_KEY))); } catch (e) { opts = normalizeOptions(null); }
+  try { var s = localStorage.getItem(TEXT_KEY); if (s) $('inputText').value = s; } catch (e) {}
+  applyI18n(); bind(); process();
 }
-
-/**
- * Convert Persian numbers to English numbers
- */
-function convertToEnglishNumbers(text) {
-    for (let i = 0; i < 10; i++) {
-        const regex = new RegExp(PERSIAN_NUMBERS[i], 'g');
-        text = text.replace(regex, ENGLISH_NUMBERS[i]);
-    }
-    
-    // Also convert Arabic-Indic numbers
-    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    for (let i = 0; i < 10; i++) {
-        const regex = new RegExp(arabicNumbers[i], 'g');
-        text = text.replace(regex, ENGLISH_NUMBERS[i]);
-    }
-    
-    return text;
-}
-
-/**
- * Convert English numbers to Persian numbers
- */
-function convertToPersianNumbers(text) {
-    for (let i = 0; i < 10; i++) {
-        const regex = new RegExp(ENGLISH_NUMBERS[i], 'g');
-        text = text.replace(regex, PERSIAN_NUMBERS[i]);
-    }
-    
-    // Also convert Arabic-Indic numbers
-    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    for (let i = 0; i < 10; i++) {
-        const regex = new RegExp(arabicNumbers[i], 'g');
-        text = text.replace(regex, PERSIAN_NUMBERS[i]);
-    }
-    
-    return text;
-}
-
-/**
- * Remove invisible and problematic characters
- */
-function removeInvisibleCharacters(text) {
-    // Remove various invisible characters
-    text = text.replace(/\u200B/g, ''); // Zero-Width Space
-    text = text.replace(/\u200E/g, ''); // Left-to-Right Mark
-    text = text.replace(/\u200F/g, ''); // Right-to-Left Mark
-    text = text.replace(/\uFEFF/g, ''); // Zero-Width No-Break Space (BOM)
-    text = text.replace(/\u202A/g, ''); // Left-to-Right Embedding
-    text = text.replace(/\u202B/g, ''); // Right-to-Left Embedding
-    text = text.replace(/\u202C/g, ''); // Pop Directional Formatting
-    text = text.replace(/\u202D/g, ''); // Left-to-Right Override
-    text = text.replace(/\u202E/g, ''); // Right-to-Left Override
-    text = text.replace(/\u2060/g, ''); // Word Joiner
-    text = text.replace(/\u2061/g, ''); // Function Application
-    text = text.replace(/\u2062/g, ''); // Invisible Times
-    text = text.replace(/\u2063/g, ''); // Invisible Separator
-    text = text.replace(/\u2064/g, ''); // Invisible Plus
-    text = text.replace(/\uFFF9/g, ''); // Interlinear Annotation Anchor
-    text = text.replace(/\uFFFA/g, ''); // Interlinear Annotation Separator
-    text = text.replace(/\uFFFB/g, ''); // Interlinear Annotation Terminator
-    
-    // Replace Arabic characters with Persian equivalents
-    text = text.replace(/ك/g, 'ک'); // Arabic Kaf to Persian Kaf
-    text = text.replace(/ي/g, 'ی'); // Arabic Yeh to Persian Yeh
-    text = text.replace(/ى/g, 'ی'); // Alef Maksura to Persian Yeh
-    text = text.replace(/ئ/g, 'ئ'); // Normalize Yeh with Hamza
-    
-    return text;
-}
-
-/**
- * Smart trim: remove extra whitespace, multiple spaces, and empty lines
- */
-function smartTrim(text) {
-    // Remove leading and trailing whitespace from each line
-    text = text.split('\n').map(line => line.trim()).join('\n');
-    
-    // Replace multiple spaces with single space
-    text = text.replace(/ {2,}/g, ' ');
-    
-    // Replace multiple tabs with single space
-    text = text.replace(/\t+/g, ' ');
-    
-    // Remove spaces before punctuation
-    text = text.replace(/ +([،,؛;:.!؟?»\]])/g, '$1');
-    
-    // Add space after punctuation if missing (for Persian)
-    text = text.replace(/([،,؛;:.!؟?])([آ-یa-zA-Z0-9۰-۹])/g, '$1 $2');
-    
-    // Remove multiple consecutive empty lines (keep max 1 empty line)
-    text = text.replace(/\n{3,}/g, '\n\n');
-    
-    // Trim the entire text
-    text = text.trim();
-    
-    return text;
-}
-
-// Utility Functions
-
-/**
- * Process text with given function and update output
- */
-function processText(processingFunction) {
-    const input = inputText.value;
-    
-    if (!input.trim()) {
-        showNotification('لطفا ابتدا متنی را وارد کنید', 'error');
-        return;
-    }
-    
-    const result = processingFunction(input);
-    outputText.value = result;
-    updateCharCount();
-    showNotification('پردازش با موفقیت انجام شد', 'success');
-}
-
-/**
- * Copy output text to clipboard
- */
-function copyToClipboard() {
-    const text = outputText.value;
-    
-    if (!text) {
-        showNotification('هیچ متنی برای کپی کردن وجود ندارد', 'error');
-        return;
-    }
-    
-    navigator.clipboard.writeText(text).then(() => {
-        showNotification('متن با موفقیت کپی شد', 'success');
-    }).catch(() => {
-        // Fallback method
-        outputText.select();
-        document.execCommand('copy');
-        showNotification('متن با موفقیت کپی شد', 'success');
-    });
-}
-
-/**
- * Replace input text with output text
- */
-function replaceInput() {
-    const output = outputText.value;
-    
-    if (!output) {
-        showNotification('هیچ متنی برای جایگزینی وجود ندارد', 'error');
-        return;
-    }
-    
-    inputText.value = output;
-    outputText.value = '';
-    updateCharCount();
-    saveToStorage();
-    showNotification('متن ورودی با موفقیت جایگزین شد', 'success');
-}
-
-/**
- * Clear all text
- */
-function clearAll() {
-    if (!inputText.value && !outputText.value) {
-        showNotification('هیچ متنی برای پاک کردن وجود ندارد', 'error');
-        return;
-    }
-    
-    inputText.value = '';
-    outputText.value = '';
-    updateCharCount();
-    saveToStorage();
-    showNotification('تمام متن‌ها پاک شدند', 'success');
-}
-
-/**
- * Update character count displays
- */
-function updateCharCount() {
-    const inputLength = inputText.value.length;
-    const outputLength = outputText.value.length;
-    
-    inputCount.textContent = `${inputLength.toLocaleString('fa-IR')} کاراکتر`;
-    outputCount.textContent = `${outputLength.toLocaleString('fa-IR')} کاراکتر`;
-}
-
-/**
- * Show notification message
- */
-function showNotification(message, type = 'success') {
-    notification.textContent = message;
-    notification.className = `notification ${type} show`;
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
-}
-
-/**
- * Save input text to localStorage
- */
-function saveToStorage() {
-    try {
-        localStorage.setItem(STORAGE_KEY, inputText.value);
-    } catch (e) {
-        console.error('Failed to save to localStorage:', e);
-    }
-}
-
-/**
- * Load input text from localStorage
- */
-function loadFromStorage() {
-    try {
-        const savedText = localStorage.getItem(STORAGE_KEY);
-        if (savedText) {
-            inputText.value = savedText;
-        }
-    } catch (e) {
-        console.error('Failed to load from localStorage:', e);
-    }
-}
-
-// Initialize app when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
-
+document.addEventListener('DOMContentLoaded', boot);
+})();

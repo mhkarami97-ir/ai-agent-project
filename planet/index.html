@@ -1,329 +1,128 @@
-﻿<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مدیریت هوشمند گیاهان</title>
-     <link rel="stylesheet" href="../Vazirmatn-font-face.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title data-i18n="title">مدیریت هوشمند گیاهان</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-content">
-                <h1 class="app-title" data-i18n="app_title">🌱 گیاه من</h1>
-                <p class="app-subtitle" data-i18n="app_subtitle">مراقب گیاهان خود باشید</p>
-            </div>
-            <div class="header-actions">
-                <button class="btn btn-outline" id="exportBtn" data-i18n-title="export" title="خروجی گرفتن">
-                    <span>📤</span>
-                </button>
-                <button class="btn btn-outline" id="importBtn" data-i18n-title="import" title="ورود اطلاعات">
-                    <span>📥</span>
-                </button>
-                <button class="btn btn-primary" id="addPlantBtn">
-                    <span>➕</span> <span data-i18n="add_plant">افزودن گیاه</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Navigation -->
-        <nav class="main-nav">
-            <button class="nav-btn active" data-view="plants">
-                <span class="nav-icon">🌿</span>
-                <span data-i18n="my_plants">گیاهان من</span>
-            </button>
-            <button class="nav-btn" data-view="reminders">
-                <span class="nav-icon">🔔</span>
-                <span data-i18n="reminders">یادآوری‌ها</span>
-            </button>
-            <button class="nav-btn" data-view="guide">
-                <span class="nav-icon">📖</span>
-                <span data-i18n="guide">راهنمای نگهداری</span>
-            </button>
-            <button class="nav-btn" data-view="statistics">
-                <span class="nav-icon">📊</span>
-                <span data-i18n="statistics">آمار</span>
-            </button>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Plants View -->
-            <div id="plantsView" class="view active">
-                <!-- Filters -->
-                <div class="filters-section">
-                    <div class="search-box">
-                        <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="جستجوی گیاه...">
-                        <span class="search-icon">🔍</span>
-                    </div>
-                    <div class="filter-tags" id="filterTags">
-                        <button class="tag-filter active" data-filter="all" data-i18n="all">همه</button>
-                    </div>
-                </div>
-
-                <!-- Plants Grid -->
-                <div class="plants-grid" id="plantsGrid">
-                    <!-- Plants will be rendered here -->
-                </div>
-
-                <!-- Empty State -->
-                <div class="empty-state" id="emptyState">
-                    <div class="empty-icon">🌱</div>
-                    <h3 data-i18n="no_plants">هنوز گیاهی اضافه نکرده‌اید</h3>
-                    <p data-i18n="no_plants_desc">با افزودن گیاه اول خود شروع کنید و از آن مراقبت کنید</p>
-                    <button class="btn btn-primary" onclick="document.getElementById('addPlantBtn').click()">
-                        <span data-i18n="add_first_plant">افزودن اولین گیاه</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Reminders View -->
-            <div id="remindersView" class="view">
-                <div class="reminders-container">
-                    <div class="reminders-header">
-                        <h2 data-i18n="today_reminders">یادآوری‌های امروز</h2>
-                        <button class="btn btn-sm btn-outline" id="clearCompletedBtn" data-i18n="clear_completed">پاک کردن انجام شده‌ها</button>
-                    </div>
-                    <div class="reminders-list" id="todayReminders"></div>
-
-                    <div class="reminders-header">
-                        <h2 data-i18n="future_reminders">یادآوری‌های آینده</h2>
-                    </div>
-                    <div class="reminders-list" id="upcomingReminders"></div>
-                </div>
-            </div>
-
-            <!-- Guide View -->
-            <div id="guideView" class="view">
-                <div class="guide-container">
-                    <h2 data-i18n="guide_title">راهنمای نگهداری از گیاهان</h2>
-                    
-                    <div class="guide-section">
-                        <h3>💧 آبیاری صحیح</h3>
-                        <div class="guide-content">
-                            <p><strong>آبیاری کم:</strong> گیاهانی مانند کاکتوس و ساکولنت‌ها که در هر 7-14 روز یکبار نیاز به آبیاری دارند.</p>
-                            <p><strong>آبیاری متوسط:</strong> اکثر گیاهان آپارتمانی که در هر 3-5 روز یکبار آبیاری می‌شوند.</p>
-                            <p><strong>آبیاری زیاد:</strong> گیاهان گرمسیری که خاک آن‌ها باید همیشه مرطوب باشد.</p>
-                            <p><strong>نکته:</strong> قبل از آبیاری، خاک را لمس کنید. اگر 2-3 سانتی‌متر بالایی خاک خشک بود، وقت آبیاری است.</p>
-                        </div>
-                    </div>
-
-                    <div class="guide-section">
-                        <h3>☀️ نور مناسب</h3>
-                        <div class="guide-content">
-                            <p><strong>نور کم:</strong> گیاهانی که در فاصله 2-3 متری از پنجره قرار می‌گیرند. مانند پتوس و سانسوریا.</p>
-                            <p><strong>نور متوسط:</strong> گیاهانی که در فاصله 1-2 متری از پنجره با نور غیرمستقیم قرار دارند.</p>
-                            <p><strong>نور زیاد:</strong> گیاهانی که در کنار پنجره با نور مستقیم خورشید قرار می‌گیرند. مانند کاکتوس.</p>
-                            <p><strong>نکته:</strong> برگ‌های زرد معمولاً نشانه نور زیاد و برگ‌های کشیده نشانه نور کم است.</p>
-                        </div>
-                    </div>
-
-                    <div class="guide-section">
-                        <h3>🌡️ دما و رطوبت</h3>
-                        <div class="guide-content">
-                            <p><strong>دمای مناسب:</strong> اکثر گیاهان آپارتمانی در دمای 18-24 درجه سانتی‌گراد رشد می‌کنند.</p>
-                            <p><strong>رطوبت:</strong> گیاهان گرمسیری به رطوبت بالا نیاز دارند. می‌توانید اسپری آب بزنید یا گلدان را روی ظرفی پر از سنگریزه و آب قرار دهید.</p>
-                            <p><strong>نکته:</strong> گیاهان را از کنار شوفاژ و کولر دور نگه دارید.</p>
-                        </div>
-                    </div>
-
-                    <div class="guide-section">
-                        <h3>🌿 کوددهی</h3>
-                        <div class="guide-content">
-                            <p><strong>زمان کوددهی:</strong> در فصل رشد (بهار و تابستان) هر 2-4 هفته یکبار.</p>
-                            <p><strong>نوع کود:</strong> کود مایع مخصوص گیاهان آپارتمانی با غلظت نصف توصیه شده.</p>
-                            <p><strong>نکته:</strong> در پاییز و زمستان کوددهی را کاهش دهید یا متوقف کنید.</p>
-                        </div>
-                    </div>
-
-                    <div class="guide-section">
-                        <h3>✂️ هرس و نگهداری</h3>
-                        <div class="guide-content">
-                            <p><strong>هرس برگ‌ها:</strong> برگ‌های زرد و خشک را به طور منظم حذف کنید.</p>
-                            <p><strong>تمیز کردن برگ‌ها:</strong> هر چند وقت یکبار برگ‌ها را با دستمال مرطوب پاک کنید.</p>
-                            <p><strong>تعویض گلدان:</strong> هر 1-2 سال یکبار گلدان را عوض کنید تا ریشه‌ها فضای بیشتری داشته باشند.</p>
-                        </div>
-                    </div>
-
-                    <div class="guide-section">
-                        <h3>🐛 آفات و بیماری‌ها</h3>
-                        <div class="guide-content">
-                            <p><strong>شپشک:</strong> برگ‌ها را با محلول آب و صابون بشویید.</p>
-                            <p><strong>کنه:</strong> رطوبت را افزایش دهید و اسپری آب بزنید.</p>
-                            <p><strong>پوسیدگی ریشه:</strong> آبیاری را کاهش دهید و گیاه را به خاک خشک‌تر منتقل کنید.</p>
-                            <p><strong>نکته:</strong> پیشگیری بهتر از درمان است. به طور منظم گیاهان را بررسی کنید.</p>
-                        </div>
-                    </div>
-
-                    <div class="guide-section">
-                        <h3>🌱 <span data-i18n="beginner_plants">گیاهان مناسب برای مبتدی‌ها</span></h3>
-                        <div class="guide-content">
-                            <ul>
-                                <li><strong data-i18n="pothos">پتوس (پای خروسی):</strong> <span data-i18n="pothos_desc">گیاه بسیار مقاوم با نیاز آبی کم</span></li>
-                                <li><strong data-i18n="sansevieria">سانسوریا (زبان مادرشوهر):</strong> <span data-i18n="sansevieria_desc">نیاز به مراقبت کم و تحمل نور کم</span></li>
-                                <li><strong data-i18n="rubber_plant">برگ انجیری:</strong> <span data-i18n="rubber_plant_desc">گیاه بزرگ و زیبا با مراقبت آسان</span></li>
-                                <li><strong data-i18n="cactus">کاکتوس:</strong> <span data-i18n="cactus_desc">نیاز به آبیاری بسیار کم</span></li>
-                                <li><strong data-i18n="peace_lily">اسپاتی فیلوم:</strong> <span data-i18n="peace_lily_desc">تصفیه کننده هوا و مقاوم</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Statistics View -->
-            <div id="statisticsView" class="view">
-                <div class="statistics-container">
-                    <h2 data-i18n="my_plants_stats">آمار گیاهان من</h2>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon">🌿</div>
-                            <div class="stat-value" id="totalPlants">0</div>
-                            <div class="stat-label" data-i18n="total_plants">تعداد گیاهان</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <div class="stat-icon">🔔</div>
-                            <div class="stat-value" id="todayTasks">0</div>
-                            <div class="stat-label" data-i18n="today_tasks">وظایف امروز</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <div class="stat-icon">✅</div>
-                            <div class="stat-value" id="completedTasks">0</div>
-                            <div class="stat-label" data-i18n="completed_tasks">انجام شده این ماه</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <div class="stat-icon">📍</div>
-                            <div class="stat-value" id="totalLocations">0</div>
-                            <div class="stat-label" data-i18n="total_locations">مکان‌های مختلف</div>
-                        </div>
-                    </div>
-
-                    <div class="chart-section">
-                        <h3 data-i18n="location_distribution">توزیع گیاهان بر اساس مکان</h3>
-                        <div class="chart-container" id="locationChart"></div>
-                    </div>
-
-                    <div class="chart-section">
-                        <h3 data-i18n="water_distribution">توزیع بر اساس نیاز آبی</h3>
-                        <div class="chart-container" id="waterChart"></div>
-                    </div>
-
-                    <div class="chart-section">
-                        <h3 data-i18n="light_distribution">توزیع بر اساس نیاز نوری</h3>
-                        <div class="chart-container" id="lightChart"></div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Modal: Add/Edit Plant -->
-        <div id="plantModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="modalTitle" data-i18n="add_new_plant">افزودن گیاه جدید</h2>
-                    <button class="close-btn" id="closeModal">&times;</button>
-                </div>
-                <form id="plantForm">
-                    <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label data-i18n="plant_name">نام گیاه *</label>
-                            <input type="text" id="plantName" required data-i18n-placeholder="plant_name_placeholder" placeholder="مثلاً: پتوس سبز">
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label data-i18n="scientific_name">نام علمی</label>
-                            <input type="text" id="scientificName" data-i18n-placeholder="scientific_name_placeholder" placeholder="مثلاً: Epipremnum aureum">
-                        </div>
-
-                        <div class="form-group">
-                            <label data-i18n="water_needs">نیاز آبی *</label>
-                            <select id="waterNeeds" required>
-                                <option value="" data-i18n="select_option">انتخاب کنید</option>
-                                <option value="low" data-i18n="water_low">کم (هر 7-14 روز)</option>
-                                <option value="medium" data-i18n="water_medium">متوسط (هر 3-5 روز)</option>
-                                <option value="high" data-i18n="water_high">زیاد (هر 1-2 روز)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label data-i18n="light_needs">نیاز نوری *</label>
-                            <select id="lightNeeds" required>
-                                <option value="" data-i18n="select_option">انتخاب کنید</option>
-                                <option value="low" data-i18n="light_low">کم (نیمه‌سایه)</option>
-                                <option value="medium" data-i18n="light_medium">متوسط (نور غیرمستقیم)</option>
-                                <option value="high" data-i18n="light_high">زیاد (نور مستقیم)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label data-i18n="water_interval">آبیاری هر چند روز؟ *</label>
-                            <input type="number" id="waterInterval" required min="1" max="30" placeholder="3">
-                        </div>
-
-                        <div class="form-group">
-                            <label data-i18n="fertilize_interval">کوددهی هر چند روز؟</label>
-                            <input type="number" id="fertilizeInterval" min="1" max="90" placeholder="14">
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label data-i18n="location">مکان قرارگیری *</label>
-                            <input type="text" id="location" required data-i18n-placeholder="location_placeholder" placeholder="مثلاً: اتاق خواب، پذیرایی" list="locationSuggestions">
-                            <datalist id="locationSuggestions"></datalist>
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label data-i18n="tags">برچسب‌ها</label>
-                            <input type="text" id="tags" data-i18n-placeholder="tags_placeholder" placeholder="با کاما جدا کنید، مثل: گیاه آپارتمانی, تصفیه هوا">
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label data-i18n="notes">یادداشت</label>
-                            <textarea id="notes" rows="3" data-i18n-placeholder="notes_placeholder" placeholder="یادداشت‌های مربوط به گیاه..."></textarea>
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label data-i18n="plant_image">تصویر گیاه</label>
-                            <input type="file" id="plantImage" accept="image/*">
-                            <div class="image-preview" id="imagePreview"></div>
-                        </div>
-                    </div>
-
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn-outline" id="cancelBtn" data-i18n="cancel">انصراف</button>
-                        <button type="submit" class="btn btn-primary" id="submitBtn" data-i18n="save_plant">ذخیره گیاه</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Modal: Plant Details -->
-        <div id="plantDetailsModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="detailsPlantName" data-i18n="plant_details">جزئیات گیاه</h2>
-                    <button class="close-btn" id="closeDetailsModal">&times;</button>
-                </div>
-                <div class="plant-details" id="plantDetailsContent">
-                    <!-- Details will be rendered here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Toast Notification -->
-        <div id="toast" class="toast"></div>
+<main class="page pl">
+  <header class="pl-head">
+    <div>
+      <h1 data-i18n="app_title">گیاه من</h1>
+      <p class="pl-muted" data-i18n="app_subtitle">مراقب گیاهان خود باشید</p>
     </div>
+    <div class="pl-head-actions">
+      <button type="button" class="pl-btn pl-btn--icon" id="exportBtn" data-i18n-aria="export" aria-label="خروجی گرفتن">📤</button>
+      <button type="button" class="pl-btn pl-btn--icon" id="importBtn" data-i18n-aria="import" aria-label="ورود اطلاعات">📥</button>
+      <button type="button" class="pl-btn pl-btn--primary" id="addPlantBtn" data-i18n="add_plant">افزودن گیاه</button>
+    </div>
+  </header>
 
-    <input type="file" id="importFileInput" accept=".json" style="display: none;">
-    
-    <script src="assets/script.js"></script>
-    <script src="../assets/tool-wrapper.js"></script>
+  <nav class="pl-nav" role="tablist" aria-label="بخش‌ها" data-i18n-aria="aria_sections">
+    <button type="button" class="pl-tab is-active" role="tab" aria-selected="true" data-view="plants"><span aria-hidden="true">🌿</span><span data-i18n="my_plants">گیاهان من</span></button>
+    <button type="button" class="pl-tab" role="tab" aria-selected="false" data-view="reminders"><span aria-hidden="true">🔔</span><span data-i18n="reminders">یادآوری‌ها</span><b class="pl-count" id="navCount" hidden>0</b></button>
+    <button type="button" class="pl-tab" role="tab" aria-selected="false" data-view="guide"><span aria-hidden="true">📖</span><span data-i18n="guide">راهنما</span></button>
+    <button type="button" class="pl-tab" role="tab" aria-selected="false" data-view="statistics"><span aria-hidden="true">📊</span><span data-i18n="statistics">آمار</span></button>
+  </nav>
+
+  <section id="view-plants" class="pl-view" role="tabpanel">
+    <input type="search" id="searchInput" class="pl-input" enterkeyhint="search" data-i18n-placeholder="search_placeholder" placeholder="جستجوی گیاه...">
+    <div class="pl-filters" id="filterTags" role="group" aria-label="فیلتر" data-i18n-aria="aria_filter"></div>
+    <div class="pl-grid" id="plantsGrid"></div>
+    <div class="pl-empty" id="emptyState" hidden>
+      <div class="pl-empty-icon" aria-hidden="true">🌱</div>
+      <h2 id="emptyTitle" data-i18n="no_plants">هنوز گیاهی اضافه نکرده‌اید</h2>
+      <p id="emptyDesc" class="pl-muted" data-i18n="no_plants_desc">با افزودن گیاه اول خود شروع کنید</p>
+      <button type="button" class="pl-btn pl-btn--primary" id="emptyAddBtn" data-i18n="add_first_plant">افزودن اولین گیاه</button>
+    </div>
+  </section>
+
+  <section id="view-reminders" class="pl-view" role="tabpanel" hidden>
+    <div class="pl-row-between">
+      <h2 data-i18n="today_reminders">یادآوری‌های امروز</h2>
+      <button type="button" class="pl-btn pl-btn--sm" id="clearCompletedBtn" data-i18n="clear_completed">پاک کردن سابقه انجام‌شده‌ها</button>
+    </div>
+    <div class="pl-list" id="todayReminders"></div>
+    <h2 data-i18n="future_reminders">یادآوری‌های آینده</h2>
+    <div class="pl-list" id="upcomingReminders"></div>
+  </section>
+
+  <section id="view-guide" class="pl-view" role="tabpanel" hidden>
+    <h2 data-i18n="guide_title">راهنمای نگهداری از گیاهان</h2>
+    <div id="guideBox"></div>
+  </section>
+
+  <section id="view-statistics" class="pl-view" role="tabpanel" hidden>
+    <h2 data-i18n="my_plants_stats">آمار گیاهان من</h2>
+    <div class="pl-stats">
+      <div class="pl-stat"><strong id="sTotal">0</strong><span data-i18n="total_plants">تعداد گیاهان</span></div>
+      <div class="pl-stat"><strong id="sToday">0</strong><span data-i18n="today_tasks">وظایف امروز</span></div>
+      <div class="pl-stat"><strong id="sDone">0</strong><span data-i18n="completed_tasks">انجام‌شده این ماه</span></div>
+      <div class="pl-stat"><strong id="sLoc">0</strong><span data-i18n="total_locations">مکان‌های مختلف</span></div>
+    </div>
+    <div class="pl-card"><h3 data-i18n="location_distribution">توزیع بر اساس مکان</h3><div id="chartLoc"></div></div>
+    <div class="pl-card"><h3 data-i18n="water_distribution">توزیع بر اساس نیاز آبی</h3><div id="chartWater"></div></div>
+    <div class="pl-card"><h3 data-i18n="light_distribution">توزیع بر اساس نیاز نوری</h3><div id="chartLight"></div></div>
+  </section>
+</main>
+
+<dialog id="plantDialog" class="pl-dialog" aria-labelledby="plantDialogTitle">
+  <form id="plantForm" method="dialog" autocomplete="off">
+    <h2 id="plantDialogTitle" data-i18n="add_new_plant">افزودن گیاه جدید</h2>
+    <div class="pl-grid-form">
+      <div class="pl-field pl-wide"><label for="fName" data-i18n="plant_name">نام گیاه</label><input id="fName" class="pl-input" type="text" required maxlength="80" data-i18n-placeholder="plant_name_placeholder" placeholder="مثلاً: پتوس سبز"></div>
+      <div class="pl-field pl-wide"><label for="fSci" data-i18n="scientific_name">نام علمی</label><input id="fSci" class="pl-input" type="text" maxlength="80" dir="ltr" data-i18n-placeholder="scientific_name_placeholder" placeholder="Epipremnum aureum"></div>
+      <div class="pl-field"><label for="fWater" data-i18n="water_needs">نیاز آبی</label><select id="fWater" class="pl-input" required></select></div>
+      <div class="pl-field"><label for="fLight" data-i18n="light_needs">نیاز نوری</label><select id="fLight" class="pl-input" required></select></div>
+      <div class="pl-field"><label for="fWInt" data-i18n="water_interval">آبیاری هر چند روز؟</label><input id="fWInt" class="pl-input" type="text" inputmode="numeric" required maxlength="2" placeholder="3"></div>
+      <div class="pl-field"><label for="fFInt" data-i18n="fertilize_interval">کوددهی هر چند روز؟ (اختیاری)</label><input id="fFInt" class="pl-input" type="text" inputmode="numeric" maxlength="2" placeholder="14"></div>
+      <div class="pl-field pl-wide"><label for="fLoc" data-i18n="location">مکان قرارگیری</label><input id="fLoc" class="pl-input" type="text" required maxlength="60" list="locList" data-i18n-placeholder="location_placeholder" placeholder="مثلاً: اتاق خواب"><datalist id="locList"></datalist></div>
+      <div class="pl-field pl-wide"><label for="fTags" data-i18n="tags">برچسب‌ها</label><input id="fTags" class="pl-input" type="text" maxlength="200" data-i18n-placeholder="tags_placeholder" placeholder="با کاما جدا کنید"></div>
+      <div class="pl-field pl-wide"><label for="fNotes" data-i18n="notes">یادداشت</label><textarea id="fNotes" class="pl-input" rows="3" maxlength="500" data-i18n-placeholder="notes_placeholder" placeholder="یادداشت‌های مربوط به گیاه..."></textarea></div>
+      <div class="pl-field pl-wide">
+        <label for="fImage" data-i18n="plant_image">تصویر گیاه</label>
+        <input id="fImage" class="pl-input" type="file" accept="image/*">
+        <div class="pl-preview" id="imgPreview" hidden><img alt=""><button type="button" class="pl-btn pl-btn--sm" id="imgRemove" data-i18n="remove_image">حذف تصویر</button></div>
+      </div>
+    </div>
+    <div class="pl-actions">
+      <button type="submit" class="pl-btn pl-btn--primary" data-i18n="save_plant">ذخیره گیاه</button>
+      <button type="button" class="pl-btn" id="plantCancel" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="detailsDialog" class="pl-dialog" aria-labelledby="detailsTitle">
+  <h2 id="detailsTitle"></h2>
+  <div id="detailsBody"></div>
+  <div class="pl-actions">
+    <button type="button" class="pl-btn pl-btn--primary" id="detailsEdit" data-i18n="edit">ویرایش</button>
+    <button type="button" class="pl-btn" id="detailsClose" data-i18n="close">بستن</button>
+  </div>
+</dialog>
+
+<dialog id="confirmDialog" class="pl-dialog pl-dialog--sm" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="pl-actions">
+      <button type="submit" value="ok" class="pl-btn pl-btn--danger" id="confirmOk" data-i18n="confirm_yes">بله</button>
+      <button type="submit" value="cancel" class="pl-btn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<div class="pl-toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="assets/script.js"></script>
+<script src="../assets/tool-wrapper.js"></script>
 </body>
 </html>
-

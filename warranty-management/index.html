@@ -1,55 +1,83 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title data-i18n="title">مدیریت ضمانت‌نامه‌ها</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/css/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="page-shell">
-<header class="hero">
-<p class="eyebrow" data-i18n="text_eyebrow_0">مروری سریع</p>
-<h1 data-i18n="heading_0">مدیریت ضمانت‌نامه‌ها</h1>
-<p class="lede" data-i18n="text_lede_1">در یک جا کالا، تاریخ خرید و مدت گارانتی را ثبت کنید تا نزدیک پایان، به شما یادآوری شود.</p>
-</header>
-<section aria-live="polite" class="reminder-panel">
-<p id="reminder-text">هنوز هیچ ضمانت‌نامه‌ای ثبت نشده است.</p>
-</section>
-<section class="form-section">
-<form id="warranty-form">
-<div class="form-row">
-<label data-i18n="label_0" for="product-name">کالا</label>
-<input id="product-name" name="product" placeholder="نام کالا یا خدمت" required="" type="text"/>
-</div>
-<div class="form-row">
-<label data-i18n="label_1" for="purchase-date">تاریخ خرید</label>
-<input id="purchase-date" name="purchaseDate" required="" type="date"/>
-</div>
-<div class="form-row">
-<label data-i18n="label_2" for="duration">مدت گارانتی (ماه)</label>
-<input id="duration" min="1" name="duration" placeholder="مثلاً ۱۲" required="" type="number"/>
-</div>
-<div class="actions">
-<button data-i18n="button_0" type="submit">ثبت ضمانت</button>
-<button class="ghost" data-i18n="button_1" id="cancel-edit" type="button">پاک کردن فرم</button>
-</div>
-</form>
-</section>
-<section class="list-section">
-<header>
-<h2 data-i18n="heading_1">ضمانت‌نامه‌ها</h2>
-<p>لیست تمام کالاها به‌ترتیب ثبت را مشاهده کنید، ویرایش یا حذف کنید.</p>
-</header>
-<div aria-live="polite" class="list" id="warranty-list"></div>
-</section>
-</div>
-<script defer="" src="assets/js/app.js"></script>
+<main class="page wm">
+  <header class="wm-head">
+    <p class="wm-eyebrow" data-i18n="text_eyebrow_0">مروری سریع</p>
+    <h1 data-i18n="heading_0">مدیریت ضمانت‌نامه‌ها</h1>
+    <p class="wm-muted" data-i18n="text_lede_1">در یک جا کالا، تاریخ خرید و مدت گارانتی را ثبت کنید تا نزدیک پایان، به شما یادآوری شود.</p>
+  </header>
+
+  <section class="wm-reminder" id="reminder" aria-live="polite"><p id="reminderText"></p></section>
+
+  <section class="wm-stats" aria-label="آمار" data-i18n-aria="aria_stats">
+    <div class="wm-stat"><strong id="statTotal">0</strong><span data-i18n="stat_total">کل</span></div>
+    <div class="wm-stat wm-stat--ok"><strong id="statActive">0</strong><span data-i18n="st_active">فعال</span></div>
+    <div class="wm-stat wm-stat--warn"><strong id="statExpiring">0</strong><span data-i18n="st_expiring">رو به پایان</span></div>
+    <div class="wm-stat wm-stat--bad"><strong id="statExpired">0</strong><span data-i18n="st_expired">منقضی</span></div>
+  </section>
+
+  <section class="wm-card" id="formCard" aria-labelledby="formTitle">
+    <h2 id="formTitle" data-i18n="heading_add">ثبت ضمانت‌نامه</h2>
+    <form id="warrantyForm" autocomplete="off">
+      <div class="wm-grid">
+        <div class="wm-field wm-field--wide">
+          <label for="product" data-i18n="label_0">کالا</label>
+          <input id="product" type="text" required maxlength="100" data-i18n-placeholder="ph_product" placeholder="نام کالا یا خدمت">
+        </div>
+        <div class="wm-field">
+          <label for="purchaseDate" data-i18n="label_1">تاریخ خرید</label>
+          <input id="purchaseDate" type="date" required>
+        </div>
+        <div class="wm-field">
+          <label for="duration" data-i18n="label_2">مدت گارانتی (ماه)</label>
+          <input id="duration" type="text" inputmode="numeric" required maxlength="3" data-i18n-placeholder="ph_duration" placeholder="مثلاً ۱۲">
+        </div>
+      </div>
+      <div class="wm-actions">
+        <button type="submit" class="wm-btn wm-btn--primary" id="submitBtn" data-i18n="button_0">ثبت ضمانت</button>
+        <button type="button" class="wm-btn" id="cancelBtn" data-i18n="button_1">پاک کردن فرم</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="wm-card" aria-labelledby="listTitle">
+    <h2 id="listTitle" data-i18n="heading_1">ضمانت‌نامه‌ها</h2>
+    <p class="wm-muted" data-i18n="list_hint">کالاها بر اساس نزدیک‌ترین پایان گارانتی مرتب شده‌اند.</p>
+    <div class="wm-filters" role="group" aria-label="فیلتر" data-i18n-aria="aria_filter">
+      <button type="button" class="wm-chip is-active" data-filter="all" aria-pressed="true" data-i18n="filter_all">همه</button>
+      <button type="button" class="wm-chip" data-filter="active" aria-pressed="false" data-i18n="st_active">فعال</button>
+      <button type="button" class="wm-chip" data-filter="expiring" aria-pressed="false" data-i18n="st_expiring">رو به پایان</button>
+      <button type="button" class="wm-chip" data-filter="expired" aria-pressed="false" data-i18n="st_expired">منقضی</button>
+    </div>
+    <div class="wm-list" id="list" aria-live="polite"></div>
+  </section>
+</main>
+
+<dialog id="confirmDialog" class="wm-dialog" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="wm-actions">
+      <button type="submit" value="ok" class="wm-btn wm-btn--danger" data-i18n="btn_confirm">بله، حذف شود</button>
+      <button type="submit" value="cancel" class="wm-btn" data-i18n="btn_cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<div class="wm-toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="assets/js/app.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>
 </html>

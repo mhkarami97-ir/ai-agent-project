@@ -1,828 +1,410 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
-    }
+(function () {
+'use strict';
 
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
-    }
+/* @logic-start */
+var P = '۰۱۲۳۴۵۶۷۸۹', A = '٠١٢٣٤٥٦٧٨٩';
+/* مقدار ذخیره‌شدهٔ دسته همان نام فارسی قدیمی است (سازگاری با دادهٔ موجود) */
+var CATS = {
+  income: [['حقوق', 'salary'], ['پاداش', 'bonus'], ['سرمایه گذاری', 'investment'], ['سایر', 'other']],
+  expense: [['غذا', 'food'], ['حمل و نقل', 'transport'], ['خرید', 'shopping'], ['قبض', 'bills'], ['تفریح', 'fun'], ['بهداشت', 'health'], ['آموزش', 'education'], ['سایر', 'other']]
+};
+function normDigits(s) {
+  return String(s == null ? '' : s).replace(/[۰-۹]/g, function (d) { return P.indexOf(d); }).replace(/[٠-٩]/g, function (d) { return A.indexOf(d); });
+}
+function foldText(s) { return normDigits(s).replace(/ي/g, 'ی').replace(/ك/g, 'ک').toLowerCase(); }
+function pad(n) { return String(n).padStart(2, '0'); }
+function dayKey(d) { d = d || new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function parseISO(s) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(normDigits(s).trim());
+  if (!m) return null;
+  var y = +m[1], mo = +m[2], d = +m[3], dt = new Date(Date.UTC(y, mo - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+  return { y: y, m: mo, d: d, utc: dt.getTime() };
+}
+/* مبلغ: ارقام فارسی/عربی، جداکنندهٔ هزارگان (, ٬ فاصله)، اعشار (. ٫) تا دو رقم */
+function parseAmount(s) {
+  var v = normDigits(s).replace(/[\s,٬،]/g, '').replace(/٫/g, '.');
+  if (!/^\d+(\.\d{1,2})?$/.test(v)) return null;
+  var n = parseFloat(v);
+  return n > 0 && n <= 1e15 ? n : null;
+}
+var jalaliFmt = null;
+function jalaliParts(p) {
+  if (!jalaliFmt) jalaliFmt = new Intl.DateTimeFormat('en-US-u-ca-persian', { timeZone: 'UTC', year: 'numeric', month: 'numeric', day: 'numeric' });
+  var o = {};
+  jalaliFmt.formatToParts(new Date(Date.UTC(p.y, p.m - 1, p.d, 12))).forEach(function (x) { if (x.type !== 'literal') o[x.type] = x.value; });
+  return { y: parseInt(o.relatedYear || o.year, 10), m: parseInt(o.month, 10), d: parseInt(o.day, 10) };
+}
+/* کلید ماه: cal = 'persian' | 'gregory' */
+function monthKey(iso, cal) {
+  var p = parseISO(iso); if (!p) return null;
+  if (cal === 'persian') { var j = jalaliParts(p); return j.y + '-' + pad(j.m); }
+  return p.y + '-' + pad(p.m);
+}
+function normalizeTx(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  if (raw.type !== 'income' && raw.type !== 'expense') return null;
+  var amount = Number(raw.amount);
+  var date = parseISO(raw.date);
+  if (!isFinite(amount) || amount <= 0 || !date) return null;
+  return {
+    id: raw.id,
+    type: raw.type,
+    category: String(raw.category == null ? '' : raw.category).trim().slice(0, 60) || 'سایر',
+    description: String(raw.description == null ? '' : raw.description).trim().slice(0, 120),
+    amount: Math.round(amount * 100) / 100,
+    date: normDigits(raw.date).trim(),
+    timestamp: Number(raw.timestamp) > 0 ? Number(raw.timestamp) : 0
+  };
+}
+function sortTx(list) {
+  return list.slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : b.timestamp - a.timestamp; });
+}
+function round2(n) { return Math.round(n * 100) / 100; }
+function summarize(list) {
+  var i = 0, o = 0;
+  list.forEach(function (t) { if (t.type === 'income') i += t.amount; else o += t.amount; });
+  return { income: round2(i), expense: round2(o), balance: round2(i - o) };
+}
+function inMonth(list, month, cal) {
+  return month === 'all' ? list : list.filter(function (t) { return monthKey(t.date, cal) === month; });
+}
+function filterTx(list, type, query, labelFn) {
+  var q = foldText(query || '').trim();
+  return list.filter(function (t) {
+    if (type !== 'all' && t.type !== type) return false;
+    return !q || foldText(t.description).indexOf(q) >= 0 || foldText(labelFn ? labelFn(t) : t.category).indexOf(q) >= 0;
+  });
+}
+function byCategory(list, type) {
+  var d = {};
+  list.forEach(function (t) { if (t.type === type) d[t.category] = round2((d[t.category] || 0) + t.amount); });
+  return Object.keys(d).map(function (k) { return { category: k, total: d[k] }; }).sort(function (a, b) { return b.total - a.total; });
+}
+function monthlySeries(list, cal) {
+  var d = {};
+  list.forEach(function (t) {
+    var k = monthKey(t.date, cal); if (!k) return;
+    d[k] = d[k] || { key: k, income: 0, expense: 0, sample: t.date };
+    d[k][t.type] = round2(d[k][t.type] + t.amount);
+  });
+  return Object.keys(d).sort().map(function (k) { return d[k]; });
+}
+function csvCell(v) {
+  var s = String(v == null ? '' : v);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function buildCSV(headers, rows) {
+  return '\ufeff' + [headers].concat(rows).map(function (r) { return r.map(csvCell).join(','); }).join('\r\n');
+}
+/* زاویه‌های conic-gradient برای نمودار دایره‌ای */
+function conicStops(items, colors) {
+  var total = items.reduce(function (s, x) { return s + x.total; }, 0), acc = 0, parts = [];
+  items.forEach(function (x, i) {
+    var a = acc / total * 100; acc += x.total; var b = acc / total * 100;
+    parts.push(colors[i % colors.length] + ' ' + a.toFixed(2) + '% ' + b.toFixed(2) + '%');
+  });
+  return parts.join(', ');
+}
+/* @logic-end */
 
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
-    }
-
-    getTheme() {
-        return this.currentTheme;
-    }
+var DB_NAME = 'BudgetPlannerDB', STORE = 'transactions', MAX_LIST = 200;
+var COLORS = ['var(--p0)', 'var(--p1)', 'var(--p2)', 'var(--p3)', 'var(--p4)', 'var(--p5)', 'var(--p6)', 'var(--p7)', 'var(--p8)'];
+var lang = 'fa', dict = {};
+try { lang = String(localStorage.getItem('lang') || '').replace(/"/g, '') === 'en' ? 'en' : 'fa'; } catch (e) {}
+function t(key, vars) {
+  var s = (dict[lang] && dict[lang][key]) || (dict.fa && dict.fa[key]) || key;
+  if (vars) Object.keys(vars).forEach(function (k) { s = s.replace('{' + k + '}', vars[k]); });
+  return s;
+}
+function loc() { return lang === 'fa' ? 'fa-IR' : 'en-US'; }
+function cal() { return lang === 'fa' ? 'persian' : 'gregory'; }
+function nf(n) { return new Intl.NumberFormat(loc(), { maximumFractionDigits: 2 }).format(n); }
+function money(n) { return nf(n) + ' ' + t('currency'); }
+function $(id) { return document.getElementById(id); }
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function svg(tag, attrs) { var e = document.createElementNS('http://www.w3.org/2000/svg', tag); Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); }); return e; }
+function catLabel(type, value) {
+  var f = (CATS[type] || []).find(function (c) { return c[0] === value; });
+  return f ? t('cat_' + f[1]) : value;
+}
+function fmtDate(iso) {
+  var p = parseISO(iso); if (!p) return iso;
+  return new Intl.DateTimeFormat(lang === 'fa' ? 'fa-IR-u-ca-persian' : 'en-US', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(Date.UTC(p.y, p.m - 1, p.d, 12)));
+}
+function monthLabel(sampleIso) {
+  var p = parseISO(sampleIso);
+  return new Intl.DateTimeFormat(lang === 'fa' ? 'fa-IR-u-ca-persian' : 'en-US', { timeZone: 'UTC', year: 'numeric', month: 'long' }).format(new Date(Date.UTC(p.y, p.m - 1, p.d, 12)));
 }
 
-const themeManager = new ThemeManager();
+var db = null, txs = [], skipped = 0, typeFilter = 'all', chartType = 'pie', monthSel = 'all', formType = 'expense', editingId = null;
 
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
-    }
-
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
-        }
-    }
-
-    t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
-        }
-        
-        return value;
-    }
-
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
-        });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
-        }
-    }
-
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
-    }
-}
-
-const i18n = new I18n();
-
-
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-// مدیریت دیتابیس مرورگر (IndexedDB)
-class BudgetDB {
-    constructor() {
-        this.dbName = 'BudgetPlannerDB';
-        this.dbVersion = 1;
-        this.db = null;
-    }
-
-    async init() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(this.dbName, this.dbVersion);
-
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => {
-                this.db = request.result;
-                resolve();
-            };
-
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains('transactions')) {
-                    const objectStore = db.createObjectStore('transactions', { keyPath: 'id', autoIncrement: true });
-                    objectStore.createIndex('type', 'type', { unique: false });
-                    objectStore.createIndex('category', 'category', { unique: false });
-                    objectStore.createIndex('date', 'date', { unique: false });
-                }
-            };
-        });
-    }
-
-    async addTransaction(transaction) {
-        return new Promise((resolve, reject) => {
-            const tx = this.db.transaction(['transactions'], 'readwrite');
-            const store = tx.objectStore('transactions');
-            const request = store.add(transaction);
-
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    async getAllTransactions() {
-        return new Promise((resolve, reject) => {
-            const tx = this.db.transaction(['transactions'], 'readonly');
-            const store = tx.objectStore('transactions');
-            const request = store.getAll();
-
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    async updateTransaction(id, transaction) {
-        return new Promise((resolve, reject) => {
-            const tx = this.db.transaction(['transactions'], 'readwrite');
-            const store = tx.objectStore('transactions');
-            transaction.id = id;
-            const request = store.put(transaction);
-
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    async deleteTransaction(id) {
-        return new Promise((resolve, reject) => {
-            const tx = this.db.transaction(['transactions'], 'readwrite');
-            const store = tx.objectStore('transactions');
-            const request = store.delete(id);
-
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    async clearAll() {
-        return new Promise((resolve, reject) => {
-            const tx = this.db.transaction(['transactions'], 'readwrite');
-            const store = tx.objectStore('transactions');
-            const request = store.clear();
-
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
-    }
-}
-
-// متغیرهای سراسری
-const budgetDB = new BudgetDB();
-let transactions = [];
-let currentChart = null;
-let currentChartType = 'pie';
-let currentFilter = 'all';
-let editingId = null;
-
-// المنت‌های DOM
-const transactionForm = document.getElementById('transactionForm');
-const editForm = document.getElementById('editForm');
-const transactionsList = document.getElementById('transactionsList');
-const totalIncomeEl = document.getElementById('totalIncome');
-const totalExpenseEl = document.getElementById('totalExpense');
-const balanceEl = document.getElementById('balance');
-const searchInput = document.getElementById('searchInput');
-const modal = document.getElementById('modal');
-const closeModal = document.querySelector('.close');
-const exportBtn = document.getElementById('exportBtn');
-const clearAllBtn = document.getElementById('clearAllBtn');
-const chartCanvas = document.getElementById('chart');
-
-// تنظیم تاریخ پیش‌فرض
-document.getElementById('date').valueAsDate = new Date();
-document.getElementById('editDate').valueAsDate = new Date();
-
-// راه‌اندازی برنامه
-async function initApp() {
-    try {
-        await budgetDB.init();
-        await loadTransactions();
-        setupEventListeners();
-        updateUI();
-    } catch (error) {
-        console.error('خطا در راه‌اندازی برنامه:', error);
-        alert('خطا در راه‌اندازی برنامه. لطفاً صفحه را رفرش کنید.');
-    }
-}
-
-// بارگذاری تراکنش‌ها از دیتابیس
-async function loadTransactions() {
-    transactions = await budgetDB.getAllTransactions();
-    transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-}
-
-// تنظیم رویدادها
-function setupEventListeners() {
-    // فرم افزودن تراکنش
-    transactionForm.addEventListener('submit', handleAddTransaction);
-
-    // فرم ویرایش تراکنش
-    editForm.addEventListener('submit', handleEditTransaction);
-
-    // دکمه‌های فیلتر
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            currentFilter = e.target.dataset.filter;
-            displayTransactions();
-        });
-    });
-
-    // دکمه‌های تب نمودار
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            currentChartType = e.target.dataset.chart;
-            updateChart();
-        });
-    });
-
-    // جستجو
-    searchInput.addEventListener('input', displayTransactions);
-
-    // مودال
-    closeModal.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-
-    // خروجی و پاک کردن
-    exportBtn.addEventListener('click', exportToCSV);
-    clearAllBtn.addEventListener('click', clearAllData);
-
-    // تغییر نوع تراکنش
-    document.getElementById('type').addEventListener('change', updateCategoryOptions);
-    document.getElementById('editType').addEventListener('change', updateEditCategoryOptions);
-}
-
-// به‌روزرسانی دسته‌بندی‌ها بر اساس نوع
-function updateCategoryOptions() {
-    const type = document.getElementById('type').value;
-    const category = document.getElementById('category');
-    
-    const incomeCategories = ['حقوق', 'پاداش', 'سرمایه گذاری', 'سایر'];
-    const expenseCategories = ['غذا', 'حمل و نقل', 'خرید', 'قبض', 'تفریح', 'بهداشت', 'آموزش', 'سایر'];
-    
-    const categories = type === 'income' ? incomeCategories : expenseCategories;
-    
-    category.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-}
-
-function updateEditCategoryOptions() {
-    const type = document.getElementById('editType').value;
-    const category = document.getElementById('editCategory');
-    
-    const incomeCategories = ['حقوق', 'پاداش', 'سرمایه گذاری', 'سایر'];
-    const expenseCategories = ['غذا', 'حمل و نقل', 'خرید', 'قبض', 'تفریح', 'بهداشت', 'آموزش', 'سایر'];
-    
-    const categories = type === 'income' ? incomeCategories : expenseCategories;
-    
-    category.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-}
-
-// افزودن تراکنش
-async function handleAddTransaction(e) {
-    e.preventDefault();
-
-    const transaction = {
-        type: document.getElementById('type').value,
-        category: document.getElementById('category').value,
-        description: document.getElementById('description').value,
-        amount: parseFloat(document.getElementById('amount').value),
-        date: document.getElementById('date').value,
-        timestamp: Date.now()
+/* ---------- IndexedDB (همان پایگاه قبلی) ---------- */
+function openDB() {
+  return new Promise(function (res, rej) {
+    var r = indexedDB.open(DB_NAME, 1);
+    r.onerror = function () { rej(r.error); };
+    r.onupgradeneeded = function (e) {
+      var d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE)) {
+        var s = d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+        s.createIndex('type', 'type', { unique: false }); s.createIndex('category', 'category', { unique: false }); s.createIndex('date', 'date', { unique: false });
+      }
     };
-
-    try {
-        await budgetDB.addTransaction(transaction);
-        await loadTransactions();
-        updateUI();
-        transactionForm.reset();
-        document.getElementById('date').valueAsDate = new Date();
-        showNotification('تراکنش با موفقیت اضافه شد', 'success');
-    } catch (error) {
-        console.error('خطا در افزودن تراکنش:', error);
-        showNotification('خطا در افزودن تراکنش', 'error');
-    }
+    r.onsuccess = function () { db = r.result; res(); };
+  });
+}
+function run(mode, fn) {
+  return new Promise(function (res, rej) {
+    var tx = db.transaction([STORE], mode), req = fn(tx.objectStore(STORE));
+    tx.oncomplete = function () { res(req && req.result); };
+    tx.onerror = tx.onabort = function () { rej(tx.error); };
+  });
+}
+async function reload() {
+  var raw = await run('readonly', function (s) { return s.getAll(); });
+  skipped = 0;
+  txs = sortTx(raw.map(function (r) { var n = normalizeTx(r); if (!n) skipped++; return n; }).filter(Boolean));
+  render();
 }
 
-// ویرایش تراکنش
-function openEditModal(id) {
-    const transaction = transactions.find(t => t.id === id);
-    if (!transaction) return;
-
-    editingId = id;
-    document.getElementById('editType').value = transaction.type;
-    updateEditCategoryOptions();
-    document.getElementById('editCategory').value = transaction.category;
-    document.getElementById('editDescription').value = transaction.description;
-    document.getElementById('editAmount').value = transaction.amount;
-    document.getElementById('editDate').value = transaction.date;
-
-    modal.style.display = 'block';
+var toastTimer;
+function toast(msg, isError) {
+  var n = $('toast'); n.textContent = msg; n.className = 'bp-toast' + (isError ? ' is-error' : ''); n.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(function () { n.hidden = true; }, 2800);
+}
+function confirmDialog(message) {
+  return new Promise(function (resolve) {
+    var d = $('confirmDialog'); $('confirmText').textContent = message;
+    var done = function () { d.removeEventListener('close', done); resolve(d.returnValue === 'ok'); };
+    d.returnValue = ''; d.addEventListener('close', done); d.showModal();
+  });
 }
 
-async function handleEditTransaction(e) {
-    e.preventDefault();
-
-    const transaction = {
-        type: document.getElementById('editType').value,
-        category: document.getElementById('editCategory').value,
-        description: document.getElementById('editDescription').value,
-        amount: parseFloat(document.getElementById('editAmount').value),
-        date: document.getElementById('editDate').value,
-        timestamp: Date.now()
-    };
-
-    try {
-        await budgetDB.updateTransaction(editingId, transaction);
-        await loadTransactions();
-        updateUI();
-        modal.style.display = 'none';
-        showNotification('تراکنش با موفقیت ویرایش شد', 'success');
-    } catch (error) {
-        console.error('خطا در ویرایش تراکنش:', error);
-        showNotification('خطا در ویرایش تراکنش', 'error');
-    }
+function fillCats(sel, type, keep) {
+  var cur = keep ? sel.value : '';
+  sel.textContent = '';
+  CATS[type].forEach(function (c) { var o = el('option', '', t('cat_' + c[1])); o.value = c[0]; sel.appendChild(o); });
+  if (cur && CATS[type].some(function (c) { return c[0] === cur; })) sel.value = cur;
+}
+function fillEditType() {
+  var s = $('eType'), cur = s.value; s.textContent = '';
+  ['income', 'expense'].forEach(function (k) { var o = el('option', '', t('type_' + k)); o.value = k; s.appendChild(o); });
+  if (cur) s.value = cur;
+}
+function applyI18n() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(function (e) { e.textContent = t(e.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function (e) { e.placeholder = t(e.getAttribute('data-i18n-placeholder')); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function (e) { e.setAttribute('aria-label', t(e.getAttribute('data-i18n-aria'))); });
+  document.title = t('title');
+  fillCats($('fCat'), formType, true); fillEditType();
+  if (!$('editDialog').open) { fillCats($('eCat'), 'expense', false); }
+  hintAmount();
 }
 
-// حذف تراکنش
-async function deleteTransaction(id) {
-    if (!confirm('آیا از حذف این تراکنش اطمینان دارید؟')) return;
-
-    try {
-        await budgetDB.deleteTransaction(id);
-        await loadTransactions();
-        updateUI();
-        showNotification('تراکنش با موفقیت حذف شد', 'success');
-    } catch (error) {
-        console.error('خطا در حذف تراکنش:', error);
-        showNotification('خطا در حذف تراکنش', 'error');
-    }
+function hintAmount() {
+  var n = parseAmount($('fAmount').value);
+  $('amountHint').textContent = n === null ? '' : money(n);
 }
 
-// به‌روزرسانی رابط کاربری
-function updateUI() {
-    updateSummary();
-    displayTransactions();
-    updateChart();
+/* ---------- نمایش ---------- */
+function monthOptions() {
+  var sel = $('monthSel'), cur = monthSel; sel.textContent = '';
+  var o = el('option', '', t('all_months')); o.value = 'all'; sel.appendChild(o);
+  monthlySeries(txs, cal()).reverse().forEach(function (m) { var x = el('option', '', monthLabel(m.sample)); x.value = m.key; sel.appendChild(x); });
+  if ([].some.call(sel.options, function (x) { return x.value === cur; })) sel.value = cur; else { monthSel = 'all'; sel.value = 'all'; }
 }
-
-// به‌روزرسانی خلاصه
-function updateSummary() {
-    const income = transactions
-        .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const expense = transactions
-        .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const balance = income - expense;
-
-    totalIncomeEl.textContent = formatCurrency(income);
-    totalExpenseEl.textContent = formatCurrency(expense);
-    balanceEl.textContent = formatCurrency(balance);
-    balanceEl.style.color = balance >= 0 ? '#10b981' : '#ef4444';
+function render() {
+  monthOptions();
+  var scope = inMonth(txs, monthSel, cal()), s = summarize(scope);
+  $('sumIn').textContent = money(s.income); $('sumOut').textContent = money(s.expense); $('sumBal').textContent = money(s.balance);
+  $('sumBalBox').className = 'bp-sum ' + (s.balance < 0 ? 'is-neg' : 'is-pos');
+  renderList(scope); renderChart(scope);
 }
-
-// نمایش تراکنش‌ها
-function displayTransactions() {
-    let filteredTransactions = transactions;
-
-    // فیلتر بر اساس نوع
-    if (currentFilter !== 'all') {
-        filteredTransactions = filteredTransactions.filter(t => t.type === currentFilter);
-    }
-
-    // جستجو
-    const searchTerm = searchInput.value.toLowerCase();
-    if (searchTerm) {
-        filteredTransactions = filteredTransactions.filter(t =>
-            t.description.toLowerCase().includes(searchTerm) ||
-            t.category.toLowerCase().includes(searchTerm)
-        );
-    }
-
-    if (filteredTransactions.length === 0) {
-        transactionsList.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">🔍</div>
-                <p>تراکنشی یافت نشد</p>
-                <p class="empty-hint">فیلتر یا جستجوی دیگری امتحان کنید</p>
-            </div>
-        `;
-        return;
-    }
-
-    transactionsList.innerHTML = filteredTransactions.map(transaction => `
-        <div class="transaction-item ${transaction.type}">
-            <div class="transaction-info">
-                <div class="transaction-header">
-                    <span class="transaction-description">${transaction.description}</span>
-                    <span class="transaction-amount ${transaction.type}">
-                        ${transaction.type === 'income' ? '+' : '-'} ${formatCurrency(transaction.amount)}
-                    </span>
-                </div>
-                <div class="transaction-meta">
-                    <span class="transaction-category">📁 ${transaction.category}</span>
-                    <span class="transaction-date">📅 ${formatDate(transaction.date)}</span>
-                </div>
-            </div>
-            <div class="transaction-actions">
-                <button class="action-btn edit-btn" onclick="openEditModal(${transaction.id})">✏️ ویرایش</button>
-                <button class="action-btn delete-btn" onclick="deleteTransaction(${transaction.id})">🗑️ حذف</button>
-            </div>
-        </div>
-    `).join('');
+function renderList(scope) {
+  var box = $('txList'); box.textContent = '';
+  var list = filterTx(scope, typeFilter, $('searchInput').value, function (x) { return catLabel(x.type, x.category); });
+  if (!list.length) { box.appendChild(el('p', 'bp-none', t(txs.length ? 'no_match' : 'no_tx'))); return; }
+  list.slice(0, MAX_LIST).forEach(function (x) {
+    var row = el('article', 'bp-tx ' + x.type); row.dataset.id = x.id;
+    var main = el('div', 'bp-tx-main'), top = el('div', 'bp-tx-top');
+    top.appendChild(el('span', 'bp-tx-desc', x.description || '—'));
+    top.appendChild(el('span', 'bp-tx-amt', (x.type === 'income' ? '+' : '−') + ' ' + money(x.amount)));
+    main.appendChild(top);
+    var meta = el('div', 'bp-tx-meta');
+    meta.appendChild(el('span', '', '📁 ' + catLabel(x.type, x.category)));
+    meta.appendChild(el('span', '', '📅 ' + fmtDate(x.date)));
+    main.appendChild(meta); row.appendChild(main);
+    var act = el('div', 'bp-tx-actions');
+    var eb = el('button', 'bp-btn bp-btn--sm', t('edit')); eb.type = 'button'; eb.dataset.action = 'edit';
+    var db2 = el('button', 'bp-btn bp-btn--sm bp-btn--danger', t('delete')); db2.type = 'button'; db2.dataset.action = 'delete';
+    act.appendChild(eb); act.appendChild(db2); row.appendChild(act); box.appendChild(row);
+  });
+  if (list.length > MAX_LIST) box.appendChild(el('p', 'bp-more', t('more_hint', { n: nf(list.length - MAX_LIST) })));
 }
-
-// به‌روزرسانی نمودار
-function updateChart() {
-    if (currentChart) {
-        currentChart.destroy();
-    }
-
-    const ctx = chartCanvas.getContext('2d');
-
-    if (currentChartType === 'pie') {
-        drawPieChart(ctx);
-    } else if (currentChartType === 'bar') {
-        drawBarChart(ctx);
-    } else if (currentChartType === 'line') {
-        drawLineChart(ctx);
-    }
-}
-
-// نمودار دایره‌ای
-function drawPieChart(ctx) {
-    const expensesByCategory = {};
-    transactions
-        .filter(t => t.type === 'expense')
-        .forEach(t => {
-            expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
-        });
-
-    const labels = Object.keys(expensesByCategory);
-    const data = Object.values(expensesByCategory);
-
-    if (labels.length === 0) {
-        drawEmptyChart(ctx);
-        return;
-    }
-
-    currentChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: [
-                    '#ef4444', '#f59e0b', '#10b981', '#3b82f6', 
-                    '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    rtl: true,
-                    labels: {
-                        font: {
-                            family: 'Vazirmatn',
-                            size: 12
-                        }
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.label + ': ' + formatCurrency(context.parsed);
-                        }
-                    },
-                    rtl: true,
-                    bodyFont: {
-                        family: 'Vazirmatn'
-                    }
-                }
-            }
-        }
+function renderChart(scope) {
+  var box = $('chartBox'); box.textContent = '';
+  if (chartType === 'pie') {
+    var items = byCategory(scope, 'expense');
+    if (!items.length) { box.appendChild(el('p', 'bp-none', t('no_data'))); return; }
+    var total = items.reduce(function (s, x) { return s + x.total; }, 0);
+    var d = el('div', 'bp-donut'); d.style.background = 'conic-gradient(' + conicStops(items, COLORS) + ')';
+    d.setAttribute('role', 'img'); d.setAttribute('aria-label', t('pie_aria', { n: nf(items.length) })); box.appendChild(d);
+    var ul = el('ul', 'bp-legend');
+    items.forEach(function (x, i) {
+      var li = el('li'); var dot = el('span', 'bp-dot'); dot.style.background = COLORS[i % COLORS.length]; li.appendChild(dot);
+      var nm = el('span', '', catLabel('expense', x.category)); li.appendChild(nm);
+      var v = el('span'); v.appendChild(document.createTextNode(money(x.total) + ' ')); v.appendChild(el('small', '', '(' + nf(Math.round(x.total / total * 100)) + (lang === 'fa' ? '٪' : '%') + ')')); li.appendChild(v);
+      ul.appendChild(li);
     });
-}
-
-// نمودار میله‌ای
-function drawBarChart(ctx) {
-    const incomeByCategory = {};
-    const expenseByCategory = {};
-
-    transactions.forEach(t => {
-        if (t.type === 'income') {
-            incomeByCategory[t.category] = (incomeByCategory[t.category] || 0) + t.amount;
-        } else {
-            expenseByCategory[t.category] = (expenseByCategory[t.category] || 0) + t.amount;
-        }
+    box.appendChild(ul);
+  } else if (chartType === 'bar') {
+    var inc = byCategory(scope, 'income'), exp = byCategory(scope, 'expense'), cats = {};
+    var rows = {};
+    inc.forEach(function (x) { rows[x.category] = rows[x.category] || { i: 0, e: 0 }; rows[x.category].i = x.total; });
+    exp.forEach(function (x) { rows[x.category] = rows[x.category] || { i: 0, e: 0 }; rows[x.category].e = x.total; });
+    var keys = Object.keys(rows);
+    if (!keys.length) { box.appendChild(el('p', 'bp-none', t('no_data'))); return; }
+    var max = Math.max.apply(null, keys.map(function (k) { return Math.max(rows[k].i, rows[k].e); }));
+    var wrap = el('div', 'bp-bars');
+    keys.sort(function (a, b) { return (rows[b].i + rows[b].e) - (rows[a].i + rows[a].e); }).forEach(function (k) {
+      var r = el('div', 'bp-bar-row');
+      r.appendChild(el('span', 'bp-bar-name', catLabel(rows[k].e && !rows[k].i ? 'expense' : 'income', k)));
+      [['in', rows[k].i], ['out', rows[k].e]].forEach(function (z) {
+        if (!z[1]) return;
+        var line = el('div', 'bp-bar-line ' + z[0]), tr = el('div', 'bp-bar-track'), f = el('span'); f.style.width = Math.max(2, Math.round(z[1] / max * 100)) + '%'; tr.appendChild(f);
+        line.appendChild(tr); line.appendChild(el('span', '', money(z[1]))); r.appendChild(line);
+      });
+      wrap.appendChild(r);
     });
-
-    const allCategories = [...new Set([...Object.keys(incomeByCategory), ...Object.keys(expenseByCategory)])];
-
-    if (allCategories.length === 0) {
-        drawEmptyChart(ctx);
-        return;
+    box.appendChild(wrap);
+    var key = el('div', 'bp-key'); key.appendChild(el('span', 'k-in', t('type_income'))); key.appendChild(el('span', 'k-out', t('type_expense'))); box.appendChild(key);
+  } else {
+    var ser = monthlySeries(txs, cal());
+    if (!ser.length) { box.appendChild(el('p', 'bp-none', t('no_data'))); return; }
+    var W = 600, H = 280, pl = 52, pr = 14, pt = 16, pb = 44, pw = W - pl - pr, ph = H - pt - pb;
+    var mx = Math.max.apply(null, ser.map(function (s) { return Math.max(s.income, s.expense); }).concat([1]));
+    var s = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, 'class': 'bp-svg', role: 'img', 'aria-label': t('line_aria', { n: nf(ser.length) }) });
+    var compact = new Intl.NumberFormat(loc(), { notation: 'compact', maximumFractionDigits: 1 });
+    for (var i = 0; i <= 4; i++) {
+      var y = pt + ph * i / 4;
+      s.appendChild(svg('line', { x1: pl, x2: W - pr, y1: y, y2: y, 'class': 'grid' }));
+      var tx = svg('text', { x: pl - 6, y: y + 4, 'text-anchor': 'end' }); tx.textContent = compact.format(mx * (4 - i) / 4); s.appendChild(tx);
     }
-
-    currentChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: allCategories,
-            datasets: [
-                {
-                    label: 'درآمد',
-                    data: allCategories.map(cat => incomeByCategory[cat] || 0),
-                    backgroundColor: '#10b981'
-                },
-                {
-                    label: 'هزینه',
-                    data: allCategories.map(cat => expenseByCategory[cat] || 0),
-                    backgroundColor: '#ef4444'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    rtl: true,
-                    labels: {
-                        font: {
-                            family: 'Vazirmatn',
-                            size: 12
-                        }
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
-                        }
-                    },
-                    rtl: true,
-                    bodyFont: {
-                        family: 'Vazirmatn'
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    reverse: true,
-                    ticks: {
-                        font: {
-                            family: 'Vazirmatn'
-                        }
-                    }
-                },
-                y: {
-                    ticks: {
-                        callback: function(value) {
-                            return formatCurrency(value);
-                        },
-                        font: {
-                            family: 'Vazirmatn'
-                        }
-                    }
-                }
-            }
-        }
+    var xs = ser.map(function (_, k) { return ser.length === 1 ? pl + pw / 2 : pl + pw * k / (ser.length - 1); });
+    var yy = function (v) { return pt + ph - ph * v / mx; };
+    ['income', 'expense'].forEach(function (f) {
+      var pts = ser.map(function (m, k) { return xs[k].toFixed(1) + ',' + yy(m[f]).toFixed(1); }).join(' ');
+      if (ser.length > 1) s.appendChild(svg('polyline', { points: pts, 'class': f === 'income' ? 'l-in' : 'l-out' }));
+      ser.forEach(function (m, k) { s.appendChild(svg('circle', { cx: xs[k], cy: yy(m[f]), r: 4.5, 'class': f === 'income' ? 'd-in' : 'd-out' })); });
     });
-}
-
-// نمودار خطی
-function drawLineChart(ctx) {
-    const monthlyData = {};
-    
-    transactions.forEach(t => {
-        const monthKey = t.date.substring(0, 7); // YYYY-MM
-        if (!monthlyData[monthKey]) {
-            monthlyData[monthKey] = { income: 0, expense: 0 };
-        }
-        if (t.type === 'income') {
-            monthlyData[monthKey].income += t.amount;
-        } else {
-            monthlyData[monthKey].expense += t.amount;
-        }
+    var step = Math.ceil(ser.length / 6);
+    ser.forEach(function (m, k) {
+      if (k % step && k !== ser.length - 1) return;
+      var p = parseISO(m.sample), lab = new Intl.DateTimeFormat(lang === 'fa' ? 'fa-IR-u-ca-persian' : 'en-US', { timeZone: 'UTC', month: 'short', year: '2-digit' }).format(new Date(Date.UTC(p.y, p.m - 1, p.d, 12)));
+      var tt = svg('text', { x: xs[k], y: H - 18, 'text-anchor': 'middle' }); tt.textContent = lab; s.appendChild(tt);
     });
+    box.appendChild(s);
+    var key2 = el('div', 'bp-key'); key2.appendChild(el('span', 'k-in', t('type_income'))); key2.appendChild(el('span', 'k-out', t('type_expense'))); box.appendChild(key2);
+  }
+}
 
-    const sortedMonths = Object.keys(monthlyData).sort();
+/* ---------- عملیات ---------- */
+function setFormType(type) {
+  formType = type;
+  document.querySelectorAll('.bp-seg-btn').forEach(function (b) { var on = b.dataset.type === type; b.classList.toggle('is-active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+  fillCats($('fCat'), type, false);
+}
+async function onAdd(e) {
+  e.preventDefault();
+  var amount = parseAmount($('fAmount').value);
+  if (amount === null) { toast(t('err_amount'), true); $('fAmount').focus(); return; }
+  var tx = normalizeTx({ type: formType, category: $('fCat').value, description: $('fDesc').value, amount: amount, date: $('fDate').value, timestamp: Date.now() });
+  if (!tx) { toast(t('err_invalid'), true); return; }
+  delete tx.id;
+  try { await run('readwrite', function (s) { return s.add(tx); }); await reload(); $('txForm').reset(); $('fDate').value = dayKey(); setFormType(formType); hintAmount(); toast(t('ok_added')); }
+  catch (err) { console.error(err); toast(t('err_save'), true); }
+}
+function openEdit(id) {
+  var x = txs.find(function (v) { return v.id === id; }); if (!x) return;
+  editingId = id;
+  $('eType').value = x.type; fillCats($('eCat'), x.type, false);
+  var has = CATS[x.type].some(function (c) { return c[0] === x.category; });
+  if (!has) { var o = el('option', '', x.category); o.value = x.category; $('eCat').appendChild(o); }
+  $('eCat').value = x.category; $('eDesc').value = x.description; $('eAmount').value = String(x.amount); $('eDate').value = x.date;
+  $('editDialog').showModal();
+}
+async function onEdit(e) {
+  e.preventDefault();
+  var old = txs.find(function (v) { return v.id === editingId; }); if (!old) { $('editDialog').close(); return; }
+  var amount = parseAmount($('eAmount').value);
+  if (amount === null) { toast(t('err_amount'), true); return; }
+  var tx = normalizeTx({ id: editingId, type: $('eType').value, category: $('eCat').value, description: $('eDesc').value, amount: amount, date: $('eDate').value, timestamp: old.timestamp || Date.now() });
+  if (!tx) { toast(t('err_invalid'), true); return; }
+  try { await run('readwrite', function (s) { return s.put(tx); }); await reload(); $('editDialog').close(); toast(t('ok_edited')); }
+  catch (err) { console.error(err); toast(t('err_save'), true); }
+}
+async function onDelete(id) {
+  if (!(await confirmDialog(t('confirm_delete')))) return;
+  try { await run('readwrite', function (s) { return s.delete(id); }); await reload(); toast(t('ok_deleted')); }
+  catch (err) { console.error(err); toast(t('err_save'), true); }
+}
+async function onClear() {
+  if (!(await confirmDialog(t('confirm_clear')))) return;
+  try { await run('readwrite', function (s) { return s.clear(); }); await reload(); toast(t('ok_cleared')); }
+  catch (err) { console.error(err); toast(t('err_save'), true); }
+}
+function onExport() {
+  if (!txs.length) { toast(t('nothing_export'), true); return; }
+  var headers = [t('csv_type'), t('csv_category'), t('csv_desc'), t('csv_amount'), t('csv_date'), t('csv_date_local')];
+  var rows = sortTx(txs).reverse().map(function (x) { return [t('type_' + x.type), catLabel(x.type, x.category), x.description, x.amount, x.date, fmtDate(x.date)]; });
+  var url = URL.createObjectURL(new Blob([buildCSV(headers, rows)], { type: 'text/csv;charset=utf-8' }));
+  var a = document.createElement('a'); a.href = url; a.download = 'budget-' + dayKey() + '.csv';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  toast(t('ok_export'));
+}
 
-    if (sortedMonths.length === 0) {
-        drawEmptyChart(ctx);
-        return;
-    }
-
-    currentChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: sortedMonths.map(m => formatMonth(m)),
-            datasets: [
-                {
-                    label: 'درآمد',
-                    data: sortedMonths.map(m => monthlyData[m].income),
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                },
-                {
-                    label: 'هزینه',
-                    data: sortedMonths.map(m => monthlyData[m].expense),
-                    borderColor: '#ef4444',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    rtl: true,
-                    labels: {
-                        font: {
-                            family: 'Vazirmatn',
-                            size: 12
-                        }
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
-                        }
-                    },
-                    rtl: true,
-                    bodyFont: {
-                        family: 'Vazirmatn'
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    reverse: true,
-                    ticks: {
-                        font: {
-                            family: 'Vazirmatn'
-                        }
-                    }
-                },
-                y: {
-                    ticks: {
-                        callback: function(value) {
-                            return formatCurrency(value);
-                        },
-                        font: {
-                            family: 'Vazirmatn'
-                        }
-                    }
-                }
-            }
-        }
+function bind() {
+  $('txForm').addEventListener('submit', onAdd);
+  $('editForm').addEventListener('submit', onEdit);
+  $('editCancel').addEventListener('click', function () { $('editDialog').close(); });
+  document.querySelectorAll('.bp-seg-btn').forEach(function (b) { b.addEventListener('click', function () { setFormType(b.dataset.type); }); });
+  $('eType').addEventListener('change', function () { fillCats($('eCat'), this.value, false); });
+  $('fAmount').addEventListener('input', hintAmount);
+  $('monthSel').addEventListener('change', function () { monthSel = this.value; render(); });
+  document.querySelectorAll('.bp-tab').forEach(function (b) {
+    b.addEventListener('click', function () {
+      chartType = b.dataset.chart;
+      document.querySelectorAll('.bp-tab').forEach(function (x) { var on = x === b; x.classList.toggle('is-active', on); x.setAttribute('aria-selected', on ? 'true' : 'false'); });
+      renderChart(inMonth(txs, monthSel, cal()));
     });
+  });
+  document.querySelectorAll('.bp-chip').forEach(function (b) {
+    b.addEventListener('click', function () {
+      typeFilter = b.dataset.filter;
+      document.querySelectorAll('.bp-chip').forEach(function (x) { var on = x === b; x.classList.toggle('is-active', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+      renderList(inMonth(txs, monthSel, cal()));
+    });
+  });
+  $('searchInput').addEventListener('input', function () { renderList(inMonth(txs, monthSel, cal())); });
+  $('txList').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-action]'), r = e.target.closest('.bp-tx'); if (!b || !r) return;
+    var id = Number(r.dataset.id); if (b.dataset.action === 'edit') openEdit(id); else onDelete(id);
+  });
+  $('exportBtn').addEventListener('click', onExport);
+  $('clearBtn').addEventListener('click', onClear);
+  ['editDialog', 'confirmDialog'].forEach(function (id) { $(id).addEventListener('click', function (e) { if (e.target === e.currentTarget) e.currentTarget.close(); }); });
+  window.addEventListener('languageChanged', function (e) { lang = e.detail === 'en' ? 'en' : 'fa'; monthSel = 'all'; applyI18n(); render(); });
 }
 
-// نمودار خالی
-function drawEmptyChart(ctx) {
-    ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-    ctx.font = '16px Vazirmatn';
-    ctx.fillStyle = '#9ca3af';
-    ctx.textAlign = 'center';
-    ctx.fillText('داده‌ای برای نمایش وجود ندارد', chartCanvas.width / 2, chartCanvas.height / 2);
+async function boot() {
+  try { dict = await (await fetch('assets/translations.json')).json(); } catch (e) { console.error('translations', e); }
+  applyI18n(); bind(); $('fDate').value = dayKey(); setFormType('expense'); render();
+  try { await openDB(); await reload(); if (skipped) toast(t('warn_skipped', { n: nf(skipped) }), true); }
+  catch (e) { console.error(e); toast(t('err_db'), true); }
 }
-
-// خروجی CSV
-function exportToCSV() {
-    if (transactions.length === 0) {
-        alert('تراکنشی برای خروجی وجود ندارد');
-        return;
-    }
-
-    const headers = ['نوع', 'دسته بندی', 'توضیحات', 'مبلغ (تومان)', 'تاریخ'];
-    const rows = transactions.map(t => [
-        t.type === 'income' ? 'درآمد' : 'هزینه',
-        t.category,
-        t.description,
-        t.amount,
-        formatDate(t.date)
-    ]);
-
-    const csvContent = [
-        '\ufeff' + headers.join(','),
-        ...rows.map(row => row.join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `budget-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-
-    showNotification('فایل با موفقیت دانلود شد', 'success');
-}
-
-// پاک کردن همه داده‌ها
-async function clearAllData() {
-    if (!confirm('آیا از پاک کردن تمام داده‌ها اطمینان دارید؟ این عمل قابل بازگشت نیست!')) return;
-
-    try {
-        await budgetDB.clearAll();
-        await loadTransactions();
-        updateUI();
-        showNotification('تمام داده‌ها پاک شدند', 'success');
-    } catch (error) {
-        console.error('خطا در پاک کردن داده‌ها:', error);
-        showNotification('خطا در پاک کردن داده‌ها', 'error');
-    }
-}
-
-// توابع کمکی
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('fa-IR').format(amount) + ' تومان';
-}
-
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fa-IR').format(date);
-}
-
-function formatMonth(monthString) {
-    const [year, month] = monthString.split('-');
-    const date = new Date(year, month - 1);
-    return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long' }).format(date);
-}
-
-function showNotification(message, type) {
-    // ایجاد نوتیفیکیشن ساده
-    const notification = document.createElement('div');
-    notification.textContent = message;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: ${type === 'success' ? '#10b981' : '#ef4444'};
-        color: white;
-        padding: 15px 30px;
-        border-radius: 10px;
-        font-family: Vazirmatn;
-        font-weight: 600;
-        z-index: 10000;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        animation: slideDown 0.3s ease;
-    `;
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        notification.style.animation = 'fadeOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-// راه‌اندازی برنامه
-initApp();
-
+document.addEventListener('DOMContentLoaded', boot);
+})();

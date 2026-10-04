@@ -1,493 +1,223 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
-    }
+(function () {
+'use strict';
 
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
-    }
+/* @logic-start */
+var P = '۰۱۲۳۴۵۶۷۸۹', A = '٠١٢٣٤٥٦٧٨٩';
+var READ_WPM = 200, SPEAK_WPM = 130, MAX_SAVED = 100000, HAS_WORD = /[\p{L}\p{N}]/u;
+function normDigits(s) {
+  return String(s == null ? '' : s).replace(/[۰-۹]/g, function (d) { return P.indexOf(d); }).replace(/[٠-٩]/g, function (d) { return A.indexOf(d); });
+}
+function fold(s) { return normDigits(s).replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').toLowerCase(); }
+var segmenter = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter('fa', { granularity: 'grapheme' }) : null;
+/* کاراکتر = grapheme (ایموجی مرکب یک کاراکتر است) */
+function countChars(s) {
+  if (!s) return 0;
+  if (!segmenter) return Array.from(s).length;
+  var n = 0; for (var x of segmenter.segment(s)) { n++; } return n;
+}
+/* بدون فاصله: فاصله‌ها و نیم‌فاصله و صفر-عرض حذف می‌شوند */
+function countCharsNoSpace(s) { return countChars(s.replace(/[\s\u200c\u200b]/g, '')); }
+function getWords(text) {
+  return String(text).split(/[\s\u200b]+/).filter(function (w) { return HAS_WORD.test(w); });
+}
+function getSentences(text) {
+  var out = [];
+  String(text).replace(/\r\n?/g, '\n').split('\n').forEach(function (line) {
+    line.split(/(?<=[.!?؟…۔]+["»”'’)\]]*)\s+/u).forEach(function (s) { if (HAS_WORD.test(s)) out.push(s.trim()); });
+  });
+  return out;
+}
+/* پاراگراف = هر خط غیرخالی */
+function getParagraphs(text) {
+  return String(text).replace(/\r\n?/g, '\n').split('\n').filter(function (l) { return HAS_WORD.test(l); });
+}
+function secondsFor(words, wpm) { return words > 0 ? Math.max(1, Math.round(words / wpm * 60)) : 0; }
+function splitSeconds(sec) { return { m: Math.floor(sec / 60), s: sec % 60 }; }
+function analyze(text) {
+  var words = getWords(text);
+  return {
+    chars: countChars(text), charsNoSpace: countCharsNoSpace(text), words: words.length,
+    sentences: getSentences(text).length, paragraphs: getParagraphs(text).length,
+    readSec: secondsFor(words.length, READ_WPM), speakSec: secondsFor(words.length, SPEAK_WPM)
+  };
+}
+function stripEdges(w) { return w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''); }
+function frequency(text, min, limit) {
+  var map = {};
+  getWords(text).forEach(function (w) { var k = fold(stripEdges(w)); if (k) map[k] = (map[k] || 0) + 1; });
+  var arr = Object.keys(map).filter(function (k) { return map[k] >= min; }).map(function (k) { return { word: k, count: map[k] }; });
+  arr.sort(function (a, b) { return b.count - a.count || a.word.localeCompare(b.word, 'fa'); });
+  return { total: arr.length, items: arr.slice(0, limit || 100) };
+}
+function parseMin(v) {
+  var s = normDigits(v).trim();
+  var n = /^\d+$/.test(s) ? parseInt(s, 10) : NaN;
+  return isFinite(n) ? Math.min(100, Math.max(1, n)) : 2;
+}
+function truncate(text, n) {
+  var a = Array.from(text);
+  return a.length > n ? a.slice(0, n).join('') + '…' : text;
+}
+/* تاریخچه: {id, text, date, stats}؛ date قدیمی رشتهٔ محلی بوده و id برابر Date.now() */
+function normalizeHistory(raw) {
+  if (!Array.isArray(raw)) return [];
+  var seen = {};
+  return raw.map(function (h, i) {
+    if (!h || typeof h !== 'object') return null;
+    var text = typeof h.text === 'string' ? h.text.slice(0, MAX_SAVED) : '';
+    if (!text.trim()) return null;
+    var id = Number(h.id); if (!isFinite(id) || id <= 0) id = Date.now() + i;
+    while (seen[id]) id++;
+    seen[id] = 1;
+    var d = new Date(h.date), ts = !isNaN(d.getTime()) ? d.getTime() : (id > 1e12 ? id : 0);
+    return { id: id, text: text, ts: ts, legacyDate: !isNaN(d.getTime()) || typeof h.date !== 'string' ? '' : h.date };
+  }).filter(Boolean).slice(0, 10);
+}
+/* @logic-end */
 
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
-    }
-
-    getTheme() {
-        return this.currentTheme;
-    }
+var HIST_KEY = 'textAnalyzerHistory', LAST_KEY = 'lastText';
+var lang = 'fa', dict = {};
+try { lang = String(localStorage.getItem('lang') || '').replace(/"/g, '') === 'en' ? 'en' : 'fa'; } catch (e) {}
+function t(key, vars) {
+  var s = (dict[lang] && dict[lang][key]) || (dict.fa && dict.fa[key]) || key;
+  if (vars) Object.keys(vars).forEach(function (k) { s = s.replace('{' + k + '}', vars[k]); });
+  return s;
+}
+function nf(n) { return new Intl.NumberFormat(lang === 'fa' ? 'fa-IR' : 'en-US').format(n); }
+function $(id) { return document.getElementById(id); }
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function timeLabel(sec) {
+  if (!sec) return '–';
+  var p = splitSeconds(sec);
+  if (!p.m) return t('t_sec', { s: nf(p.s) });
+  return p.s ? t('t_min_sec', { m: nf(p.m), s: nf(p.s) }) : t('t_min', { m: nf(p.m) });
 }
 
-const themeManager = new ThemeManager();
+var history = [], minOcc = 2, saveTimer, freqTimer;
 
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
-    }
-
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
-        }
-    }
-
-    t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
-        }
-        
-        return value;
-    }
-
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
-        });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
-        }
-    }
-
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
-    }
+function readJSON(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+function writeHistory() {
+  var out = history.map(function (h) {
+    var a = analyze(h.text);
+    return { id: h.id, text: h.text, date: h.ts ? new Date(h.ts).toISOString() : h.legacyDate, stats: { words: a.words, sentences: a.sentences, characters: a.chars } };
+  });
+  try { localStorage.setItem(HIST_KEY, JSON.stringify(out)); return true; } catch (e) { toast(t('err_save'), true); return false; }
+}
+var toastTimer;
+function toast(msg, isError) {
+  var n = $('toast'); n.textContent = msg; n.className = 'tc-toast' + (isError ? ' is-error' : ''); n.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(function () { n.hidden = true; }, 2500);
+}
+function confirmDialog(message) {
+  return new Promise(function (resolve) {
+    var d = $('confirmDialog'); $('confirmText').textContent = message;
+    var done = function () { d.removeEventListener('close', done); resolve(d.returnValue === 'ok'); };
+    d.returnValue = ''; d.addEventListener('close', done); d.showModal();
+  });
+}
+function applyI18n() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(function (e) { e.textContent = t(e.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function (e) { e.placeholder = t(e.getAttribute('data-i18n-placeholder')); });
+  document.title = t('title');
 }
 
-const i18n = new I18n();
-
-
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-// Text Analysis Application
-class TextAnalyzer {
-    constructor() {
-        this.textInput = document.getElementById('textInput');
-        this.charCount = document.getElementById('charCount');
-        this.charCountNoSpace = document.getElementById('charCountNoSpace');
-        this.wordCount = document.getElementById('wordCount');
-        this.sentenceCount = document.getElementById('sentenceCount');
-        this.paragraphCount = document.getElementById('paragraphCount');
-        this.readTime = document.getElementById('readTime');
-        this.wordFrequency = document.getElementById('wordFrequency');
-        this.historyList = document.getElementById('historyList');
-        this.minOccurrence = document.getElementById('minOccurrence');
-        
-        this.clearBtn = document.getElementById('clearBtn');
-        this.saveBtn = document.getElementById('saveBtn');
-        this.analyzeBtn = document.getElementById('analyzeBtn');
-        this.clearHistoryBtn = document.getElementById('clearHistoryBtn');
-        
-        this.STORAGE_KEY = 'textAnalyzerHistory';
-        this.WORDS_PER_MINUTE = 200; // Average reading speed in Persian
-        
-        this.init();
-    }
-    
-    init() {
-        // Event listeners
-        this.textInput.addEventListener('input', () => this.updateStats());
-        this.clearBtn.addEventListener('click', () => this.clearText());
-        this.saveBtn.addEventListener('click', () => this.saveText());
-        this.analyzeBtn.addEventListener('click', () => this.analyzeWordFrequency());
-        this.clearHistoryBtn.addEventListener('click', () => this.clearHistory());
-        
-        // Load saved history
-        this.loadHistory();
-        
-        // Load last text from localStorage if exists
-        this.loadLastText();
-        
-        // Initial stats update
-        this.updateStats();
-    }
-    
-    // Text Statistics Functions
-    updateStats() {
-        const text = this.textInput.value;
-        
-        // Character count
-        this.charCount.textContent = text.length.toLocaleString('fa-IR');
-        
-        // Character count without spaces
-        const noSpaces = text.replace(/\s/g, '');
-        this.charCountNoSpace.textContent = noSpaces.length.toLocaleString('fa-IR');
-        
-        // Word count
-        const words = this.getWords(text);
-        this.wordCount.textContent = words.length.toLocaleString('fa-IR');
-        
-        // Sentence count
-        const sentences = this.getSentences(text);
-        this.sentenceCount.textContent = sentences.length.toLocaleString('fa-IR');
-        
-        // Paragraph count
-        const paragraphs = this.getParagraphs(text);
-        this.paragraphCount.textContent = paragraphs.length.toLocaleString('fa-IR');
-        
-        // Reading time (in minutes)
-        const readingTime = words.length > 0 ? Math.ceil(words.length / this.WORDS_PER_MINUTE) : 0;
-        this.readTime.textContent = readingTime.toLocaleString('fa-IR');
-        
-        // Auto-save to localStorage
-        this.autoSave(text);
-    }
-    
-    getWords(text) {
-        if (!text.trim()) return [];
-        // Match Persian, Arabic, and English words
-        return text.trim().split(/\s+/).filter(word => word.length > 0);
-    }
-    
-    getSentences(text) {
-        if (!text.trim()) return [];
-        // Split by Persian and English sentence endings
-        return text.split(/[.!?؟۔\n]+/).filter(sentence => sentence.trim().length > 0);
-    }
-    
-    getParagraphs(text) {
-        if (!text.trim()) return [];
-        return text.split(/\n\n+/).filter(para => para.trim().length > 0);
-    }
-    
-    // Word Frequency Analysis
-    analyzeWordFrequency() {
-        const text = this.textInput.value;
-        const words = this.getWords(text);
-        
-        if (words.length === 0) {
-            this.wordFrequency.innerHTML = '<p class="empty-message">متنی برای تحلیل وجود ندارد</p>';
-            return;
-        }
-        
-        // Count word frequencies
-        const frequency = {};
-        words.forEach(word => {
-            // Normalize word (remove punctuation and convert to lowercase)
-            const normalized = word.replace(/[.,،؛:;!؟?"«»()\[\]{}]/g, '').toLowerCase();
-            if (normalized.length > 0) {
-                frequency[normalized] = (frequency[normalized] || 0) + 1;
-            }
-        });
-        
-        // Filter by minimum occurrence
-        const minOcc = parseInt(this.minOccurrence.value) || 2;
-        const filtered = Object.entries(frequency)
-            .filter(([_word, count]) => count >= minOcc)
-            .sort((a, b) => b[1] - a[1]);
-        
-        if (filtered.length === 0) {
-            this.wordFrequency.innerHTML = `<p class="empty-message">هیچ کلمه‌ای با حداقل ${minOcc.toLocaleString('fa-IR')} تکرار یافت نشد</p>`;
-            return;
-        }
-        
-        // Display results
-        const maxCount = filtered[0][1];
-        let html = '';
-        
-        filtered.forEach(([word, count]) => {
-            const percentage = (count / maxCount) * 100;
-            html += `
-                <div class="word-item">
-                    <span class="word-text">${this.escapeHtml(word)}</span>
-                    <div class="word-bar-container">
-                        <div class="word-bar" style="width: ${percentage}%"></div>
-                    </div>
-                    <span class="word-count">${count.toLocaleString('fa-IR')} بار</span>
-                </div>
-            `;
-        });
-        
-        this.wordFrequency.innerHTML = html;
-    }
-    
-    // Text Management Functions
-    clearText() {
-        if (this.textInput.value.trim() && !confirm('آیا مطمئن هستید که می‌خواهید متن را پاک کنید؟')) {
-            return;
-        }
-        this.textInput.value = '';
-        this.updateStats();
-        this.wordFrequency.innerHTML = '<p class="empty-message">متن خود را وارد کنید و دکمه تحلیل را بزنید</p>';
-        localStorage.removeItem('lastText');
-    }
-    
-    saveText() {
-        const text = this.textInput.value.trim();
-        
-        if (!text) {
-            alert('لطفاً ابتدا متنی وارد کنید');
-            return;
-        }
-        
-        // Get current history
-        let history = this.getHistory();
-        
-        // Create new history item
-        const item = {
-            id: Date.now(),
-            text: text,
-            date: new Date().toLocaleString('fa-IR'),
-            stats: {
-                words: this.getWords(text).length,
-                sentences: this.getSentences(text).length,
-                characters: text.length
-            }
-        };
-        
-        // Add to beginning of history
-        history.unshift(item);
-        
-        // Keep only last 10 items
-        if (history.length > 10) {
-            history = history.slice(0, 10);
-        }
-        
-        // Save to localStorage
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
-        
-        // Reload history display
-        this.loadHistory();
-        
-        // Show success message
-        this.showNotification('متن با موفقیت ذخیره شد');
-    }
-    
-    // History Management Functions
-    getHistory() {
-        try {
-            const stored = localStorage.getItem(this.STORAGE_KEY);
-            return stored ? JSON.parse(stored) : [];
-        } catch (e) {
-            console.error('Error loading history:', e);
-            return [];
-        }
-    }
-    
-    loadHistory() {
-        const history = this.getHistory();
-        
-        if (history.length === 0) {
-            this.historyList.innerHTML = '<p class="empty-message">هنوز متنی ذخیره نشده است</p>';
-            return;
-        }
-        
-        let html = '';
-        history.forEach(item => {
-            const preview = item.text.length > 150 ? item.text.substring(0, 150) + '...' : item.text;
-            html += `
-                <div class="history-item" data-id="${item.id}">
-                    <div class="history-item-header">
-                        <div class="history-date">${item.date}</div>
-                    </div>
-                    <div class="history-text" id="text-${item.id}">${this.escapeHtml(preview)}</div>
-                    <div class="history-stats">
-                        <span class="history-stat">📝 ${item.stats.characters.toLocaleString('fa-IR')} کاراکتر</span>
-                        <span class="history-stat">🔤 ${item.stats.words.toLocaleString('fa-IR')} کلمه</span>
-                        <span class="history-stat">📋 ${item.stats.sentences.toLocaleString('fa-IR')} جمله</span>
-                    </div>
-                    <div class="history-actions">
-                        ${item.text.length > 150 ? '<button class="btn btn-toggle btn-toggle-text" data-id="' + item.id + '">نمایش کامل</button>' : ''}
-                        <button class="btn btn-restore" data-id="${item.id}">بازگردانی</button>
-                        <button class="btn btn-delete" data-id="${item.id}">حذف</button>
-                    </div>
-                </div>
-            `;
-        });
-        
-        this.historyList.innerHTML = html;
-        
-        // Add event listeners
-        this.historyList.querySelectorAll('.btn-restore').forEach(btn => {
-            btn.addEventListener('click', (e) => this.restoreText(e.target.dataset.id));
-        });
-        
-        this.historyList.querySelectorAll('.btn-delete').forEach(btn => {
-            btn.addEventListener('click', (e) => this.deleteHistoryItem(e.target.dataset.id));
-        });
-        
-        this.historyList.querySelectorAll('.btn-toggle-text').forEach(btn => {
-            btn.addEventListener('click', (e) => this.toggleFullText(e.target.dataset.id));
-        });
-    }
-    
-    restoreText(id) {
-        const history = this.getHistory();
-        const item = history.find(h => h.id === parseInt(id));
-        
-        if (item) {
-            this.textInput.value = item.text;
-            this.updateStats();
-            this.textInput.focus();
-            this.textInput.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            this.showNotification('متن بازگردانی شد');
-        }
-    }
-    
-    deleteHistoryItem(id) {
-        if (!confirm('آیا مطمئن هستید که می‌خواهید این متن را حذف کنید؟')) {
-            return;
-        }
-        
-        let history = this.getHistory();
-        history = history.filter(h => h.id !== parseInt(id));
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
-        this.loadHistory();
-        this.showNotification('متن حذف شد');
-    }
-    
-    clearHistory() {
-        if (!confirm('آیا مطمئن هستید که می‌خواهید تمام متن‌های ذخیره شده را حذف کنید؟')) {
-            return;
-        }
-        
-        localStorage.removeItem(this.STORAGE_KEY);
-        this.loadHistory();
-        this.showNotification('تمام متن‌ها حذف شدند');
-    }
-    
-    toggleFullText(id) {
-        const history = this.getHistory();
-        const item = history.find(h => h.id === parseInt(id));
-        const textElement = document.getElementById(`text-${id}`);
-        const btn = this.historyList.querySelector(`.btn-toggle-text[data-id="${id}"]`);
-        
-        if (!item || !textElement || !btn) return;
-        
-        if (textElement.classList.contains('expanded')) {
-            textElement.textContent = item.text.substring(0, 150) + '...';
-            textElement.classList.remove('expanded');
-            btn.textContent = 'نمایش کامل';
-        } else {
-            textElement.textContent = item.text;
-            textElement.classList.add('expanded');
-            btn.textContent = 'نمایش خلاصه';
-        }
-    }
-    
-    // LocalStorage Functions
-    autoSave(text) {
-        if (text.trim()) {
-            localStorage.setItem('lastText', text);
-        }
-    }
-    
-    loadLastText() {
-        const lastText = localStorage.getItem('lastText');
-        if (lastText) {
-            this.textInput.value = lastText;
-        }
-    }
-    
-    // Utility Functions
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-    
-    showNotification(message) {
-        // Simple notification using alert
-        // Could be replaced with a custom notification system
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #10b981;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            z-index: 1000;
-            font-family: 'Vazirmatn', sans-serif;
-            animation: slideIn 0.3s ease-out;
-        `;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease-out';
-            setTimeout(() => notification.remove(), 300);
-        }, 2000);
-    }
+function updateStats() {
+  var a = analyze($('textInput').value);
+  $('sChars').textContent = nf(a.chars); $('sCharsNo').textContent = nf(a.charsNoSpace);
+  $('sWords').textContent = nf(a.words); $('sSentences').textContent = nf(a.sentences); $('sParas').textContent = nf(a.paragraphs);
+  $('sRead').textContent = timeLabel(a.readSec); $('sSpeak').textContent = timeLabel(a.speakSec);
+}
+function renderFreq() {
+  var text = $('textInput').value, box = $('freq'); box.textContent = '';
+  if (!getWords(text).length) { box.appendChild(el('p', 'tc-none', t('freq_empty'))); return; }
+  var r = frequency(text, minOcc, 100);
+  if (!r.items.length) { box.appendChild(el('p', 'tc-none', t('freq_none', { n: nf(minOcc) }))); return; }
+  var max = r.items[0].count;
+  r.items.forEach(function (it) {
+    var row = el('div', 'tc-w'); row.appendChild(el('b', '', it.word));
+    var bar = el('div', 'tc-bar'), f = el('span'); f.style.width = Math.max(3, Math.round(it.count / max * 100)) + '%'; bar.appendChild(f); row.appendChild(bar);
+    row.appendChild(el('small', '', t('times', { n: nf(it.count) }))); box.appendChild(row);
+  });
+  if (r.total > r.items.length) box.appendChild(el('p', 'tc-none', t('freq_more', { n: nf(r.total - r.items.length) })));
+}
+function renderHistory() {
+  var box = $('hist'); box.textContent = '';
+  $('clearHistBtn').hidden = !history.length;
+  if (!history.length) { box.appendChild(el('p', 'tc-none', t('text_empty_message_2'))); return; }
+  history.forEach(function (h) {
+    var a = analyze(h.text), it = el('article', 'tc-h'); it.dataset.id = h.id;
+    it.appendChild(el('div', 'tc-h-date', h.ts ? new Date(h.ts).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US') : h.legacyDate));
+    var long = Array.from(h.text).length > 150, p = el('p', 'tc-h-text', long ? truncate(h.text, 150) : h.text); p.dir = 'auto'; it.appendChild(p);
+    var st = el('div', 'tc-h-stats');
+    st.appendChild(el('span', '', t('n_chars', { n: nf(a.chars) }))); st.appendChild(el('span', '', t('n_words', { n: nf(a.words) }))); st.appendChild(el('span', '', t('n_sentences', { n: nf(a.sentences) })));
+    it.appendChild(st);
+    var act = el('div', 'tc-h-actions');
+    [long ? ['toggle', 'show_full', ''] : null, ['restore', 'restore', 'tc-btn--primary'], ['delete', 'delete', 'tc-btn--danger']].forEach(function (d) {
+      if (!d) return; var b = el('button', 'tc-btn tc-btn--sm ' + d[2], t(d[1])); b.type = 'button'; b.dataset.action = d[0]; act.appendChild(b);
+    });
+    it.appendChild(act); box.appendChild(it);
+  });
 }
 
-// Add notification animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(100px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    @keyframes slideOut {
-        from {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        to {
-            opacity: 0;
-            transform: translateX(100px);
-        }
-    }
-`;
-document.head.appendChild(style);
+function onInput() {
+  updateStats();
+  clearTimeout(freqTimer); freqTimer = setTimeout(renderFreq, 250);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function () {
+    try { var v = $('textInput').value; if (v.trim()) localStorage.setItem(LAST_KEY, v.slice(0, MAX_SAVED * 2)); else localStorage.removeItem(LAST_KEY); } catch (e) {}
+  }, 300);
+}
+function setText(v) { $('textInput').value = v; onInput(); }
+async function onClear() {
+  var ta = $('textInput');
+  if (ta.value.trim() && !(await confirmDialog(t('confirm_clear_text')))) return;
+  setText(''); ta.focus();
+}
+function onSave() {
+  var text = $('textInput').value.trim();
+  if (!text) { toast(t('err_empty'), true); return; }
+  if (text.length > MAX_SAVED) { toast(t('err_too_long', { n: nf(MAX_SAVED) }), true); return; }
+  var id = Date.now(); while (history.some(function (h) { return h.id === id; })) id++;
+  history.unshift({ id: id, text: text, ts: id, legacyDate: '' });
+  history = history.slice(0, 10);
+  if (writeHistory()) toast(t('ok_saved'));
+  renderHistory();
+}
 
-// Initialize the application when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new TextAnalyzer();
-});
+function bind() {
+  $('textInput').addEventListener('input', onInput);
+  $('clearBtn').addEventListener('click', onClear);
+  $('saveBtn').addEventListener('click', onSave);
+  $('minOcc').addEventListener('input', function () { var v = normDigits(this.value).replace(/\D/g, ''); this.value = v; if (v) { minOcc = parseMin(v); renderFreq(); } });
+  $('minOcc').addEventListener('blur', function () { this.value = String(minOcc); });
+  $('hist').addEventListener('click', async function (e) {
+    var b = e.target.closest('button[data-action]'), c = e.target.closest('.tc-h'); if (!b || !c) return;
+    var h = history.find(function (x) { return String(x.id) === c.dataset.id; }); if (!h) return;
+    if (b.dataset.action === 'restore') { setText(h.text); $('textInput').focus(); $('textInput').scrollIntoView({ behavior: 'smooth', block: 'center' }); toast(t('ok_restored')); }
+    else if (b.dataset.action === 'delete') {
+      if (!(await confirmDialog(t('confirm_delete')))) return;
+      history = history.filter(function (x) { return x !== h; }); if (writeHistory()) toast(t('ok_deleted')); renderHistory();
+    } else {
+      var p = c.querySelector('.tc-h-text'), open = p.classList.toggle('is-open');
+      p.textContent = open ? h.text : truncate(h.text, 150); b.textContent = t(open ? 'show_short' : 'show_full');
+    }
+  });
+  $('clearHistBtn').addEventListener('click', async function () {
+    if (!(await confirmDialog(t('confirm_clear_hist')))) return;
+    history = []; try { localStorage.removeItem(HIST_KEY); } catch (e) {} renderHistory(); toast(t('ok_cleared'));
+  });
+  $('confirmDialog').addEventListener('click', function (e) { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  window.addEventListener('languageChanged', function (e) { lang = e.detail === 'en' ? 'en' : 'fa'; applyI18n(); updateStats(); renderFreq(); renderHistory(); });
+}
 
+async function boot() {
+  try { dict = await (await fetch('assets/translations.json')).json(); } catch (e) { console.error('translations', e); }
+  history = normalizeHistory(readJSON(HIST_KEY));
+  var last = null; try { last = localStorage.getItem(LAST_KEY); } catch (e) {}
+  if (last) $('textInput').value = last;
+  applyI18n(); bind(); updateStats(); renderFreq(); renderHistory();
+}
+document.addEventListener('DOMContentLoaded', boot);
+})();

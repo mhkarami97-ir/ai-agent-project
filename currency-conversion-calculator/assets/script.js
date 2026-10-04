@@ -1,473 +1,267 @@
-// تنظیمات و متغیرهای اصلی
-const API_KEY_EXCHANGERATE = 'https://api.exchangerate-api.com/v4/latest/';
-const API_KEY_COINGECKO = 'https://api.coingecko.com/api/v3/simple/price';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 دقیقه
+(function () {
+'use strict';
 
-// لیست ارزهای دیجیتال
-const cryptoCurrencies = ['BTC', 'ETH', 'BNB', 'XRP', 'ADA', 'SOL', 'DOGE', 'DOT', 'MATIC', 'LTC'];
+/* @logic-start */
+var P = '۰۱۲۳۴۵۶۷۸۹', A = '٠١٢٣٤٥٦٧٨٩';
+var FIAT = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'TRY', 'AED'];
+/* MATIC در سپتامبر ۲۰۲۴ به POL ارتقا یافت (۱ به ۱)؛ شناسهٔ CoinGecko برای POL تأیید نشده و اگر قیمتی نیاید گزینه غیرفعال می‌شود */
+var CRYPTO = { BTC: 'bitcoin', ETH: 'ethereum', BNB: 'binancecoin', XRP: 'ripple', ADA: 'cardano', SOL: 'solana', DOGE: 'dogecoin', DOT: 'polkadot', POL: 'polygon-ecosystem-token', LTC: 'litecoin' };
+var FIAT_TTL = 60 * 60 * 1000, CRYPTO_TTL = 5 * 60 * 1000;
+var POPULAR = [['USD', 'EUR'], ['USD', 'GBP'], ['EUR', 'GBP'], ['BTC', 'USD'], ['ETH', 'USD'], ['BNB', 'USD']];
 
-// انتخاب المنت‌ها
-const elements = {
-    amount: document.getElementById('amount'),
-    fromCurrency: document.getElementById('fromCurrency'),
-    toCurrency: document.getElementById('toCurrency'),
-    convertBtn: document.getElementById('convertBtn'),
-    swapBtn: document.getElementById('swapBtn'),
-    resultContainer: document.getElementById('resultContainer'),
-    resultValue: document.getElementById('resultValue'),
-    exchangeRate: document.getElementById('exchangeRate'),
-    lastUpdate: document.getElementById('lastUpdate'),
-    loading: document.getElementById('loading'),
-    errorMessage: document.getElementById('errorMessage'),
-    historyList: document.getElementById('historyList'),
-    clearHistoryBtn: document.getElementById('clearHistoryBtn'),
-    ratesGrid: document.getElementById('ratesGrid')
-};
+function normDigits(s) {
+  return String(s == null ? '' : s).replace(/[۰-۹]/g, function (d) { return P.indexOf(d); }).replace(/[٠-٩]/g, function (d) { return A.indexOf(d); });
+}
+/* مقدار: ارقام فارسی/عربی، جداکنندهٔ هزارگان و اعشار (. یا ٫)، تا ۱۲ رقم اعشار */
+function parseAmount(s) {
+  var v = normDigits(s).replace(/[\s,٬،]/g, '').replace(/٫/g, '.');
+  if (!/^\d*\.?\d{0,12}$/.test(v) || v === '' || v === '.') return null;
+  var n = parseFloat(v);
+  return n > 0 && n < 1e15 ? n : null;
+}
+function legacyCode(c) { return c === 'MATIC' ? 'POL' : c; }
+function isKnown(c) { return FIAT.indexOf(c) >= 0 || Object.prototype.hasOwnProperty.call(CRYPTO, c); }
+function cacheFresh(ts, ttl, now) { return typeof ts === 'number' && ts > 0 && now - ts >= 0 && now - ts < ttl; }
+/* پاسخ open.er-api.com: {result:'success', rates:{USD:1,...}, time_last_update_unix} */
+function parseFiat(j) {
+  if (!j || j.result !== 'success' || !j.rates || typeof j.rates !== 'object') return null;
+  var rates = {};
+  FIAT.forEach(function (c) { var v = Number(j.rates[c]); if (isFinite(v) && v > 0) rates[c] = v; });
+  if (!rates.USD) rates.USD = 1;
+  return { rates: rates, updated: Number(j.time_last_update_unix) > 0 ? Number(j.time_last_update_unix) * 1000 : 0 };
+}
+/* پاسخ CoinGecko: {bitcoin:{usd:123}, ...} */
+function parseCrypto(j) {
+  if (!j || typeof j !== 'object') return null;
+  var prices = {}, n = 0;
+  Object.keys(CRYPTO).forEach(function (sym) {
+    var o = j[CRYPTO[sym]], v = o && Number(o.usd);
+    if (isFinite(v) && v > 0) { prices[sym] = v; n++; }
+  });
+  return n ? { prices: prices } : null;
+}
+/* ارزش هر واحد به دلار */
+function usdValues(fiat, crypto) {
+  var u = {};
+  if (fiat) Object.keys(fiat.rates).forEach(function (c) { u[c] = 1 / fiat.rates[c]; });
+  if (crypto) Object.keys(crypto.prices).forEach(function (c) { u[c] = crypto.prices[c]; });
+  return u;
+}
+function rateOf(u, from, to) {
+  var a = u[from], b = u[to];
+  return a > 0 && b > 0 ? a / b : null;
+}
+function normalizeHistory(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(function (h) {
+    if (!h || typeof h !== 'object') return null;
+    var from = legacyCode(String(h.from)), to = legacyCode(String(h.to));
+    var amount = Number(h.amount), result = Number(h.result), rate = Number(h.rate), ts = Number(h.timestamp);
+    if (!isKnown(from) || !isKnown(to) || !(amount > 0) || !(result >= 0) || !(rate > 0) || !isFinite(result) || !isFinite(rate)) return null;
+    return { amount: amount, from: from, to: to, result: result, rate: rate, timestamp: ts > 0 ? ts : 0 };
+  }).filter(Boolean).slice(0, 10);
+}
+/* قالب‌بندی: بزرگ‌ها با رقم اعشار کم، کوچک‌ها با رقم معنادار */
+function fmtOptions(n) {
+  var a = Math.abs(n);
+  if (a >= 1000) return { maximumFractionDigits: 2 };
+  if (a >= 1) return { maximumFractionDigits: 4 };
+  if (a === 0) return { maximumFractionDigits: 0 };
+  return { maximumSignificantDigits: 6 };
+}
+/* @logic-end */
 
-// کلاس مدیریت Cache
-class CacheManager {
-    constructor() {
-        this.cache = new Map();
-    }
+var HIST_KEY = 'currency_conversion_history', FIAT_KEY = 'fx_fiat_cache_v1', CRYPTO_KEY = 'fx_crypto_cache_v1';
+var FIAT_URL = 'https://open.er-api.com/v6/latest/USD';
+var CRYPTO_URL = 'https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=' + Object.keys(CRYPTO).map(function (k) { return CRYPTO[k]; }).join(',');
+var lang = 'fa', dict = {};
+try { lang = String(localStorage.getItem('lang') || '').replace(/"/g, '') === 'en' ? 'en' : 'fa'; } catch (e) {}
+function t(key, vars) {
+  var s = (dict[lang] && dict[lang][key]) || (dict.fa && dict.fa[key]) || key;
+  if (vars) Object.keys(vars).forEach(function (k) { s = s.replace('{' + k + '}', vars[k]); });
+  return s;
+}
+function loc() { return lang === 'fa' ? 'fa-IR' : 'en-US'; }
+function fmt(n) { return new Intl.NumberFormat(loc(), fmtOptions(n)).format(n); }
+function $(id) { return document.getElementById(id); }
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function curLabel(c) { return t('cur_' + c) + ' (' + c + ')'; }
 
-    set(key, value) {
-        this.cache.set(key, {
-            data: value,
-            timestamp: Date.now()
-        });
-    }
+var state = { fiat: null, crypto: null, fiatAt: 0, cryptoAt: 0, fiatStale: false, cryptoStale: false, fiatFail: false, cryptoFail: false, usd: {} };
 
-    get(key) {
-        const cached = this.cache.get(key);
-        if (!cached) return null;
-
-        if (Date.now() - cached.timestamp > CACHE_DURATION) {
-            this.cache.delete(key);
-            return null;
-        }
-
-        return cached.data;
-    }
+function readCache(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
+function writeCache(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) {} }
+async function fetchJSON(url) {
+  var ctl = new AbortController(), timer = setTimeout(function () { ctl.abort(); }, 10000);
+  try {
+    var r = await fetch(url, { signal: ctl.signal });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(timer); }
+}
+async function loadFiat() {
+  var c = readCache(FIAT_KEY), now = Date.now(), data = c && parseFiat(c.data);
+  if (data && cacheFresh(c.ts, FIAT_TTL, now)) { state.fiat = data; state.fiatAt = c.ts; state.fiatStale = false; state.fiatFail = false; return; }
+  try {
+    var j = await fetchJSON(FIAT_URL), p = parseFiat(j);
+    if (!p) throw new Error('bad fiat data');
+    writeCache(FIAT_KEY, { ts: now, data: j }); state.fiat = p; state.fiatAt = now; state.fiatStale = false; state.fiatFail = false;
+  } catch (e) {
+    console.error('fiat', e); state.fiatFail = true;
+    if (data) { state.fiat = data; state.fiatAt = c.ts; state.fiatStale = true; }
+  }
+}
+async function loadCrypto() {
+  var c = readCache(CRYPTO_KEY), now = Date.now(), data = c && parseCrypto(c.data);
+  if (data && cacheFresh(c.ts, CRYPTO_TTL, now)) { state.crypto = data; state.cryptoAt = c.ts; state.cryptoStale = false; state.cryptoFail = false; return; }
+  try {
+    var j = await fetchJSON(CRYPTO_URL), p = parseCrypto(j);
+    if (!p) throw new Error('bad crypto data');
+    writeCache(CRYPTO_KEY, { ts: now, data: j }); state.crypto = p; state.cryptoAt = now; state.cryptoStale = false; state.cryptoFail = false;
+  } catch (e) {
+    console.error('crypto', e); state.cryptoFail = true;
+    if (data) { state.crypto = data; state.cryptoAt = c.ts; state.cryptoStale = true; }
+  }
+}
+var loading = null;
+function loadAll() {
+  if (loading) return loading;
+  $('result').setAttribute('aria-busy', 'true');
+  loading = Promise.all([loadFiat(), loadCrypto()]).then(function () {
+    state.usd = usdValues(state.fiat, state.crypto);
+    loading = null; $('result').removeAttribute('aria-busy');
+    markOptions(); renderStatus(); renderRates(); convertNow(false);
+  });
+  return loading;
 }
 
-const cacheManager = new CacheManager();
-
-// کلاس مدیریت تاریخچه با LocalStorage
-class HistoryManager {
-    constructor() {
-        this.storageKey = 'currency_conversion_history';
-    }
-
-    getHistory() {
-        try {
-            const history = localStorage.getItem(this.storageKey);
-            return history ? JSON.parse(history) : [];
-        } catch (error) {
-            console.error('خطا در خواندن تاریخچه:', error);
-            return [];
-        }
-    }
-
-    addToHistory(item) {
-        try {
-            const history = this.getHistory();
-            history.unshift({
-                ...item,
-                timestamp: Date.now(),
-                id: Date.now() + Math.random()
-            });
-
-            // نگه داشتن فقط 10 مورد آخر
-            if (history.length > 10) {
-                history.pop();
-            }
-
-            localStorage.setItem(this.storageKey, JSON.stringify(history));
-            this.displayHistory();
-        } catch (error) {
-            console.error('خطا در ذخیره تاریخچه:', error);
-        }
-    }
-
-    clearHistory() {
-        try {
-            localStorage.removeItem(this.storageKey);
-            this.displayHistory();
-        } catch (error) {
-            console.error('خطا در پاک کردن تاریخچه:', error);
-        }
-    }
-
-    displayHistory() {
-        const history = this.getHistory();
-
-        if (history.length === 0) {
-            elements.historyList.innerHTML = '<p class="empty-history">هنوز تبدیلی انجام نشده است</p>';
-            return;
-        }
-
-        elements.historyList.innerHTML = history.map(item => {
-            const timeAgo = this.getTimeAgo(item.timestamp);
-            return `
-                <div class="history-item">
-                    <div class="history-item-content">
-                        <div class="history-item-main">
-                            ${this.formatNumber(item.amount)} ${item.from} = ${this.formatNumber(item.result)} ${item.to}
-                        </div>
-                        <div class="history-item-rate">
-                            نرخ: 1 ${item.from} = ${this.formatNumber(item.rate)} ${item.to}
-                        </div>
-                        <div class="history-item-time">${timeAgo}</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    getTimeAgo(timestamp) {
-        const seconds = Math.floor((Date.now() - timestamp) / 1000);
-
-        if (seconds < 60) return 'همین الان';
-        if (seconds < 3600) return `${Math.floor(seconds / 60)} دقیقه پیش`;
-        if (seconds < 86400) return `${Math.floor(seconds / 3600)} ساعت پیش`;
-        return `${Math.floor(seconds / 86400)} روز پیش`;
-    }
-
-    formatNumber(num) {
-        return new Intl.NumberFormat('fa-IR', {
-            maximumFractionDigits: 8
-        }).format(num);
-    }
+/* ---------- رابط ---------- */
+function fillSelect(sel, keep) {
+  var cur = keep ? sel.value : '';
+  sel.textContent = '';
+  [['group_fiat', FIAT], ['group_crypto', Object.keys(CRYPTO)]].forEach(function (g) {
+    var og = document.createElement('optgroup'); og.label = t(g[0]);
+    g[1].forEach(function (c) { var o = el('option', '', curLabel(c)); o.value = c; og.appendChild(o); });
+    sel.appendChild(og);
+  });
+  if (cur) sel.value = cur;
+}
+function markOptions() {
+  var ready = state.fiat || state.crypto;
+  ['fromCur', 'toCur'].forEach(function (id) {
+    [].forEach.call($(id).options, function (o) { o.disabled = ready ? !(state.usd[o.value] > 0) : false; });
+  });
+}
+function applyI18n() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(function (e) { e.textContent = t(e.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function (e) { e.placeholder = t(e.getAttribute('data-i18n-placeholder')); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function (e) { e.setAttribute('aria-label', t(e.getAttribute('data-i18n-aria'))); });
+  document.title = t('title');
+  fillSelect($('fromCur'), true); fillSelect($('toCur'), true); markOptions();
+}
+function showError(msg) { var e = $('error'); e.textContent = msg; e.hidden = !msg; }
+function renderStatus() {
+  var parts = [], s = $('status'), warn = false;
+  var when = function (ts) { return new Date(ts).toLocaleString(loc(), { dateStyle: 'medium', timeStyle: 'short' }); };
+  if (state.fiat) parts.push(t('fiat_updated', { d: when(state.fiat.updated || state.fiatAt) }));
+  if (state.crypto) parts.push(t('crypto_updated', { d: when(state.cryptoAt) }));
+  if (state.fiatFail && !state.fiat) { parts.push(t('fiat_unavailable')); warn = true; }
+  else if (state.fiatStale) { parts.push(t('fiat_stale')); warn = true; }
+  if (state.cryptoFail && !state.crypto) { parts.push(t('crypto_unavailable')); warn = true; }
+  else if (state.cryptoStale) { parts.push(t('crypto_stale')); warn = true; }
+  s.textContent = parts.join(' · '); s.className = 'fx-status' + (warn ? ' is-warn' : '');
+}
+function convertNow(save) {
+  var amt = parseAmount($('amount').value), from = $('fromCur').value, to = $('toCur').value;
+  var box = $('result');
+  if (amt === null) { box.hidden = true; showError($('amount').value.trim() ? t('err_amount') : ''); return; }
+  if (!Object.keys(state.usd).length) { box.hidden = true; showError(loading ? '' : t('err_no_data')); return; }
+  var rate = rateOf(state.usd, from, to);
+  if (rate === null) { box.hidden = true; showError(t('err_rate', { c: state.usd[from] > 0 ? to : from })); return; }
+  showError('');
+  var result = amt * rate;
+  $('resultValue').textContent = fmt(result) + ' ' + to;
+  $('resultRate').textContent = '1 ' + from + ' = ' + fmt(rate) + ' ' + to;
+  box.hidden = false;
+  if (save && from !== to) addHistory({ amount: amt, from: from, to: to, result: result, rate: rate, timestamp: Date.now() });
+}
+function renderRates() {
+  var box = $('rates'); box.textContent = '';
+  POPULAR.forEach(function (p) {
+    var rate = Object.keys(state.usd).length ? rateOf(state.usd, p[0], p[1]) : null;
+    var b = el('button', 'fx-rate'); b.type = 'button'; b.dataset.from = p[0]; b.dataset.to = p[1];
+    b.appendChild(el('b', '', p[0] + '/' + p[1])); b.appendChild(el('span', '', rate === null ? '—' : fmt(rate)));
+    box.appendChild(b);
+  });
+}
+function loadHist() { return normalizeHistory(readCache(HIST_KEY)); }
+function addHistory(item) {
+  var list = loadHist(); list.unshift(item); writeCache(HIST_KEY, list.slice(0, 10)); renderHistory();
+}
+function ago(ts) {
+  if (!ts) return '';
+  var s = Math.max(0, Math.floor((Date.now() - ts) / 1000)), rtf = new Intl.RelativeTimeFormat(loc(), { numeric: 'auto' });
+  if (s < 60) return rtf.format(0, 'second');
+  if (s < 3600) return rtf.format(-Math.floor(s / 60), 'minute');
+  if (s < 86400) return rtf.format(-Math.floor(s / 3600), 'hour');
+  return rtf.format(-Math.floor(s / 86400), 'day');
+}
+function renderHistory() {
+  var list = loadHist(), box = $('hist'); box.textContent = '';
+  $('clearBtn').hidden = !list.length;
+  if (!list.length) { box.appendChild(el('p', 'fx-none', t('text_empty_history_1'))); return; }
+  list.forEach(function (h) {
+    var b = el('button', 'fx-h-item'); b.type = 'button'; b.dataset.amount = String(h.amount); b.dataset.from = h.from; b.dataset.to = h.to;
+    b.appendChild(el('div', 'fx-h-main', fmt(h.amount) + ' ' + h.from + ' = ' + fmt(h.result) + ' ' + h.to));
+    b.appendChild(el('div', 'fx-h-sub', '1 ' + h.from + ' = ' + fmt(h.rate) + ' ' + h.to));
+    var tm = ago(h.timestamp); if (tm) b.appendChild(el('div', 'fx-h-time', tm));
+    box.appendChild(b);
+  });
+}
+function confirmDialog(message) {
+  return new Promise(function (resolve) {
+    var d = $('confirmDialog'); $('confirmText').textContent = message;
+    var done = function () { d.removeEventListener('close', done); resolve(d.returnValue === 'ok'); };
+    d.returnValue = ''; d.addEventListener('close', done); d.showModal();
+  });
+}
+function setPair(from, to, amount) {
+  if (from) $('fromCur').value = from; if (to) $('toCur').value = to;
+  if (amount != null) $('amount').value = String(amount);
+  convertNow(false);
 }
 
-const historyManager = new HistoryManager();
-
-// تابع دریافت نرخ ارز معمولی
-async function getFiatExchangeRate(from, to) {
-    const cacheKey = `fiat_${from}_${to}`;
-    const cached = cacheManager.get(cacheKey);
-
-    if (cached) {
-        return cached;
-    }
-
-    try {
-        const response = await fetch(`${API_KEY_EXCHANGERATE}${from}`);
-
-        if (!response.ok) {
-            throw new Error('خطا در دریافت اطلاعات');
-        }
-
-        const data = await response.json();
-
-        if (!data.rates[to]) {
-            throw new Error('ارز مقصد یافت نشد');
-        }
-
-        const rate = data.rates[to];
-        cacheManager.set(cacheKey, rate);
-
-        return rate;
-    } catch (error) {
-        console.error('خطا در دریافت نرخ ارز:', error);
-        throw error;
-    }
+function bind() {
+  var timer;
+  $('amount').addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(function () { convertNow(false); }, 150); });
+  $('amount').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); convertNow(true); } });
+  $('convertBtn').addEventListener('click', function () { convertNow(true); });
+  $('fromCur').addEventListener('change', function () { convertNow(false); });
+  $('toCur').addEventListener('change', function () { convertNow(false); });
+  $('swapBtn').addEventListener('click', function () { var f = $('fromCur').value; $('fromCur').value = $('toCur').value; $('toCur').value = f; convertNow(false); });
+  $('rates').addEventListener('click', function (e) { var b = e.target.closest('.fx-rate'); if (b) setPair(b.dataset.from, b.dataset.to); });
+  $('hist').addEventListener('click', function (e) { var b = e.target.closest('.fx-h-item'); if (b) setPair(b.dataset.from, b.dataset.to, b.dataset.amount); });
+  $('clearBtn').addEventListener('click', async function () {
+    if (!(await confirmDialog(t('confirm_clear')))) return;
+    try { localStorage.removeItem(HIST_KEY); } catch (e) {} renderHistory();
+  });
+  $('confirmDialog').addEventListener('click', function (e) { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  window.addEventListener('languageChanged', function (e) { lang = e.detail === 'en' ? 'en' : 'fa'; applyI18n(); renderStatus(); renderRates(); renderHistory(); convertNow(false); });
+  var refresh = function () { if (!document.hidden) loadAll(); };
+  document.addEventListener('visibilitychange', refresh);
+  setInterval(refresh, CRYPTO_TTL);
 }
 
-// تابع دریافت نرخ ارز دیجیتال
-async function getCryptoExchangeRate(from, to) {
-    const cacheKey = `crypto_${from}_${to}`;
-    const cached = cacheManager.get(cacheKey);
-
-    if (cached) {
-        return cached;
-    }
-
-    try {
-        // اگر هر دو ارز دیجیتال باشند
-        if (cryptoCurrencies.includes(from) && cryptoCurrencies.includes(to)) {
-            const response = await fetch(
-                `${API_KEY_COINGECKO}?ids=${getCoinId(from)},${getCoinId(to)}&vs_currencies=usd`
-            );
-
-            if (!response.ok) {
-                throw new Error('خطا در دریافت اطلاعات ارز دیجیتال');
-            }
-
-            const data = await response.json();
-            const fromPrice = data[getCoinId(from)].usd;
-            const toPrice = data[getCoinId(to)].usd;
-            const rate = fromPrice / toPrice;
-
-            cacheManager.set(cacheKey, rate);
-            return rate;
-        }
-
-        // اگر یکی ارز دیجیتال و یکی معمولی باشد
-        if (cryptoCurrencies.includes(from)) {
-            const response = await fetch(
-                `${API_KEY_COINGECKO}?ids=${getCoinId(from)}&vs_currencies=${to.toLowerCase()}`
-            );
-
-            if (!response.ok) {
-                throw new Error('خطا در دریافت اطلاعات ارز دیجیتال');
-            }
-
-            const data = await response.json();
-            const rate = data[getCoinId(from)][to.toLowerCase()];
-
-            if (!rate) {
-                throw new Error('نرخ تبدیل یافت نشد');
-            }
-
-            cacheManager.set(cacheKey, rate);
-            return rate;
-        }
-
-        if (cryptoCurrencies.includes(to)) {
-            const response = await fetch(
-                `${API_KEY_COINGECKO}?ids=${getCoinId(to)}&vs_currencies=${from.toLowerCase()}`
-            );
-
-            if (!response.ok) {
-                throw new Error('خطا در دریافت اطلاعات ارز دیجیتال');
-            }
-
-            const data = await response.json();
-            const rate = 1 / data[getCoinId(to)][from.toLowerCase()];
-
-            if (!rate) {
-                throw new Error('نرخ تبدیل یافت نشد');
-            }
-
-            cacheManager.set(cacheKey, rate);
-            return rate;
-        }
-
-    } catch (error) {
-        console.error('خطا در دریافت نرخ ارز دیجیتال:', error);
-        throw error;
-    }
+async function boot() {
+  try { dict = await (await fetch('assets/translations.json')).json(); } catch (e) { console.error('translations', e); }
+  applyI18n();
+  $('fromCur').value = 'USD'; $('toCur').value = 'EUR';
+  bind(); renderHistory(); renderRates();
+  var sk = $('rates'); sk.textContent = ''; for (var i = 0; i < POPULAR.length; i++) sk.appendChild(el('div', 'fx-skel'));
+  $('status').textContent = t('loading');
+  await loadAll();
 }
-
-// تابع تبدیل نام ارز دیجیتال به ID در CoinGecko
-function getCoinId(symbol) {
-    const coinMap = {
-        'BTC': 'bitcoin',
-        'ETH': 'ethereum',
-        'BNB': 'binancecoin',
-        'XRP': 'ripple',
-        'ADA': 'cardano',
-        'SOL': 'solana',
-        'DOGE': 'dogecoin',
-        'DOT': 'polkadot',
-        'MATIC': 'matic-network',
-        'LTC': 'litecoin'
-    };
-
-    return coinMap[symbol] || symbol.toLowerCase();
-}
-
-// تابع اصلی تبدیل ارز
-async function convertCurrency() {
-    const amount = parseFloat(elements.amount.value);
-    const from = elements.fromCurrency.value;
-    const to = elements.toCurrency.value;
-
-    // اعتبارسنجی ورودی
-    if (isNaN(amount) || amount <= 0) {
-        showError('لطفاً مقدار معتبر وارد کنید');
-        return;
-    }
-
-    if (from === to) {
-        showError('لطفاً ارزهای متفاوت انتخاب کنید');
-        return;
-    }
-
-    showLoading();
-    hideError();
-    hideResult();
-
-    try {
-        let rate;
-
-        // تشخیص نوع ارز و دریافت نرخ مناسب
-        if (cryptoCurrencies.includes(from) || cryptoCurrencies.includes(to)) {
-            rate = await getCryptoExchangeRate(from, to);
-        } else {
-            rate = await getFiatExchangeRate(from, to);
-        }
-
-        const result = amount * rate;
-
-        // نمایش نتیجه
-        displayResult(result, amount, from, to, rate);
-
-        // ذخیره در تاریخچه
-        historyManager.addToHistory({
-            amount,
-            from,
-            to,
-            result,
-            rate
-        });
-
-    } catch (error) {
-        showError('خطا در تبدیل ارز. لطفاً دوباره تلاش کنید.');
-        console.error(error);
-    } finally {
-        hideLoading();
-    }
-}
-
-// نمایش نتیجه
-function displayResult(result, amount, from, to, rate) {
-    const formattedResult = new Intl.NumberFormat('fa-IR', {
-        maximumFractionDigits: 8
-    }).format(result);
-
-    const formattedRate = new Intl.NumberFormat('fa-IR', {
-        maximumFractionDigits: 8
-    }).format(rate);
-
-    elements.resultValue.textContent = `${formattedResult} ${to}`;
-    elements.exchangeRate.textContent = `1 ${from} = ${formattedRate} ${to}`;
-    elements.lastUpdate.textContent = `به‌روزرسانی: ${new Date().toLocaleString('fa-IR')}`;
-
-    elements.resultContainer.classList.add('show');
-}
-
-// مدیریت Loading
-function showLoading() {
-    elements.loading.classList.add('show');
-}
-
-function hideLoading() {
-    elements.loading.classList.remove('show');
-}
-
-// مدیریت خطاها
-function showError(message) {
-    elements.errorMessage.textContent = message;
-    elements.errorMessage.classList.add('show');
-
-    setTimeout(() => {
-        hideError();
-    }, 5000);
-}
-
-function hideError() {
-    elements.errorMessage.classList.remove('show');
-}
-
-// مخفی کردن نتیجه
-function hideResult() {
-    elements.resultContainer.classList.remove('show');
-}
-
-// تعویض ارزها
-function swapCurrencies() {
-    const temp = elements.fromCurrency.value;
-    elements.fromCurrency.value = elements.toCurrency.value;
-    elements.toCurrency.value = temp;
-
-    if (elements.resultContainer.classList.contains('show')) {
-        convertCurrency();
-    }
-}
-
-// نمایش نرخ‌های محبوب
-async function loadPopularRates() {
-    const popularPairs = [
-        { from: 'USD', to: 'EUR', label: 'دلار به یورو' },
-        { from: 'USD', to: 'GBP', label: 'دلار به پوند' },
-        { from: 'EUR', to: 'GBP', label: 'یورو به پوند' },
-        { from: 'BTC', to: 'USD', label: 'بیت‌کوین به دلار' },
-        { from: 'ETH', to: 'USD', label: 'اتریوم به دلار' },
-        { from: 'BNB', to: 'USD', label: 'بایننس به دلار' }
-    ];
-
-    elements.ratesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">در حال بارگذاری نرخ‌ها...</p>';
-
-    try {
-        const rateCards = await Promise.all(
-            popularPairs.map(async pair => {
-                try {
-                    let rate;
-                    if (cryptoCurrencies.includes(pair.from) || cryptoCurrencies.includes(pair.to)) {
-                        rate = await getCryptoExchangeRate(pair.from, pair.to);
-                    } else {
-                        rate = await getFiatExchangeRate(pair.from, pair.to);
-                    }
-
-                    const formattedRate = new Intl.NumberFormat('fa-IR', {
-                        maximumFractionDigits: 6
-                    }).format(rate);
-
-                    return `
-                        <div class="rate-card">
-                            <div class="rate-card-header">
-                                <span class="rate-card-pair">${pair.from}/${pair.to}</span>
-                            </div>
-                            <div class="rate-card-value">${formattedRate}</div>
-                        </div>
-                    `;
-                } catch (error) {
-                    console.error(`خطا در دریافت نرخ ${pair.from}/${pair.to}:`, error);
-                    return '';
-                }
-            })
-        );
-
-        elements.ratesGrid.innerHTML = rateCards.filter(card => card !== '').join('');
-    } catch (error) {
-        console.error('خطا در بارگذاری نرخ‌های محبوب:', error);
-        elements.ratesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--error-color);">خطا در بارگذاری نرخ‌ها</p>';
-    }
-}
-
-// Event Listeners
-elements.convertBtn.addEventListener('click', convertCurrency);
-elements.swapBtn.addEventListener('click', swapCurrencies);
-elements.clearHistoryBtn.addEventListener('click', () => {
-    if (confirm('آیا می‌خواهید تمام تاریخچه را پاک کنید؟')) {
-        historyManager.clearHistory();
-    }
-});
-
-// تبدیل با فشردن Enter
-elements.amount.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        convertCurrency();
-    }
-});
-
-// تبدیل خودکار هنگام تغییر ارز (اختیاری)
-elements.fromCurrency.addEventListener('change', () => {
-    if (elements.resultContainer.classList.contains('show')) {
-        convertCurrency();
-    }
-});
-
-elements.toCurrency.addEventListener('change', () => {
-    if (elements.resultContainer.classList.contains('show')) {
-        convertCurrency();
-    }
-});
-
-// بارگذاری اولیه
-document.addEventListener('DOMContentLoaded', () => {
-    historyManager.displayHistory();
-    loadPopularRates();
-
-    // تبدیل اولیه
-    convertCurrency();
-});
-
-// به‌روزرسانی نرخ‌های محبوب هر 5 دقیقه
-setInterval(() => {
-    loadPopularRates();
-}, 5 * 60 * 1000);
-
-
+document.addEventListener('DOMContentLoaded', boot);
+})();

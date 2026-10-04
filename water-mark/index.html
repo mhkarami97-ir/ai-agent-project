@@ -1,133 +1,110 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta content="افزودن واترمارک به تصاویر به صورت آنلاین و رایگان" name="description"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="افزودن واترمارک متنی یا تصویری به عکس، کاملاً روی دستگاه شما">
 <title data-i18n="title">افزودن واترمارک به تصویر</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="container">
-<header class="header">
-<h1 data-i18n="heading_0">افزودن واترمارک به تصویر</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">واترمارک متنی یا تصویری خود را به راحتی اضافه کنید</p>
-</header>
-<main class="main-content">
-<!-- Upload Section -->
-<section class="upload-section">
-<div class="upload-box" id="uploadBox">
-<svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
-<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-<polyline points="17 8 12 3 7 8"></polyline>
-<line x1="12" x2="12" y1="3" y2="15"></line>
-</svg>
-<p class="upload-text" data-i18n="text_upload_text_1">تصویر خود را اینجا بکشید یا کلیک کنید</p>
-<p class="upload-hint" data-i18n="text_upload_hint_2">فرمت‌های پشتیبانی شده: JPG، PNG، GIF</p>
-<input accept="image/*" hidden="" id="imageInput" type="file"/>
-</div>
-</section>
-<!-- Controls Section -->
-<section class="controls-section" id="controlsSection" style="display: none;">
-<div class="tabs">
-<button class="tab-btn active" data-i18n="button_0" data-tab="text">واترمارک متنی</button>
-<button class="tab-btn" data-i18n="button_1" data-tab="image">واترمارک تصویری</button>
-</div>
-<!-- Text Watermark Controls -->
-<div class="tab-content active" id="textTab">
-<div class="control-group">
-<label data-i18n="label_0" for="watermarkText">متن واترمارک</label>
-<input id="watermarkText" placeholder="متن خود را وارد کنید" type="text" value="نمونه واترمارک"/>
-</div>
-<div class="control-group">
-<label data-i18n="label_1" for="fontSize">اندازه فونت: <span id="fontSizeValue">48</span>px</label>
-<input id="fontSize" max="200" min="12" type="range" value="48"/>
-</div>
-<div class="control-group">
-<label data-i18n="label_2" for="textColor">رنگ متن</label>
-<input id="textColor" type="color" value="#ffffff"/>
-</div>
-</div>
-<!-- Image Watermark Controls -->
-<div class="tab-content" id="imageTab">
-<div class="control-group">
-<label data-i18n="label_3">انتخاب تصویر واترمارک</label>
-<div class="file-input-wrapper">
-<button class="btn-secondary" data-i18n="button_2" id="logoBtn">انتخاب لوگو</button>
-<span id="logoFileName">فایلی انتخاب نشده</span>
-<input accept="image/*" hidden="" id="logoInput" type="file"/>
-</div>
-</div>
-<div class="control-group">
-<label data-i18n="label_4" for="logoSize">اندازه لوگو: <span id="logoSizeValue">100</span>px</label>
-<input id="logoSize" max="500" min="20" type="range" value="100"/>
-</div>
-</div>
-<!-- Common Controls -->
-<div class="common-controls">
-<div class="control-group">
-<label data-i18n="label_5" for="opacity">شفافیت: <span id="opacityValue">70</span>%</label>
-<input id="opacity" max="100" min="0" type="range" value="70"/>
-</div>
-<div class="control-group">
-<label data-i18n="label_6">موقعیت واترمارک</label>
-<div class="position-grid">
-<button class="position-btn" data-i18n="button_3" data-position="top-left">
-<span>بالا راست</span>
-</button>
-<button class="position-btn" data-i18n="button_4" data-position="top-center">
-<span>بالا وسط</span>
-</button>
-<button class="position-btn" data-i18n="button_5" data-position="top-right">
-<span>بالا چپ</span>
-</button>
-<button class="position-btn" data-i18n="button_6" data-position="center-left">
-<span>وسط راست</span>
-</button>
-<button class="position-btn active" data-i18n="button_7" data-position="center">
-<span>مرکز</span>
-</button>
-<button class="position-btn" data-i18n="button_8" data-position="center-right">
-<span>وسط چپ</span>
-</button>
-<button class="position-btn" data-i18n="button_9" data-position="bottom-left">
-<span>پایین راست</span>
-</button>
-<button class="position-btn" data-i18n="button_10" data-position="bottom-center">
-<span>پایین وسط</span>
-</button>
-<button class="position-btn" data-i18n="button_11" data-position="bottom-right">
-<span>پایین چپ</span>
-</button>
-</div>
-</div>
-<div class="control-group">
-<label data-i18n="label_7" for="rotation">چرخش: <span id="rotationValue">0</span>°</label>
-<input id="rotation" max="180" min="-180" type="range" value="0"/>
-</div>
-</div>
-<div class="action-buttons">
-<button class="btn-primary" data-i18n="button_12" id="downloadBtn">دانلود تصویر</button>
-<button class="btn-secondary" data-i18n="button_13" id="resetBtn">تصویر جدید</button>
-</div>
-</section>
-<!-- Preview Section -->
-<section class="preview-section" id="previewSection" style="display: none;">
-<h2 data-i18n="heading_1">پیش‌نمایش</h2>
-<div class="canvas-wrapper">
-<canvas id="canvas"></canvas>
-</div>
-</section>
+<main class="page wm">
+  <header class="wm-head">
+    <h1 data-i18n="heading_0">افزودن واترمارک به تصویر</h1>
+    <p class="wm-muted" data-i18n="text_subtitle_0">واترمارک متنی یا تصویری خود را به‌راحتی اضافه کنید. تصویر هرگز از دستگاه شما خارج نمی‌شود.</p>
+  </header>
+
+  <section class="wm-card" aria-labelledby="upTitle">
+    <h2 id="upTitle" class="wm-sr" data-i18n="upload_title">بارگذاری تصویر</h2>
+    <input type="file" id="imageInput" class="wm-file" accept="image/jpeg,image/png,image/webp,image/gif">
+    <label for="imageInput" class="wm-drop" id="drop">
+      <svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <strong data-i18n="text_upload_text_1">تصویر خود را اینجا بکشید یا لمس کنید</strong>
+      <span class="wm-muted" data-i18n="text_upload_hint_2">JPG، PNG، WebP و GIF (برای GIF فقط فریم اول)</span>
+    </label>
+    <p class="wm-note" id="loadNote" role="status" aria-live="polite"></p>
+  </section>
+
+  <div class="wm-work" id="work" hidden>
+    <section class="wm-card wm-preview" aria-labelledby="pvTitle">
+      <h2 id="pvTitle" data-i18n="heading_1">پیش‌نمایش</h2>
+      <div class="wm-canvas-box"><canvas id="canvas" role="img" aria-label="پیش‌نمایش" data-i18n-aria="heading_1"></canvas></div>
+      <p class="wm-muted wm-dims" id="dims"></p>
+    </section>
+
+    <section class="wm-card wm-controls" aria-label="تنظیمات" data-i18n-aria="controls_title">
+      <div class="wm-tabs" role="tablist">
+        <button type="button" role="tab" class="wm-tab is-active" aria-selected="true" data-tab="text" data-i18n="button_0">واترمارک متنی</button>
+        <button type="button" role="tab" class="wm-tab" aria-selected="false" data-tab="image" data-i18n="button_1">واترمارک تصویری</button>
+      </div>
+
+      <div id="textTab">
+        <div class="wm-field"><label for="wmText" data-i18n="label_0">متن واترمارک</label><textarea id="wmText" class="wm-input" rows="2" maxlength="200" data-i18n-placeholder="ph_text" placeholder="متن خود را وارد کنید"></textarea></div>
+        <div class="wm-field"><div class="wm-lh"><label for="fontPct" data-i18n="label_1">اندازه متن</label><output id="fontPctVal" for="fontPct" dir="ltr"></output></div><input id="fontPct" type="range" min="2" max="40" step="1" value="6"></div>
+        <div class="wm-two">
+          <div class="wm-field"><label for="textColor" data-i18n="label_2">رنگ متن</label><input id="textColor" class="wm-color" type="color" value="#ffffff"></div>
+          <label class="wm-check"><input type="checkbox" id="shadow" checked><span data-i18n="shadow">سایه برای خوانایی</span></label>
+        </div>
+      </div>
+
+      <div id="imageTab" hidden>
+        <div class="wm-field">
+          <span class="wm-label" data-i18n="label_3">انتخاب تصویر واترمارک</span>
+          <input type="file" id="logoInput" class="wm-file" accept="image/*">
+          <label for="logoInput" class="wm-btn wm-btn--block" data-i18n="button_2">انتخاب لوگو</label>
+          <span class="wm-muted" id="logoName"></span>
+        </div>
+        <div class="wm-field"><div class="wm-lh"><label for="logoPct" data-i18n="label_4">اندازه لوگو</label><output id="logoPctVal" for="logoPct" dir="ltr"></output></div><input id="logoPct" type="range" min="3" max="80" step="1" value="20"></div>
+      </div>
+
+      <div class="wm-field"><div class="wm-lh"><label for="opacity" data-i18n="label_5">شفافیت</label><output id="opacityVal" for="opacity" dir="ltr"></output></div><input id="opacity" type="range" min="5" max="100" step="1" value="70"></div>
+      <div class="wm-field"><div class="wm-lh"><label for="rotation" data-i18n="label_7">چرخش</label><output id="rotationVal" for="rotation" dir="ltr"></output></div><input id="rotation" type="range" min="-180" max="180" step="1" value="0"></div>
+
+      <div class="wm-field">
+        <span class="wm-label" id="posLabel" data-i18n="label_6">موقعیت واترمارک</span>
+        <div class="wm-pos" role="radiogroup" aria-labelledby="posLabel" id="posGrid">
+          <button type="button" role="radio" aria-checked="false" data-pos="tl" data-i18n="pos_tl">بالا چپ</button>
+          <button type="button" role="radio" aria-checked="false" data-pos="tc" data-i18n="pos_tc">بالا وسط</button>
+          <button type="button" role="radio" aria-checked="false" data-pos="tr" data-i18n="pos_tr">بالا راست</button>
+          <button type="button" role="radio" aria-checked="false" data-pos="ml" data-i18n="pos_ml">وسط چپ</button>
+          <button type="button" role="radio" aria-checked="true" class="is-active" data-pos="mc" data-i18n="pos_mc">مرکز</button>
+          <button type="button" role="radio" aria-checked="false" data-pos="mr" data-i18n="pos_mr">وسط راست</button>
+          <button type="button" role="radio" aria-checked="false" data-pos="bl" data-i18n="pos_bl">پایین چپ</button>
+          <button type="button" role="radio" aria-checked="false" data-pos="bc" data-i18n="pos_bc">پایین وسط</button>
+          <button type="button" role="radio" aria-checked="false" data-pos="br" data-i18n="pos_br">پایین راست</button>
+        </div>
+      </div>
+
+      <div class="wm-field">
+        <label class="wm-check"><input type="checkbox" id="tile"><span data-i18n="tile">تکرار روی کل تصویر (سخت‌تر برای حذف)</span></label>
+        <div id="tileGapBox" hidden>
+          <div class="wm-lh"><label for="tileGap" data-i18n="tile_gap">فاصلهٔ تکرار</label><output id="tileGapVal" for="tileGap" dir="ltr"></output></div>
+          <input id="tileGap" type="range" min="20" max="300" step="5" value="100">
+        </div>
+      </div>
+
+      <div class="wm-two">
+        <div class="wm-field"><label for="format" data-i18n="format">قالب خروجی</label>
+          <select id="format" class="wm-input"><option value="png">PNG</option><option value="jpeg">JPEG</option><option value="webp">WebP</option></select></div>
+        <div class="wm-field" id="qualityBox"><div class="wm-lh"><label for="quality" data-i18n="quality">کیفیت</label><output id="qualityVal" for="quality" dir="ltr"></output></div><input id="quality" type="range" min="50" max="100" step="1" value="92"></div>
+      </div>
+
+      <div class="wm-actions">
+        <button type="button" class="wm-btn wm-btn--primary" id="downloadBtn" data-i18n="button_12">دانلود تصویر</button>
+        <button type="button" class="wm-btn" id="resetBtn" data-i18n="button_13">تصویر جدید</button>
+      </div>
+      <p class="wm-note" id="status" role="status" aria-live="polite"></p>
+    </section>
+  </div>
 </main>
-<footer class="footer">
-<p>© 2025 - ابزار افزودن واترمارک</p>
-</footer>
-</div>
+<div class="wm-toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="assets/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

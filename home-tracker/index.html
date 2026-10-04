@@ -1,233 +1,148 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta content="مدیریت موجودی خانه با تاریخ انقضا و هشدار هوشمند" name="description"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="مدیریت موجودی خانه با تاریخ انقضا و هشدار هوشمند">
 <title data-i18n="title">مدیریت موجودی خانه</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">🏠 مدیریت موجودی خانه</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">مدیریت هوشمند مواد غذایی و لوازم خانه</p>
-</header>
-<!-- Alert Banner -->
-<div class="alert-banner hidden" id="alertBanner">
-<div class="alert-content">
-<span class="alert-icon">⚠️</span>
-<span class="alert-text"></span>
-<button class="alert-close" data-i18n="button_0" onclick="closeAlert()">×</button>
-</div>
-</div>
-<!-- Statistics Cards -->
-<div class="stats-grid">
-<div class="stat-card">
-<div class="stat-icon">📦</div>
-<div class="stat-info">
-<div class="stat-value" id="totalItems">0</div>
-<div class="stat-label">کل اقلام</div>
-</div>
-</div>
-<div class="stat-card warning">
-<div class="stat-icon">⏰</div>
-<div class="stat-info">
-<div class="stat-value" id="expiringItems">0</div>
-<div class="stat-label">در حال انقضا</div>
-</div>
-</div>
-<div class="stat-card danger">
-<div class="stat-icon">❌</div>
-<div class="stat-info">
-<div class="stat-value" id="expiredItems">0</div>
-<div class="stat-label">منقضی شده</div>
-</div>
-</div>
-<div class="stat-card success">
-<div class="stat-icon">✅</div>
-<div class="stat-info">
-<div class="stat-value" id="freshItems">0</div>
-<div class="stat-label">تازه</div>
-</div>
-</div>
-</div>
-<!-- Add Item Form -->
-<div class="form-card">
-<h2 data-i18n="heading_1">➕ افزودن قلم جدید</h2>
-<form id="itemForm">
-<div class="form-row">
-<div class="form-group">
-<label data-i18n="label_0" for="itemName">نام قلم *</label>
-<input id="itemName" placeholder="مثال: شیر، برنج، روغن" required="" type="text"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_1" for="category">دسته‌بندی *</label>
-<select id="category" required="">
-<option value="">انتخاب کنید</option>
-<option value="dairy">لبنیات</option>
-<option value="meat">گوشت و پروتئین</option>
-<option value="vegetables">سبزیجات</option>
-<option value="fruits">میوه‌جات</option>
-<option value="grains">غلات و حبوبات</option>
-<option value="canned">کنسرو</option>
-<option value="beverages">نوشیدنی</option>
-<option value="snacks">تنقلات</option>
-<option value="cleaning">لوازم نظافت</option>
-<option value="personal">لوازم بهداشتی</option>
-<option value="other">سایر</option>
-</select>
-</div>
-</div>
-<div class="form-row">
-<div class="form-group">
-<label data-i18n="label_2" for="quantity">تعداد/مقدار *</label>
-<input id="quantity" placeholder="مثال: 2 عدد، 1 کیلو" required="" type="text"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_3" for="expiryDate">تاریخ انقضا *</label>
-<input id="expiryDate" required="" type="date"/>
-</div>
-</div>
-<div class="form-group">
-<label data-i18n="label_4" for="location">محل قرارگیری</label>
-<select id="location">
-<option value="fridge">یخچال</option>
-<option value="freezer">فریزر</option>
-<option value="pantry">انباری</option>
-<option value="cabinet">کابینت</option>
-<option value="other">سایر</option>
-</select>
-</div>
-<div class="form-group">
-<label data-i18n="label_5" for="notes">یادداشت</label>
-<textarea id="notes" placeholder="یادداشت اختیاری..." rows="2"></textarea>
-</div>
-<div class="form-actions">
-<button class="btn btn-primary" data-i18n="button_1" type="submit">
-<span>💾</span> ذخیره
-                    </button>
-<button class="btn btn-secondary" data-i18n="button_2" onclick="resetForm()" type="button">
-<span>🔄</span> پاک کردن فرم
-                    </button>
-</div>
-</form>
-</div>
-<!-- Filter and Search -->
-<div class="filter-section">
-<h2 data-i18n="heading_2">🔍 جستجو و فیلتر</h2>
-<div class="filter-controls">
-<div class="search-box">
-<input id="searchInput" placeholder="جستجو بر اساس نام..." type="text"/>
-</div>
-<div class="filter-buttons">
-<button class="filter-btn active" data-filter="all" data-i18n="button_3">همه</button>
-<button class="filter-btn" data-filter="fresh" data-i18n="button_4">تازه</button>
-<button class="filter-btn" data-filter="expiring" data-i18n="button_5">در حال انقضا</button>
-<button class="filter-btn" data-filter="expired" data-i18n="button_6">منقضی شده</button>
-</div>
-<div class="sort-controls">
-<select id="sortBy">
-<option value="expiry-asc">نزدیک‌ترین انقضا</option>
-<option value="expiry-desc">دورترین انقضا</option>
-<option value="name-asc">نام (الف تا ی)</option>
-<option value="name-desc">نام (ی تا الف)</option>
-<option value="date-desc">جدیدترین</option>
-</select>
-</div>
-</div>
-</div>
-<!-- Items List -->
-<div class="items-section">
-<div class="section-header">
-<h2 data-i18n="heading_3">📋 لیست اقلام</h2>
-<button class="btn btn-danger" data-i18n="button_7" id="clearAllBtn" onclick="clearAllItems()">
-<span>🗑️</span> حذف همه
-                </button>
-</div>
-<div class="items-grid" id="itemsList">
-<div class="empty-state">
-<div class="empty-icon">📦</div>
-<h3 data-i18n="heading_4">هنوز هیچ قلمی اضافه نشده</h3>
-<p>با استفاده از فرم بالا، اولین قلم خود را اضافه کنید</p>
-</div>
-</div>
-</div>
-</div>
-<!-- Edit Modal -->
-<div class="modal hidden" id="editModal">
-<div class="modal-content">
-<div class="modal-header">
-<h2 data-i18n="heading_5">✏️ ویرایش قلم</h2>
-<button class="modal-close" data-i18n="button_8" onclick="closeEditModal()">×</button>
-</div>
-<form id="editForm">
-<input id="editItemId" type="hidden"/>
-<div class="form-row">
-<div class="form-group">
-<label data-i18n="label_6" for="editItemName">نام قلم *</label>
-<input id="editItemName" required="" type="text"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_7" for="editCategory">دسته‌بندی *</label>
-<select id="editCategory" required="">
-<option value="dairy">لبنیات</option>
-<option value="meat">گوشت و پروتئین</option>
-<option value="vegetables">سبزیجات</option>
-<option value="fruits">میوه‌جات</option>
-<option value="grains">غلات و حبوبات</option>
-<option value="canned">کنسرو</option>
-<option value="beverages">نوشیدنی</option>
-<option value="snacks">تنقلات</option>
-<option value="cleaning">لوازم نظافت</option>
-<option value="personal">لوازم بهداشتی</option>
-<option value="other">سایر</option>
-</select>
-</div>
-</div>
-<div class="form-row">
-<div class="form-group">
-<label data-i18n="label_8" for="editQuantity">تعداد/مقدار *</label>
-<input id="editQuantity" required="" type="text"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_9" for="editExpiryDate">تاریخ انقضا *</label>
-<input id="editExpiryDate" required="" type="date"/>
-</div>
-</div>
-<div class="form-group">
-<label data-i18n="label_10" for="editLocation">محل قرارگیری</label>
-<select id="editLocation">
-<option value="fridge">یخچال</option>
-<option value="freezer">فریزر</option>
-<option value="pantry">انباری</option>
-<option value="cabinet">کابینت</option>
-<option value="other">سایر</option>
-</select>
-</div>
-<div class="form-group">
-<label data-i18n="label_11" for="editNotes">یادداشت</label>
-<textarea id="editNotes" rows="2"></textarea>
-</div>
-<div class="form-actions">
-<button class="btn btn-primary" data-i18n="button_9" type="submit">
-<span>💾</span> ذخیره تغییرات
-                    </button>
-<button class="btn btn-secondary" data-i18n="button_10" onclick="closeEditModal()" type="button">
-<span>❌</span> انصراف
-                    </button>
-</div>
-</form>
-</div>
-</div>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
+<main class="page ht">
+  <header class="ht-head">
+    <h1 data-i18n="heading_0">مدیریت موجودی خانه</h1>
+    <p class="muted" data-i18n="text_subtitle_0">مدیریت هوشمند مواد غذایی و لوازم خانه</p>
+  </header>
+
+  <div class="ht-alert" id="alertBanner" role="status" hidden>
+    <span id="alertText"></span>
+    <button type="button" class="ht-alert-close" id="alertClose" data-i18n-aria="aria_close" aria-label="بستن">×</button>
+  </div>
+
+  <section class="ht-stats" aria-label="آمار" data-i18n-aria="aria_stats">
+    <div class="ht-stat"><strong id="statTotal">0</strong><span data-i18n="stat_total">کل اقلام</span></div>
+    <div class="ht-stat ht-stat--ok"><strong id="statFresh">0</strong><span data-i18n="filter_fresh">تازه</span></div>
+    <div class="ht-stat ht-stat--warn"><strong id="statExpiring">0</strong><span data-i18n="filter_expiring">در حال انقضا</span></div>
+    <div class="ht-stat ht-stat--bad"><strong id="statExpired">0</strong><span data-i18n="filter_expired">منقضی شده</span></div>
+  </section>
+
+  <section class="ht-card" aria-labelledby="addTitle">
+    <h2 id="addTitle" data-i18n="heading_add">افزودن قلم جدید</h2>
+    <form id="itemForm" autocomplete="off">
+      <div class="ht-grid">
+        <div class="ht-field">
+          <label for="itemName" data-i18n="label_name">نام قلم</label>
+          <input id="itemName" type="text" required maxlength="80" data-i18n-placeholder="ph_name" placeholder="مثال: شیر، برنج، روغن">
+        </div>
+        <div class="ht-field">
+          <label for="category" data-i18n="label_category">دسته‌بندی</label>
+          <select id="category" required></select>
+        </div>
+        <div class="ht-field">
+          <label for="quantity" data-i18n="label_quantity">تعداد/مقدار</label>
+          <input id="quantity" type="text" required maxlength="40" data-i18n-placeholder="ph_quantity" placeholder="مثال: ۲ عدد، ۱ کیلو">
+        </div>
+        <div class="ht-field">
+          <label for="expiryDate" data-i18n="label_expiry">تاریخ انقضا</label>
+          <input id="expiryDate" type="date" required>
+        </div>
+        <div class="ht-field">
+          <label for="location" data-i18n="label_location">محل قرارگیری</label>
+          <select id="location"></select>
+        </div>
+        <div class="ht-field ht-field--wide">
+          <label for="notes" data-i18n="label_notes">یادداشت</label>
+          <textarea id="notes" rows="2" maxlength="300" data-i18n-placeholder="ph_notes" placeholder="یادداشت اختیاری..."></textarea>
+        </div>
+      </div>
+      <div class="ht-actions">
+        <button type="submit" class="ht-btn ht-btn--primary" data-i18n="btn_save">ذخیره</button>
+        <button type="button" class="ht-btn" id="resetBtn" data-i18n="btn_reset">پاک کردن فرم</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="ht-card" aria-labelledby="listTitle">
+    <div class="ht-list-head">
+      <h2 id="listTitle" data-i18n="heading_list">لیست اقلام</h2>
+      <button type="button" class="ht-btn ht-btn--danger ht-btn--sm" id="clearAllBtn" data-i18n="btn_clear_all" hidden>حذف همه</button>
+    </div>
+    <div class="ht-tools">
+      <input id="searchInput" type="search" enterkeyhint="search" data-i18n-placeholder="ph_search" placeholder="جستجو بر اساس نام...">
+      <select id="sortBy" data-i18n-aria="aria_sort" aria-label="مرتب‌سازی">
+        <option value="expiry-asc" data-i18n="sort_expiry_asc">نزدیک‌ترین انقضا</option>
+        <option value="expiry-desc" data-i18n="sort_expiry_desc">دورترین انقضا</option>
+        <option value="name-asc" data-i18n="sort_name_asc">نام (الف تا ی)</option>
+        <option value="name-desc" data-i18n="sort_name_desc">نام (ی تا الف)</option>
+        <option value="added-desc" data-i18n="sort_added_desc">جدیدترین</option>
+      </select>
+    </div>
+    <div class="ht-filters" role="group" aria-label="فیلتر وضعیت" data-i18n-aria="aria_filter">
+      <button type="button" class="ht-chip is-active" data-filter="all" aria-pressed="true" data-i18n="filter_all">همه</button>
+      <button type="button" class="ht-chip" data-filter="fresh" aria-pressed="false" data-i18n="filter_fresh">تازه</button>
+      <button type="button" class="ht-chip" data-filter="expiring" aria-pressed="false" data-i18n="filter_expiring">در حال انقضا</button>
+      <button type="button" class="ht-chip" data-filter="expired" aria-pressed="false" data-i18n="filter_expired">منقضی شده</button>
+    </div>
+    <div class="ht-items" id="itemsList" aria-live="polite"></div>
+  </section>
+</main>
+
+<dialog id="editDialog" class="ht-dialog" aria-labelledby="editTitle">
+  <form id="editForm" method="dialog">
+    <h2 id="editTitle" data-i18n="heading_edit">ویرایش قلم</h2>
+    <input id="editId" type="hidden">
+    <div class="ht-grid">
+      <div class="ht-field">
+        <label for="editName" data-i18n="label_name">نام قلم</label>
+        <input id="editName" type="text" required maxlength="80">
+      </div>
+      <div class="ht-field">
+        <label for="editCategory" data-i18n="label_category">دسته‌بندی</label>
+        <select id="editCategory" required></select>
+      </div>
+      <div class="ht-field">
+        <label for="editQuantity" data-i18n="label_quantity">تعداد/مقدار</label>
+        <input id="editQuantity" type="text" required maxlength="40">
+      </div>
+      <div class="ht-field">
+        <label for="editExpiry" data-i18n="label_expiry">تاریخ انقضا</label>
+        <input id="editExpiry" type="date" required>
+      </div>
+      <div class="ht-field">
+        <label for="editLocation" data-i18n="label_location">محل قرارگیری</label>
+        <select id="editLocation"></select>
+      </div>
+      <div class="ht-field ht-field--wide">
+        <label for="editNotes" data-i18n="label_notes">یادداشت</label>
+        <textarea id="editNotes" rows="2" maxlength="300"></textarea>
+      </div>
+    </div>
+    <div class="ht-actions">
+      <button type="submit" class="ht-btn ht-btn--primary" data-i18n="btn_save_changes">ذخیره تغییرات</button>
+      <button type="button" class="ht-btn" id="editCancel" data-i18n="btn_cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirmDialog" class="ht-dialog ht-dialog--sm" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="ht-actions">
+      <button type="submit" value="ok" class="ht-btn ht-btn--danger" data-i18n="btn_confirm">بله، حذف شود</button>
+      <button type="submit" value="cancel" class="ht-btn" data-i18n="btn_cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="ht-toast" id="toast" role="status" aria-live="polite" hidden></div>
+
 <script src="assets/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>
