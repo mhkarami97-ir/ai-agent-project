@@ -502,19 +502,19 @@ const LIST_DATA = Object.freeze({
     {
       name: "چاوشان",
       id: "mhk.chavooshan",
-      category: "culture",
+      category: "travel",
       icon: "/assets/icons/app/08.png",
     },
     {
       name: "زلف دوتا",
       id: "mhk.zolfdota",
-      category: "culture",
+      category: "business",
       icon: "/assets/icons/app/09.png",
     },
     {
       name: "دور گردون",
       id: "mhk.dorgardoon",
-      category: "culture",
+      category: "business",
       icon: "/assets/icons/app/10.png",
     },
     {
@@ -526,13 +526,13 @@ const LIST_DATA = Object.freeze({
     {
       name: "ملک ری",
       id: "mhk.molkrey",
-      category: "travel",
+      category: "finance",
       icon: "/assets/icons/app/12.png",
     },
     {
       name: "زروان",
       id: "mhk.zoorvan",
-      category: "time",
+      category: "business",
       icon: "/assets/icons/app/13.png",
     },
     {
@@ -695,8 +695,179 @@ const LIST_DATA = Object.freeze({
       category: "lifestyle",
       icon: "📜",
     },
+    { name: "جستجوگر", id: "karami_97", category: "tech", icon: "🌍​" },
     { name: "اخبار تکنولوژی", id: "karam97_dev", category: "tech", icon: "📰" },
     { name: "سفرنامه", id: "karamtravel", category: "lifestyle", icon: "🧳" },
+  ],
+  sites: [
+    {
+      name: "آی ترفند",
+      description: "ترفندهای کاربردی حوزه تکنولوژی",
+      icon: "/assets/icons/sites/09.png",
+      id: "https://tarfand.mhkarami97.ir",
+      category: "tech",
+    },
+    {
+      name: "وبلاگ",
+      description: "وبلاگ روزمرگی‌های برنامه‌نویسی",
+      icon: "/assets/icons/sites/12.png",
+      id: "https://blog.mhkarami97.ir",
+      category: "tech",
+    },
+    {
+      name: "کتابخانه",
+      description: "کتاب‌های خوانده شده",
+      icon: "/assets/icons/sites/03.png",
+      id: "https://book.mhkarami97.ir",
+      category: "culture",
+    },
+    {
+      name: "فیلم‌خانه",
+      description: "فیلم‌های دیده شده",
+      icon: "/assets/icons/sites/05.png",
+      id: "https://video.mhkarami97.ir",
+      category: "culture",
+    },
+    {
+      name: "سفرنامه",
+      description: "سفرهای رفته",
+      icon: "/assets/icons/sites/06.png",
+      id: "https://travel.mhkarami97.ir",
+      category: "travel",
+    },
+    {
+      name: "کلیپ",
+      description: "کلیپ سفرهای رفته شده",
+      icon: "/assets/icons/sites/31.png",
+      id: "https://trip.mhkarami97.ir",
+      category: "travel",
+    },
+    {
+      name: "شعر‌خانه",
+      description: "شعرهای خوانده شده",
+      icon: "/assets/icons/sites/11.png",
+      id: "https://poem.mhkarami97.ir",
+      category: "culture",
+    },
+    {
+      name: "فوت‌و‌فن",
+      description: "نکات کاربردی",
+      icon: "/assets/icons/sites/16.png",
+      id: "https://trick.mhkarami97.ir",
+      category: "learning",
+    },
+    {
+      name: "جملات انگیزشی",
+      description: "جملات انگیزشی بزرگان",
+      icon: "/assets/icons/sites/13.png",
+      id: "https://sentence.mhkarami97.ir",
+      category: "culture",
+    },
+    {
+      name: "لینکدونی",
+      description: "لینک سایت‌های کاربردی",
+      icon: "/assets/icons/sites/02.png",
+      id: "https://link.mhkarami97.ir",
+      category: "tech",
+    },
+    {
+      name: "ایونت",
+      description: "ایونت‌های طبیعت‌گردی",
+      icon: "/assets/icons/sites/14.png",
+      id: "https://event.mhkarami97.ir",
+      category: "travel",
+    },
+    {
+      name: "فیلم آموزشی",
+      description: "فیلم آموزش",
+      icon: "/assets/icons/sites/04.png",
+      id: "https://film.mhkarami97.ir",
+      category: "learning",
+    },
+    {
+      name: "تجربه",
+      description: "تجربه",
+      icon: "/assets/icons/sites/17.png",
+      id: "https://experience.mhkarami97.ir",
+      category: "knowledge",
+    },
+    {
+      name: "کلاس",
+      description: "کلاس درس",
+      icon: "/assets/icons/sites/07.png",
+      id: "https://learn.mhkarami97.ir",
+      category: "learning",
+    },
+    {
+      name: "دیکشنری",
+      description: "لغات کاربردی",
+      icon: "/assets/icons/sites/18.png",
+      id: "https://dictionary.mhkarami97.ir",
+      category: "learning",
+    },
+    {
+      name: "الگوریتم",
+      description: "سوالات الگوریتمی",
+      icon: "/assets/icons/sites/20.png",
+      id: "https://algorithm.mhkarami97.ir",
+      category: "tech",
+    },
+    {
+      name: "لایف لیست",
+      description: "لایف لیست",
+      icon: "/assets/icons/sites/22.png",
+      id: "https://list.mhkarami97.ir",
+      category: "knowledge",
+    },
+    {
+      name: "پرامپ",
+      description: "لیست پرامپت",
+      icon: "/assets/icons/sites/23.png",
+      id: "https://prompt.mhkarami97.ir",
+      category: "tech",
+    },
+    {
+      name: "تاریخ",
+      description: "اتفاقات تاریخی",
+      icon: "/assets/icons/sites/24.png",
+      id: "https://date.mhkarami97.ir",
+      category: "knowledge",
+    },
+    {
+      name: "آموزش",
+      description: "محتوای آموزشی",
+      icon: "/assets/icons/sites/26.png",
+      id: "https://teach.mhkarami97.ir",
+      category: "learning",
+    },
+    {
+      name: "اقتصاد",
+      description: "اقتصاد به زبان ساده",
+      icon: "/assets/icons/sites/29.png",
+      id: "https://economy.mhkarami97.ir",
+      category: "knowledge",
+    },
+    {
+      name: "سیاست",
+      description: "سیاست به زبان ساده",
+      icon: "/assets/icons/sites/27.png",
+      id: "https://politic.mhkarami97.ir",
+      category: "knowledge",
+    },
+    {
+      name: "علمی",
+      description: "علم به زبان ساده",
+      icon: "/assets/icons/sites/30.png",
+      id: "https://science.mhkarami97.ir",
+      category: "knowledge",
+    },
+    {
+      name: "روانشناسی",
+      description: "مطالب حوزه انسانی",
+      icon: "/assets/icons/sites/28.png",
+      id: "https://person.mhkarami97.ir",
+      category: "knowledge",
+    },
   ],
 });
 
@@ -724,6 +895,7 @@ const CATEGORY_DEFS = Object.freeze({
     { key: "travel", label: "سفر و خودرو", icon: "🚗" },
     { key: "motorsport", label: "موتوراسپرت", icon: "🏁" },
     { key: "culture", label: "ادبیات و موسیقی", icon: "📜" },
+    { key: "business", label: "بیزینس", icon: "⌨️" },
     { key: "games", label: "بازی", icon: "🎮" },
   ],
   bots: [
@@ -735,6 +907,13 @@ const CATEGORY_DEFS = Object.freeze({
     { key: "tech", label: "فناوری و هوش مصنوعی", icon: "💻" },
     { key: "lifestyle", label: "سبک زندگی و سرگرمی", icon: "🎭" },
   ],
+  sites: [
+    { key: "tech", label: "تکنولوژی و برنامه‌نویسی", icon: "💻" },
+    { key: "culture", label: "فرهنگ و هنر", icon: "🎭" },
+    { key: "travel", label: "سفر و طبیعت", icon: "🏕️" },
+    { key: "learning", label: "آموزش و مهارت", icon: "🎓" },
+    { key: "knowledge", label: "دانش و علوم", icon: "📚" },
+  ],
 });
 
 class ListBrowser {
@@ -743,12 +922,14 @@ class ListBrowser {
     { key: "apps", label: "اپلیکیشن‌ها" },
     { key: "bots", label: "ربات‌ها" },
     { key: "channels", label: "کانال‌ها" },
+    { key: "sites", label: "سایت‌ها" },
   ]);
 
   static #externalBuilders = Object.freeze({
     apps: { url: (id) => `https://cafebazaar.ir/app/${id}`, label: (id) => id },
     bots: { url: (id) => `https://t.me/${id}`, label: (id) => `@${id}` },
     channels: { url: (id) => `https://t.me/${id}`, label: (id) => `@${id}` },
+    sites: { url: (id) => id, label: (item) => item.description }
   });
 
   static #groupDefs = new Map(
@@ -811,12 +992,12 @@ class ListBrowser {
       }));
   }
 
-  #buildExternalEntries(key, items) {
+#buildExternalEntries(key, items) {
     const builder = ListBrowser.#externalBuilders[key];
     return [...items]
       .sort((a, b) => ListBrowser.#compareByGroup(key, a, b, a.name, b.name))
       .map((i) => {
-        const label = builder.label(i.id);
+        const label = builder.label(i.id) ?? builder.label(i);
         return {
           name: i.name,
           enName: i.name,
@@ -826,8 +1007,8 @@ class ListBrowser {
           icon: i.icon,
           external: true,
           group: i.category,
-          searchText: ListBrowser.#normalize(`${i.name} ${i.id}`),
-          telegramId: key === "apps" ? null : i.id,
+          searchText: ListBrowser.#normalize(`${i.name} ${i.id} ${i.description || ''}`),
+          telegramId: (key === "apps" || key === "sites") ? null : i.id,
         };
       });
   }

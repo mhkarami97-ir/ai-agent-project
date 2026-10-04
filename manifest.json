@@ -5,7 +5,7 @@
   "short_name": "جعبه ابزار",
   "description": "مجموعه ابزارهای کاربردی وب شامل محاسبه‌گرها، مبدل‌ها و ابزارهای روزمره",
   "start_url": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#0f1730",
   "theme_color": "#7c5cff",
   "orientation": "portrait-primary",

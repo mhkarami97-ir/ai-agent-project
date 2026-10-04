@@ -1,120 +1,70 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html dir="rtl" lang="fa">
+
 <head>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">خواندن Regex</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="assets/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">Regex Playground</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
+
 <body>
-<div class="container">
-<header class="header">
-<h1 data-i18n="heading_0">ریجکس پلی‌گراند</h1>
-<p>آزمایشگاه عبارات منظم فارسی</p>
-</header>
-<main class="main">
-<section class="regex-section">
-<div class="input-group">
-<label data-i18n="label_0" for="regex-input">عبارت منظم (Regex):</label>
-<div class="regex-input-container">
-<input autocomplete="off" id="regex-input" placeholder="مثال: \d{4}" type="text"/>
-<div class="regex-flags">
-<label data-i18n="label_1">
-<input checked="" id="flag-global" type="checkbox"/>
-<span>g (سراسری)</span>
-</label>
-<label data-i18n="label_2">
-<input id="flag-case" type="checkbox"/>
-<span>i (نادیده‌گیری حروف)</span>
-</label>
-<label data-i18n="label_3">
-<input id="flag-multiline" type="checkbox"/>
-<span>m (چند خطی)</span>
-</label>
-</div>
-</div>
-</div>
-<div class="input-group">
-<label data-i18n="label_4" for="test-input">متن آزمایشی:</label>
-<textarea id="test-input" placeholder="متن خود را اینجا وارد کنید..." rows="6"></textarea>
-</div>
-<div class="buttons">
-<button class="btn-primary" data-i18n="button_0" id="test-btn">تست کن</button>
-<button class="btn-secondary" data-i18n="button_1" id="clear-btn">پاک کن</button>
-<button class="btn-success" data-i18n="button_2" id="save-snippet-btn">ذخیره Snippet</button>
-</div>
-</section>
-<section class="results-section">
-<div class="results-grid">
-<div class="results-panel">
-<h3 data-i18n="heading_1">نتایج مطابقت</h3>
-<div class="matches-container" id="matches-container">
-<p class="no-results" data-i18n="text_no_results_0">هنوز هیچ تستی انجام نشده است</p>
-</div>
-</div>
-<div class="results-panel">
-<h3 data-i18n="heading_2">توضیحات</h3>
-<div class="explanation-container" id="explanation-container">
-<p class="no-results" data-i18n="text_no_results_1">عبارت منظم را وارد کرده و تست کنید</p>
-</div>
-</div>
-</div>
-<div class="highlighted-text-panel">
-<h3 data-i18n="heading_3">متن با برجسته‌سازی مطابقت‌ها</h3>
-<div class="highlighted-text" id="highlighted-text">
-<p class="no-results" data-i18n="text_no_results_2">نتایج اینجا نمایش داده می‌شود</p>
-</div>
-</div>
-</section>
-<section class="snippets-section">
-<h3 data-i18n="heading_4">Snippets ذخیره شده</h3>
-<div class="snippets-container" id="snippets-container">
-<p class="no-results" data-i18n="text_no_results_3">هنوز هیچ snippet ذخیره نشده است</p>
-</div>
-</section>
-<section class="quick-patterns-section">
-<h3 data-i18n="heading_5">الگوهای آماده</h3>
-<div class="quick-patterns">
-<button class="pattern-btn" data-desc="اعداد" data-i18n="button_3" data-pattern="\d+">اعداد</button>
-<button class="pattern-btn" data-desc="حروف انگلیسی" data-i18n="button_4" data-pattern="[a-zA-Z]+">حروف انگلیسی</button>
-<button class="pattern-btn" data-desc="حروف فارسی" data-i18n="button_5" data-pattern="[\u0600-\u06FF]+">حروف فارسی</button>
-<button class="pattern-btn" data-desc="ایمیل ساده" data-i18n="button_6" data-pattern="\w+@\w+\.\w+">ایمیل</button>
-<button class="pattern-btn" data-desc="شماره موبایل ایران" data-i18n="button_7" data-pattern="09\d{9}">موبایل ایران</button>
-<button class="pattern-btn" data-desc="کلمات ۴ حرفی" data-i18n="button_8" data-pattern="\b\w{4}\b">کلمات ۴ حرفی</button>
-<button class="pattern-btn" data-desc="کل خط" data-i18n="button_9" data-pattern="^.*$">کل خط</button>
-<button class="pattern-btn" data-desc="فاصله‌ها" data-i18n="button_10" data-pattern="\s+">فاصله‌ها</button>
-</div>
-</section>
-</main>
-<footer class="footer">
-<p>© ۱۴۰۳ ریجکس پلی‌گراند - ساخته شده با ❤️</p>
-</footer>
-</div>
-<!-- Modal for saving snippets -->
-<div class="modal" id="save-modal">
-<div class="modal-content">
-<span class="close">×</span>
-<h3 data-i18n="heading_6">ذخیره Snippet</h3>
-<div class="input-group">
-<label data-i18n="label_5" for="snippet-name">نام Snippet:</label>
-<input id="snippet-name" placeholder="نام دلخواه برای snippet" type="text"/>
-</div>
-<div class="input-group">
-<label data-i18n="label_6" for="snippet-description">توضیحات:</label>
-<textarea id="snippet-description" placeholder="توضیح اختیاری" rows="3"></textarea>
-</div>
-<div class="buttons">
-<button class="btn-primary" data-i18n="button_11" id="confirm-save-btn">ذخیره</button>
-<button class="btn-secondary" data-i18n="button_12" id="cancel-save-btn">لغو</button>
-</div>
-</div>
-</div>
-<script src="assets/script.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="rx page">
+        <header>
+            <p class="eyebrow" data-i18n="eyebrow">آزمایش عبارات منظم</p>
+            <h1 data-i18n="heading_0">ریجکس پلی‌گراند</h1>
+            <p class="muted" data-i18n="subtitle">تطابق‌ها، گروه‌ها و برجسته‌سازی را ببینید. آزمایش در Worker و با
+                محدودیت زمان اجرا می‌شود.</p>
+        </header>
+        <section class="rx-card"><label data-i18n="label_0">عبارت منظم</label><input id="pattern" class="input"
+                dir="ltr" spellcheck="false" placeholder="\d{4}">
+            <div class="flags"><label><input id="g" type="checkbox" checked> g</label><label><input id="i"
+                        type="checkbox"> i</label><label><input id="m" type="checkbox"> m</label><label><input id="s"
+                        type="checkbox"> s</label><label><input id="u" type="checkbox" checked> u</label></div><label
+                data-i18n="label_4">متن آزمایشی</label><textarea id="text" class="input" dir="auto"
+                spellcheck="false"></textarea>
+            <div class="actions"><button id="test" class="btn primary" data-i18n="button_0">تست کن</button><button
+                    id="clear" class="btn" data-i18n="button_1">پاک کن</button><button id="save" class="btn"
+                    data-i18n="button_2">ذخیره Snippet</button></div>
+            <p id="status" role="status"></p>
+        </section>
+        <section class="rx-card">
+            <h2 data-i18n="heading_1">نتایج مطابقت</h2>
+            <div id="matches"></div>
+            <h2 data-i18n="heading_3">متن با برجسته‌سازی مطابقت‌ها</h2>
+            <div id="highlight" class="highlight"></div>
+        </section>
+        <section class="rx-card">
+            <h2 data-i18n="heading_2">توضیحات</h2>
+            <div id="explain"></div>
+        </section>
+        <section class="rx-card">
+            <h2 data-i18n="heading_4">Snippetهای ذخیره شده</h2>
+            <div id="snips"></div>
+        </section>
+        <section class="rx-card">
+            <h2 data-i18n="heading_5">الگوهای آماده</h2>
+            <div id="samples" class="chips"></div>
+        </section>
+    </main>
+    <dialog id="dialog">
+        <form method="dialog">
+            <h2 data-i18n="heading_6">ذخیره Snippet</h2><input id="snipName" class="input"
+                data-i18n-placeholder="ph_name"><textarea id="snipDesc" class="input"
+                data-i18n-placeholder="ph_desc"></textarea>
+            <div class="actions"><button id="saveConfirm" class="btn primary" value="ok"
+                    data-i18n="button_11">ذخیره</button><button class="btn" value="cancel"
+                    data-i18n="button_12">لغو</button></div>
+        </form>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+    <script src="assets/script.js"></script>
+    <script src="../assets/tool-wrapper.js"></script>
 </body>
+
 </html>
