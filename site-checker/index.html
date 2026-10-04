@@ -1,116 +1,72 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html dir="rtl" lang="fa">
+
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="title">بررسی فیلترینگ سایت</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="assets/css/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">بررسی دسترسی سایت</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
+
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">🔍 بررسی فیلترینگ و دسترسی سایت</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">تست DNS و تشخیص نوع مسدودسازی سایت‌ها</p>
-</header>
-<main>
-<section class="input-section">
-<div class="input-group">
-<input autocomplete="off" id="urlInput" placeholder="آدرس سایت را وارد کنید (مثال: google.com)" type="text"/>
-<button class="btn-primary" data-i18n="button_0" id="checkBtn">
-<span>بررسی</span>
-<svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<circle cx="11" cy="11" r="8"></circle>
-<path d="m21 21-4.35-4.35"></path>
-</svg>
-</button>
-</div>
-<div class="quick-add">
-<button class="btn-secondary" data-i18n="button_1" id="addToHistoryBtn">
-<svg class="icon-small" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-<polyline points="17 21 17 13 7 13 7 21"></polyline>
-<polyline points="7 3 7 8 15 8"></polyline>
-</svg>
-                        افزودن به لیست ذخیره شده
-                    </button>
-</div>
-</section>
-<section class="result-section hidden" id="resultSection">
-<div class="result-card">
-<div class="result-header">
-<h2 id="resultUrl"></h2>
-<span class="status-badge" id="resultStatus"></span>
-</div>
-<div class="result-body">
-<div class="result-item">
-<span class="label" data-i18n="text_label_2">وضعیت دسترسی:</span>
-<span class="value" id="accessStatus"></span>
-</div>
-<div class="result-item">
-<span class="label" data-i18n="text_label_4">نوع مسدودسازی:</span>
-<span class="value" id="blockType"></span>
-</div>
-<div class="result-item">
-<span class="label" data-i18n="text_label_6">تست DNS:</span>
-<span class="value" id="dnsStatus"></span>
-</div>
-<div class="result-item">
-<span class="label" data-i18n="text_label_8">تست HTTP:</span>
-<span class="value" id="httpStatus"></span>
-</div>
-<div class="result-item">
-<span class="label" data-i18n="text_label_10">تست HTTPS:</span>
-<span class="value" id="httpsStatus"></span>
-</div>
-<div class="details-section" id="detailsSection">
-<h3 data-i18n="heading_2">جزئیات بیشتر</h3>
-<div class="details-content" id="detailsContent"></div>
-</div>
-</div>
-</div>
-</section>
-<section class="saved-section">
-<div class="section-header">
-<h2 data-i18n="heading_3">سایت‌های ذخیره شده</h2>
-<button class="btn-danger-small" data-i18n="button_2" id="clearAllBtn">پاک کردن همه</button>
-</div>
-<div class="saved-list" id="savedList">
-<div class="empty-state">
-<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<circle cx="12" cy="12" r="10"></circle>
-<path d="M12 16v-4"></path>
-<path d="M12 8h.01"></path>
-</svg>
-<p>هیچ سایتی ذخیره نشده است</p>
-</div>
-</div>
-</section>
-<section class="history-section">
-<div class="section-header">
-<h2 data-i18n="heading_4">تاریخچه آزمایش‌ها</h2>
-<button class="btn-danger-small" data-i18n="button_3" id="clearHistoryBtn">پاک کردن تاریخچه</button>
-</div>
-<div class="history-list" id="historyList">
-<div class="empty-state">
-<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<circle cx="12" cy="12" r="10"></circle>
-<polyline points="12 6 12 12 16 14"></polyline>
-</svg>
-<p>هیچ آزمایشی انجام نشده است</p>
-</div>
-</div>
-</section>
-</main>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
-</div>
-<div class="toast hidden" id="toast"></div>
-<script src="assets/js/app.js"></script>
-<script src="../assets/tool-wrapper.js"></script>
+    <main class="sc page">
+        <header>
+            <h1 data-i18n="heading_0">بررسی دسترسی سایت</h1>
+            <p class="muted" data-i18n="subtitle">آزمون محدود از همین مرورگر؛ نتیجه هرگز تشخیص قطعی فیلترینگ، DNS یا IP
+                نیست.</p>
+        </header>
+        <section class="sc-card">
+            <div class="sc-in"><input id="url" class="input" type="text" inputmode="url" dir="ltr"
+                    placeholder="example.com" data-i18n-placeholder="ph_url"><button class="btn primary" id="check"
+                    data-i18n="button_0">بررسی</button></div>
+            <p class="sc-note" data-i18n="limits">مرورگر نمی‌تواند DNS واقعی یا پاسخ HTTP سایت‌های دیگر را به‌علت CORS
+                ببیند. درخواست no-cors فقط نشان می‌دهد مرورگر از این دستگاه توانست درخواست را آغاز کند؛ قطع اینترنت،
+                CORS، VPN، افزونه و سرور همگی می‌توانند نتیجه را تغییر دهند.</p>
+        </section>
+        <section id="result" class="sc-card" hidden>
+            <div class="row">
+                <h2 id="host" dir="ltr"></h2><span id="badge"></span>
+            </div>
+            <div class="sc-rows">
+                <div><span data-i18n="network">شبکهٔ مرورگر</span><b id="net"></b></div>
+                <div><span data-i18n="https">آزمون HTTPS</span><b id="https"></b></div>
+                <div><span data-i18n="http">آزمون HTTP</span><b id="http"></b></div>
+            </div>
+            <p id="detail" class="sc-note"></p>
+            <div class="sc-actions"><a id="open" class="btn primary" target="_blank" rel="noopener noreferrer"
+                    data-i18n="open_site">باز کردن سایت</a><button id="save" class="btn" data-i18n="button_1">افزودن به
+                    لیست ذخیره شده</button></div>
+        </section>
+        <section class="sc-card">
+            <div class="row">
+                <h2 data-i18n="heading_3">سایت‌های ذخیره شده</h2><button id="clearSites" class="btn danger small"
+                    data-i18n="button_2" hidden>پاک کردن همه</button>
+            </div>
+            <div id="sites" class="list"></div>
+        </section>
+        <section class="sc-card">
+            <div class="row">
+                <h2 data-i18n="heading_4">تاریخچه آزمایش‌ها</h2><button id="clearHist" class="btn danger small"
+                    data-i18n="button_3" hidden>پاک کردن تاریخچه</button>
+            </div>
+            <div id="history" class="list"></div>
+        </section>
+    </main>
+    <dialog id="confirm">
+        <form method="dialog">
+            <p id="confirmtext"></p>
+            <div class="row"><button class="btn danger" value="yes" data-i18n="yes">بله</button><button class="btn"
+                    value="cancel" data-i18n="cancel">انصراف</button></div>
+        </form>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+    <script src="assets/js/app.js"></script>
+    <script src="../assets/tool-wrapper.js"></script>
 </body>
+
 </html>

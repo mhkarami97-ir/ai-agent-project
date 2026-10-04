@@ -1,206 +1,98 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title data-i18n="title">نقشه نقاط امن</title>
-<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
-<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="assets/css/style.css" rel="stylesheet"/>
-<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="stylesheet" href="../assets/tools.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-<div class="container">
-<header>
-<h1 data-i18n="heading_0">🗺️ نقشه نقاط امن</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">ذخیره و مدیریت موقعیت‌های مهم - کاملاً آفلاین</p>
-</header>
-<main>
-<section class="actions-section">
-<div class="action-buttons">
-<button class="btn btn-primary" data-i18n="button_0" id="addLocationBtn">
-<span class="icon">➕</span>
-                        افزودن نقطه جدید
-                    </button>
-<button class="btn btn-secondary" data-i18n="button_1" id="exportBtn">
-<span class="icon">📤</span>
-                        خروجی JSON
-                    </button>
-<button class="btn btn-secondary" data-i18n="button_2" id="importBtn">
-<span class="icon">📥</span>
-                        ورودی JSON
-                    </button>
-<input accept=".json" id="importFile" style="display: none;" type="file"/>
-</div>
-</section>
-<section class="filter-section">
-<div class="filter-group">
-<label data-i18n="label_0" for="filterType">فیلتر بر اساس نوع:</label>
-<select class="filter-select" id="filterType">
-<option value="all">همه موارد</option>
-<option value="hospital">🏥 بیمارستان</option>
-<option value="pharmacy">💊 داروخانه</option>
-<option value="shelter">🏠 پناهگاه</option>
-<option value="emergency">🚑 اورژانس</option>
-<option value="fire-station">🚒 آتش‌نشانی</option>
-<option value="police">👮 پلیس</option>
-<option value="store">🏪 فروشگاه</option>
-<option value="gas-station">⛽ پمپ بنزین</option>
-<option value="bank">🏦 بانک</option>
-<option value="bakery">🍞 نانوایی</option>
-</select>
-</div>
-<div class="filter-group">
-<label data-i18n="label_1" for="searchInput">جستجو:</label>
-<input class="search-input" id="searchInput" placeholder="نام یا توضیحات..." type="text"/>
-</div>
-</section>
-<section class="stats-section">
-<div class="stat-card hospital">
-<div class="stat-icon">🏥</div>
-<div class="stat-info">
-<div class="stat-value" id="hospitalCount">0</div>
-<div class="stat-label">بیمارستان</div>
-</div>
-</div>
-<div class="stat-card pharmacy">
-<div class="stat-icon">💊</div>
-<div class="stat-info">
-<div class="stat-value" id="pharmacyCount">0</div>
-<div class="stat-label">داروخانه</div>
-</div>
-</div>
-<div class="stat-card shelter">
-<div class="stat-icon">🏠</div>
-<div class="stat-info">
-<div class="stat-value" id="shelterCount">0</div>
-<div class="stat-label">پناهگاه</div>
-</div>
-</div>
-<div class="stat-card emergency">
-<div class="stat-icon">🚑</div>
-<div class="stat-info">
-<div class="stat-value" id="emergencyCount">0</div>
-<div class="stat-label">اورژانس</div>
-</div>
-</div>
-<div class="stat-card fire-station">
-<div class="stat-icon">🚒</div>
-<div class="stat-info">
-<div class="stat-value" id="fireStationCount">0</div>
-<div class="stat-label">آتش‌نشانی</div>
-</div>
-</div>
-<div class="stat-card police">
-<div class="stat-icon">👮</div>
-<div class="stat-info">
-<div class="stat-value" id="policeCount">0</div>
-<div class="stat-label">پلیس</div>
-</div>
-</div>
-<div class="stat-card store">
-<div class="stat-icon">🏪</div>
-<div class="stat-info">
-<div class="stat-value" id="storeCount">0</div>
-<div class="stat-label">فروشگاه</div>
-</div>
-</div>
-<div class="stat-card gas-station">
-<div class="stat-icon">⛽</div>
-<div class="stat-info">
-<div class="stat-value" id="gasStationCount">0</div>
-<div class="stat-label">پمپ بنزین</div>
-</div>
-</div>
-<div class="stat-card bank">
-<div class="stat-icon">🏦</div>
-<div class="stat-info">
-<div class="stat-value" id="bankCount">0</div>
-<div class="stat-label">بانک</div>
-</div>
-</div>
-<div class="stat-card bakery">
-<div class="stat-icon">🍞</div>
-<div class="stat-info">
-<div class="stat-value" id="bakeryCount">0</div>
-<div class="stat-label">نانوایی</div>
-</div>
-</div>
-</section>
-<section class="locations-section">
-<div class="locations-list" id="locationsList">
-<div class="empty-state">
-<div class="empty-icon">📍</div>
-<p>هنوز نقطه‌ای اضافه نشده است</p>
-<p class="empty-hint" data-i18n="text_empty_hint_4">برای شروع، روی دکمه "افزودن نقطه جدید" کلیک کنید</p>
-</div>
-</div>
-</section>
+<main class="page sz">
+  <header class="sz-head">
+    <h1 data-i18n="heading_0">نقشه نقاط امن</h1>
+    <p class="sz-muted" data-i18n="text_subtitle_0">ذخیره و مدیریت موقعیت‌های مهم؛ داده‌ها فقط روی دستگاه شما می‌مانند و بدون اینترنت هم کار می‌کنند.</p>
+  </header>
+
+  <section class="sz-bar" aria-label="عملیات" data-i18n-aria="aria_actions">
+    <button type="button" class="sz-btn sz-btn--primary" id="addBtn" data-i18n="button_0">افزودن نقطه جدید</button>
+    <button type="button" class="sz-btn" id="meBtn" data-i18n="my_location">موقعیت من</button>
+    <button type="button" class="sz-btn" id="exportBtn" data-i18n="button_1">خروجی JSON</button>
+    <button type="button" class="sz-btn" id="importBtn" data-i18n="button_2">ورودی JSON</button>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+  </section>
+  <p class="sz-status" id="status" role="status" aria-live="polite"></p>
+
+  <section class="sz-card sz-plot-card" id="plotCard" hidden aria-labelledby="plotTitle">
+    <h2 id="plotTitle" data-i18n="plot_title">نمای کلی نقاط</h2>
+    <svg id="plot" class="sz-plot" viewBox="0 0 600 340" role="img" aria-label="نمای کلی"></svg>
+    <p class="sz-muted sz-plot-note" data-i18n="plot_note">نمایش شماتیک بر اساس مختصات؛ نقشهٔ خیابانی نیست. برای مسیریابی روی «نقشه» هر نقطه بزنید.</p>
+  </section>
+
+  <section class="sz-card" aria-label="فیلتر" data-i18n-aria="aria_filter">
+    <div class="sz-chips" id="chips" role="group"></div>
+    <div class="sz-tools">
+      <div class="sz-field"><label for="search" data-i18n="label_1">جستجو:</label><input id="search" class="sz-input" type="search" enterkeyhint="search" data-i18n-placeholder="ph_search" placeholder="نام، آدرس یا توضیحات..."></div>
+      <div class="sz-field"><label for="sort" data-i18n="sort_label">مرتب‌سازی:</label>
+        <select id="sort" class="sz-input">
+          <option value="newest" data-i18n="sort_newest">جدیدترین</option>
+          <option value="name" data-i18n="sort_name">نام</option>
+          <option value="distance" data-i18n="sort_distance" disabled>نزدیک‌ترین به من</option>
+        </select></div>
+    </div>
+  </section>
+
+  <section id="list" class="sz-list" aria-live="polite"></section>
 </main>
-</div>
-<!-- Modal for Adding/Editing Location -->
-<div class="modal" id="locationModal">
-<div class="modal-content">
-<div class="modal-header">
-<h2 data-i18n="heading_1" id="modalTitle">افزودن نقطه جدید</h2>
-<button class="close-btn" data-i18n="button_3" id="closeModal">×</button>
-</div>
-<form id="locationForm">
-<div class="form-group">
-<label data-i18n="label_2" for="locationName">نام مکان <span class="required">*</span></label>
-<input id="locationName" placeholder="مثال: بیمارستان امام خمینی" required="" type="text"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_3" for="locationType">نوع <span class="required">*</span></label>
-<select id="locationType" required="">
-<option value="">انتخاب کنید...</option>
-<option value="hospital">🏥 بیمارستان</option>
-<option value="pharmacy">💊 داروخانه</option>
-<option value="shelter">🏠 پناهگاه</option>
-<option value="emergency">🚑 اورژانس</option>
-<option value="fire-station">🚒 آتش‌نشانی</option>
-<option value="police">👮 پلیس</option>
-<option value="store">🏪 فروشگاه</option>
-<option value="gas-station">⛽ پمپ بنزین</option>
-<option value="bank">🏦 بانک</option>
-<option value="bakery">🍞 نانوایی</option>
-</select>
-</div>
-<div class="form-row">
-<div class="form-group">
-<label data-i18n="label_4" for="locationLat">عرض جغرافیایی <span class="required">*</span></label>
-<input id="locationLat" placeholder="35.6892" required="" step="any" type="number"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_5" for="locationLng">طول جغرافیایی <span class="required">*</span></label>
-<input id="locationLng" placeholder="51.3890" required="" step="any" type="number"/>
-</div>
-</div>
-<div class="form-group">
-<label data-i18n="label_6" for="locationAddress">آدرس</label>
-<textarea id="locationAddress" placeholder="آدرس کامل مکان..." rows="2"></textarea>
-</div>
-<div class="form-group">
-<label data-i18n="label_7" for="locationPhone">شماره تماس</label>
-<input id="locationPhone" placeholder="021-12345678" type="tel"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_8" for="locationDescription">توضیحات</label>
-<textarea id="locationDescription" placeholder="توضیحات تکمیلی..." rows="3"></textarea>
-</div>
-<div class="form-actions">
-<button class="btn btn-primary" data-i18n="button_4" type="submit">
-<span class="icon">💾</span>
-                        ذخیره
-                    </button>
-<button class="btn btn-cancel" data-i18n="button_5" id="cancelBtn" type="button">
-                        انصراف
-                    </button>
-</div>
-</form>
-</div>
-</div>
+
+<dialog id="formDialog" class="sz-dialog" aria-labelledby="formTitle">
+  <form id="form" method="dialog" autocomplete="off" novalidate>
+    <h2 id="formTitle" data-i18n="heading_1">افزودن نقطه جدید</h2>
+    <div class="sz-field"><label for="fName"><span data-i18n="label_2">نام مکان</span> <span class="sz-req">*</span></label><input id="fName" class="sz-input" type="text" maxlength="100" required data-i18n-placeholder="ph_name" placeholder="مثال: بیمارستان امام خمینی"></div>
+    <div class="sz-field"><label for="fType"><span data-i18n="label_3">نوع</span> <span class="sz-req">*</span></label><select id="fType" class="sz-input" required></select></div>
+    <div class="sz-two">
+      <div class="sz-field"><label for="fLat"><span data-i18n="label_4">عرض جغرافیایی</span> <span class="sz-req">*</span></label><input id="fLat" class="sz-input" type="text" inputmode="decimal" dir="ltr" required placeholder="35.6892"></div>
+      <div class="sz-field"><label for="fLng"><span data-i18n="label_5">طول جغرافیایی</span> <span class="sz-req">*</span></label><input id="fLng" class="sz-input" type="text" inputmode="decimal" dir="ltr" required placeholder="51.3890"></div>
+    </div>
+    <button type="button" class="sz-btn sz-btn--block" id="fillMe" data-i18n="use_my_location">استفاده از موقعیت فعلی من</button>
+    <p class="sz-hint" id="coordHint" role="status" aria-live="polite"></p>
+    <div class="sz-field"><label for="fAddress" data-i18n="label_6">آدرس</label><textarea id="fAddress" class="sz-input" rows="2" maxlength="300" data-i18n-placeholder="ph_address" placeholder="آدرس کامل مکان..."></textarea></div>
+    <div class="sz-field"><label for="fPhone" data-i18n="label_7">شماره تماس</label><input id="fPhone" class="sz-input" type="tel" dir="ltr" maxlength="30" placeholder="021-12345678"></div>
+    <div class="sz-field"><label for="fDesc" data-i18n="label_8">توضیحات</label><textarea id="fDesc" class="sz-input" rows="3" maxlength="500" data-i18n-placeholder="ph_desc" placeholder="توضیحات تکمیلی..."></textarea></div>
+    <div class="sz-actions">
+      <button type="submit" class="sz-btn sz-btn--primary" data-i18n="button_4">ذخیره</button>
+      <button type="button" class="sz-btn" id="cancelBtn" data-i18n="button_5">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirmDialog" class="sz-dialog sz-dialog--sm" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="sz-actions">
+      <button type="submit" value="ok" class="sz-btn sz-btn--danger" data-i18n="confirm_yes">بله</button>
+      <button type="submit" value="cancel" class="sz-btn" data-i18n="button_5">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="importDialog" class="sz-dialog sz-dialog--sm" aria-labelledby="importText">
+  <form method="dialog">
+    <p id="importText"></p>
+    <div class="sz-actions sz-actions--col">
+      <button type="submit" value="merge" class="sz-btn sz-btn--primary" data-i18n="import_merge">افزودن به داده‌های فعلی</button>
+      <button type="submit" value="replace" class="sz-btn sz-btn--danger" data-i18n="import_replace">جایگزینی همهٔ داده‌ها</button>
+      <button type="submit" value="cancel" class="sz-btn" data-i18n="button_5">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<div class="sz-toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="assets/js/app.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

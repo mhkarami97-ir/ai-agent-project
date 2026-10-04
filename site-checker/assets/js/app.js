@@ -1,572 +1,322 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
+(function () {
+  "use strict";
+  /* @logic-start */
+  function hostOf(raw) {
+    let s = String(raw ?? "").trim();
+    if (!s) return null;
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) s = "https://" + s;
+    let u;
+    try {
+      u = new URL(s);
+    } catch (e) {
+      return null;
     }
-
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
-    }
-
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
-    }
-
-    getTheme() {
-        return this.currentTheme;
-    }
-}
-
-const themeManager = new ThemeManager();
-
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
-    }
-
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
-        }
-    }
-
-    t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
-        }
-        
-        return value;
-    }
-
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
-        });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
-        }
-    }
-
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
-    }
-}
-
-const i18n = new I18n();
-
-
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-// مدیریت Local Storage
-const Storage = {
-    KEYS: {
-        SAVED_SITES: 'siteChecker_savedSites',
-        HISTORY: 'siteChecker_history'
-    },
-
-    getSavedSites() {
-        try {
-            return JSON.parse(localStorage.getItem(this.KEYS.SAVED_SITES)) || [];
-        } catch (e) {
-            return [];
-        }
-    },
-
-    saveSite(site) {
-        const sites = this.getSavedSites();
-        const exists = sites.find(s => s.url === site.url);
-        if (!exists) {
-            sites.unshift({
-                url: site.url,
-                date: new Date().toISOString()
-            });
-            localStorage.setItem(this.KEYS.SAVED_SITES, JSON.stringify(sites));
-            return true;
-        }
-        return false;
-    },
-
-    removeSite(url) {
-        let sites = this.getSavedSites();
-        sites = sites.filter(s => s.url !== url);
-        localStorage.setItem(this.KEYS.SAVED_SITES, JSON.stringify(sites));
-    },
-
-    clearSavedSites() {
-        localStorage.removeItem(this.KEYS.SAVED_SITES);
-    },
-
-    getHistory() {
-        try {
-            return JSON.parse(localStorage.getItem(this.KEYS.HISTORY)) || [];
-        } catch (e) {
-            return [];
-        }
-    },
-
-    addToHistory(check) {
-        const history = this.getHistory();
-        history.unshift({
-            ...check,
-            date: new Date().toISOString()
-        });
-        // حداکثر 50 آیتم در تاریخچه
-        if (history.length > 50) {
-            history.pop();
-        }
-        localStorage.setItem(this.KEYS.HISTORY, JSON.stringify(history));
-    },
-
-    clearHistory() {
-        localStorage.removeItem(this.KEYS.HISTORY);
-    }
-};
-
-// تست و بررسی سایت
-class SiteChecker {
-    constructor(url) {
-        this.url = this.normalizeUrl(url);
-        this.results = {
-            url: this.url,
-            accessible: false,
-            blockType: 'نامشخص',
-            dnsStatus: 'در حال بررسی...',
-            httpStatus: 'در حال بررسی...',
-            httpsStatus: 'در حال بررسی...',
-            details: ''
+    if (!/^https?:$/.test(u.protocol) || !u.hostname) return null;
+    let h = u.hostname.toLowerCase().replace(/\.$/, "");
+    if (h.length > 253 || h.split(".").some((x) => !x || x.length > 63))
+      return null;
+    return h;
+  }
+  function probeResult(scheme, ok, ms, reason) {
+    return { scheme, ok, ms, reason };
+  }
+  function classify(r) {
+    let h = r.https,
+      o = r.http;
+    if (h.ok) return { level: "unknown", key: "reachable_request" };
+    if (typeof navigator !== "undefined" && !navigator.onLine)
+      return { level: "offline", key: "offline" };
+    if (!h.ok && o.ok) return { level: "limited", key: "http_only" };
+    return { level: "unknown", key: "inconclusive" };
+  }
+  function normSites(raw) {
+    if (!Array.isArray(raw)) return [];
+    let seen = {};
+    return raw
+      .map((x) => {
+        let h = hostOf(x && x.url);
+        if (!h || seen[h]) return null;
+        seen[h] = 1;
+        let d = new Date(x.date);
+        return { url: h, ts: isNaN(d) ? 0 : d.getTime() };
+      })
+      .filter(Boolean)
+      .slice(0, 100);
+  }
+  function normHist(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .map((x) => {
+        let h = hostOf(x && x.url);
+        if (!h) return null;
+        let d = new Date(x.date);
+        return {
+          url: h,
+          ts: isNaN(d) ? 0 : d.getTime(),
+          https: x.https || null,
+          http: x.http || null,
+          level: typeof x.level === "string" ? x.level : "unknown",
+          key: typeof x.key === "string" ? x.key : "inconclusive",
         };
+      })
+      .filter(Boolean)
+      .slice(0, 50);
+  }
+  /* @logic-end */
+  const SK = "siteChecker_savedSites",
+    HK = "siteChecker_history";
+  let lang = "fa",
+    dict = {},
+    cur = null,
+    sites = [],
+    hist = [];
+  try {
+    lang = localStorage.getItem("lang") === "en" ? "en" : "fa";
+  } catch (e) {}
+  const $ = (id) => document.getElementById(id),
+    t = (k, v) => {
+      let s = (dict[lang] || dict.fa || {})[k] || k;
+      if (v)
+        Object.keys(v).forEach((x) => (s = s.replace("{" + x + "}", v[x])));
+      return s;
+    },
+    fmt = (d) => new Date(d).toLocaleString(lang === "fa" ? "fa-IR" : "en-US");
+  function save() {
+    try {
+      localStorage.setItem(
+        SK,
+        JSON.stringify(
+          sites.map((x) => ({
+            url: x.url,
+            date: new Date(x.ts).toISOString(),
+          })),
+        ),
+      );
+      localStorage.setItem(
+        HK,
+        JSON.stringify(
+          hist.map((x) =>
+            Object.assign({}, x, { date: new Date(x.ts).toISOString() }),
+          ),
+        ),
+      );
+    } catch (e) {
+      toast(t("err_save"), true);
     }
-
-    normalizeUrl(url) {
-        url = url.trim().toLowerCase();
-        url = url.replace(/^https?:\/\//, '');
-        url = url.replace(/\/$/, '');
-        return url;
+  }
+  function toast(x, b) {
+    let e = $("toast");
+    e.textContent = x;
+    e.style.background = b ? "#b91c1c" : "#111827";
+    e.hidden = false;
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => (e.hidden = true), 2800);
+  }
+  function apply() {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
+    document
+      .querySelectorAll("[data-i18n]")
+      .forEach((e) => (e.textContent = t(e.dataset.i18n)));
+    document
+      .querySelectorAll("[data-i18n-placeholder]")
+      .forEach((e) => (e.placeholder = t(e.dataset.i18nPlaceholder)));
+    document.title = t("title");
+    renderSites();
+    renderHist();
+    if (cur) show(cur);
+  }
+  async function probe(scheme, host) {
+    let ctl = new AbortController(),
+      start = performance.now(),
+      timer = setTimeout(() => ctl.abort(), 10000);
+    try {
+      await fetch(scheme + "://" + host + "/?_sc=" + Date.now(), {
+        method: "HEAD",
+        mode: "no-cors",
+        cache: "no-store",
+        signal: ctl.signal,
+      });
+      return probeResult(
+        scheme,
+        true,
+        Math.round(performance.now() - start),
+        "opaque",
+      );
+    } catch (e) {
+      return probeResult(
+        scheme,
+        false,
+        Math.round(performance.now() - start),
+        e.name === "AbortError" ? "timeout" : "network-error",
+      );
+    } finally {
+      clearTimeout(timer);
     }
-
-    async check() {
-        try {
-            // تست DNS و دسترسی
-            await this.checkDNS();
-            await this.checkHTTP();
-            await this.checkHTTPS();
-            
-            // تحلیل نتایج
-            this.analyzeResults();
-            
-            return this.results;
-        } catch (error) {
-            this.results.details = `خطا در بررسی: ${error.message}`;
-            return this.results;
-        }
+  }
+  async function check(host) {
+    $("check").disabled = true;
+    $("check").textContent = t("checking");
+    let [h, o] = await Promise.all([probe("https", host), probe("http", host)]);
+    let x = { url: host, ts: Date.now(), https: h, http: o };
+    Object.assign(x, classify(x));
+    cur = x;
+    hist.unshift(x);
+    hist = hist.slice(0, 50);
+    save();
+    show(x);
+    renderHist();
+    $("check").disabled = false;
+    $("check").textContent = t("button_0");
+  }
+  function val(r) {
+    if (!r) return t("na");
+    return r.ok
+      ? t("request_started", { n: r.ms })
+      : t(r.reason === "timeout" ? "timeout" : "request_failed", { n: r.ms });
+  }
+  function show(x) {
+    $("result").hidden = false;
+    $("host").textContent = x.url;
+    $("open").href = "https://" + x.url;
+    let b = $("badge");
+    b.textContent = t("level_" + x.level);
+    b.className =
+      x.level === "offline" ? "bad" : x.level === "limited" ? "warn" : "warn";
+    $("net").textContent = navigator.onLine ? t("online") : t("offline");
+    $("https").textContent = val(x.https);
+    $("http").textContent = val(x.http);
+    $("detail").textContent = t("detail_" + x.key);
+  }
+  function item(x, kind) {
+    let a = document.createElement("div");
+    a.className = "item";
+    let m = document.createElement("div");
+    m.className = "item-main";
+    let u = document.createElement("div");
+    u.className = "url";
+    u.textContent = x.url;
+    let d = document.createElement("div");
+    d.className = "date";
+    d.textContent = x.ts ? fmt(x.ts) : "";
+    m.append(u, d);
+    a.append(m);
+    let ac = document.createElement("div");
+    ac.className = "actions";
+    let c = document.createElement("button");
+    c.className = "btn small";
+    c.textContent = t("button_0");
+    c.onclick = () => {
+      $("url").value = x.url;
+      check(x.url);
+    };
+    ac.append(c);
+    if (kind === "site") {
+      let r = document.createElement("button");
+      r.className = "btn danger small";
+      r.textContent = t("delete");
+      r.onclick = () => {
+        sites = sites.filter((y) => y !== x);
+        save();
+        renderSites();
+      };
+      ac.append(r);
     }
-
-    async checkDNS() {
-        try {
-            // سعی در دسترسی به سایت برای تست DNS
-            const response = await fetch(`https://${this.url}`, {
-                method: 'HEAD',
-                mode: 'no-cors',
-                cache: 'no-cache'
-            });
-            
-            this.results.dnsStatus = '✓ موفق';
-            return true;
-        } catch (error) {
-            if (error.message.includes('Failed to fetch')) {
-                this.results.dnsStatus = '✗ ناموفق - احتمال مسدودی DNS';
-            } else {
-                this.results.dnsStatus = '✗ خطا';
-            }
-            return false;
-        }
-    }
-
-    async checkHTTP() {
-        try {
-            const response = await fetch(`http://${this.url}`, {
-                method: 'HEAD',
-                mode: 'no-cors',
-                cache: 'no-cache'
-            });
-            
-            this.results.httpStatus = '✓ قابل دسترس';
-            return true;
-        } catch (error) {
-            this.results.httpStatus = '✗ غیرقابل دسترس';
-            return false;
-        }
-    }
-
-    async checkHTTPS() {
-        try {
-            const response = await fetch(`https://${this.url}`, {
-                method: 'HEAD',
-                mode: 'no-cors',
-                cache: 'no-cache'
-            });
-            
-            this.results.httpsStatus = '✓ قابل دسترس';
-            return true;
-        } catch (error) {
-            this.results.httpsStatus = '✗ غیرقابل دسترس';
-            return false;
-        }
-    }
-
-    analyzeResults() {
-        const httpAccessible = this.results.httpStatus.includes('✓');
-        const httpsAccessible = this.results.httpsStatus.includes('✓');
-        const dnsWorking = this.results.dnsStatus.includes('✓');
-
-        if (httpAccessible && httpsAccessible) {
-            this.results.accessible = true;
-            this.results.blockType = 'فیلتر نشده';
-            this.results.details = 'سایت به صورت کامل قابل دسترسی است. هیچ مسدودی‌ای تشخیص داده نشد.';
-        } else if (!dnsWorking) {
-            this.results.accessible = false;
-            this.results.blockType = 'فیلتر DNS';
-            this.results.details = 'DNS سایت پاسخ نمی‌دهد. احتمالاً از طریق DNS فیلتر شده است. می‌توانید از DNS عمومی مانند 1.1.1.1 یا 8.8.8.8 استفاده کنید.';
-        } else if (!httpAccessible && !httpsAccessible) {
-            this.results.accessible = false;
-            this.results.blockType = 'فیلتر IP';
-            this.results.details = 'سایت از طریق IP مسدود شده است. برای دسترسی به آن نیاز به استفاده از VPN یا Proxy دارید.';
-        } else if (httpAccessible && !httpsAccessible) {
-            this.results.accessible = 'partial';
-            this.results.blockType = 'فیلتر HTTPS/SNI';
-            this.results.details = 'فقط HTTP قابل دسترسی است و HTTPS مسدود شده. احتمالاً فیلتر SNI یا SSL است. استفاده از ابزارهای دور زدن SNI می‌تواند مفید باشد.';
-        } else {
-            this.results.accessible = 'partial';
-            this.results.blockType = 'فیلتر جزئی';
-            this.results.details = 'سایت به صورت جزئی قابل دسترسی است. ممکن است برخی پورت‌ها یا پروتکل‌ها مسدود باشند.';
-        }
-    }
-}
-
-// مدیریت UI
-class UI {
-    constructor() {
-        this.elements = {
-            urlInput: document.getElementById('urlInput'),
-            checkBtn: document.getElementById('checkBtn'),
-            addToHistoryBtn: document.getElementById('addToHistoryBtn'),
-            resultSection: document.getElementById('resultSection'),
-            resultUrl: document.getElementById('resultUrl'),
-            resultStatus: document.getElementById('resultStatus'),
-            accessStatus: document.getElementById('accessStatus'),
-            blockType: document.getElementById('blockType'),
-            dnsStatus: document.getElementById('dnsStatus'),
-            httpStatus: document.getElementById('httpStatus'),
-            httpsStatus: document.getElementById('httpsStatus'),
-            detailsContent: document.getElementById('detailsContent'),
-            savedList: document.getElementById('savedList'),
-            historyList: document.getElementById('historyList'),
-            clearAllBtn: document.getElementById('clearAllBtn'),
-            clearHistoryBtn: document.getElementById('clearHistoryBtn'),
-            toast: document.getElementById('toast')
-        };
-
-        this.currentResult = null;
-        this.initEventListeners();
-        this.loadSavedSites();
-        this.loadHistory();
-    }
-
-    initEventListeners() {
-        this.elements.checkBtn.addEventListener('click', () => this.checkSite());
-        this.elements.urlInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.checkSite();
-            }
-        });
-        this.elements.addToHistoryBtn.addEventListener('click', () => this.saveCurrentSite());
-        this.elements.clearAllBtn.addEventListener('click', () => this.clearAllSaved());
-        this.elements.clearHistoryBtn.addEventListener('click', () => this.clearAllHistory());
-    }
-
-    async checkSite() {
-        const url = this.elements.urlInput.value.trim();
-        
-        if (!url) {
-            this.showToast('لطفاً آدرس سایت را وارد کنید', 'error');
-            return;
-        }
-
-        // شروع loading
-        this.elements.checkBtn.classList.add('loading');
-        this.elements.checkBtn.disabled = true;
-        this.elements.resultSection.classList.add('hidden');
-
-        try {
-            const checker = new SiteChecker(url);
-            const results = await checker.check();
-            
-            this.currentResult = results;
-            this.displayResults(results);
-            
-            // افزودن به تاریخچه
-            Storage.addToHistory(results);
-            this.loadHistory();
-            
-            this.showToast('بررسی با موفقیت انجام شد', 'success');
-        } catch (error) {
-            this.showToast('خطا در انجام بررسی', 'error');
-        } finally {
-            this.elements.checkBtn.classList.remove('loading');
-            this.elements.checkBtn.disabled = false;
-        }
-    }
-
-    displayResults(results) {
-        this.elements.resultUrl.textContent = results.url;
-        
-        // تعیین وضعیت
-        let statusClass = '';
-        let statusText = '';
-        
-        if (results.accessible === true) {
-            statusClass = 'accessible';
-            statusText = 'قابل دسترس';
-        } else if (results.accessible === 'partial') {
-            statusClass = 'partial';
-            statusText = 'دسترسی محدود';
-        } else {
-            statusClass = 'blocked';
-            statusText = 'مسدود';
-        }
-        
-        this.elements.resultStatus.className = `status-badge ${statusClass}`;
-        this.elements.resultStatus.textContent = statusText;
-        
-        this.elements.accessStatus.textContent = statusText;
-        this.elements.blockType.textContent = results.blockType;
-        this.elements.dnsStatus.textContent = results.dnsStatus;
-        this.elements.httpStatus.textContent = results.httpStatus;
-        this.elements.httpsStatus.textContent = results.httpsStatus;
-        this.elements.detailsContent.textContent = results.details;
-        
-        this.elements.resultSection.classList.remove('hidden');
-        this.elements.resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    saveCurrentSite() {
-        if (!this.currentResult) {
-            this.showToast('ابتدا یک سایت را بررسی کنید', 'warning');
-            return;
-        }
-
-        const saved = Storage.saveSite({ url: this.currentResult.url });
-        
-        if (saved) {
-            this.loadSavedSites();
-            this.showToast('سایت به لیست ذخیره شده اضافه شد', 'success');
-        } else {
-            this.showToast('این سایت قبلاً ذخیره شده است', 'warning');
-        }
-    }
-
-    loadSavedSites() {
-        const sites = Storage.getSavedSites();
-        
-        if (sites.length === 0) {
-            this.elements.savedList.innerHTML = `
-                <div class="empty-state">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 16v-4"></path>
-                        <path d="M12 8h.01"></path>
-                    </svg>
-                    <p>هیچ سایتی ذخیره نشده است</p>
-                </div>
-            `;
-            return;
-        }
-
-        this.elements.savedList.innerHTML = sites.map(site => `
-            <div class="saved-item">
-                <div class="saved-item-info">
-                    <div class="saved-item-url">${site.url}</div>
-                    <div class="saved-item-date">${this.formatDate(site.date)}</div>
-                </div>
-                <div class="saved-item-actions">
-                    <button class="btn-icon btn-check" onclick="app.checkSavedSite('${site.url}')">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.35-4.35"></path>
-                        </svg>
-                    </button>
-                    <button class="btn-icon btn-delete" onclick="app.removeSavedSite('${site.url}')">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    loadHistory() {
-        const history = Storage.getHistory();
-        
-        if (history.length === 0) {
-            this.elements.historyList.innerHTML = `
-                <div class="empty-state">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <p>هیچ آزمایشی انجام نشده است</p>
-                </div>
-            `;
-            return;
-        }
-
-        this.elements.historyList.innerHTML = history.map(item => {
-            let statusClass = 'success';
-            if (item.accessible === false) {
-                statusClass = 'danger';
-            } else if (item.accessible === 'partial') {
-                statusClass = 'warning';
-            }
-
-            return `
-                <div class="history-item" onclick="app.showHistoryDetails('${item.url}', ${item.date})">
-                    <div class="history-item-info">
-                        <div class="history-item-url">${item.url}</div>
-                        <div class="history-item-date">${this.formatDate(item.date)}</div>
-                        <div class="history-item-status">
-                            <span class="history-status-tag ${statusClass}">${item.blockType}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    checkSavedSite(url) {
-        this.elements.urlInput.value = url;
-        this.checkSite();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    removeSavedSite(url) {
-        Storage.removeSite(url);
-        this.loadSavedSites();
-        this.showToast('سایت حذف شد', 'success');
-    }
-
-    clearAllSaved() {
-        if (confirm('آیا از پاک کردن تمام سایت‌های ذخیره شده مطمئن هستید؟')) {
-            Storage.clearSavedSites();
-            this.loadSavedSites();
-            this.showToast('همه سایت‌ها پاک شدند', 'success');
-        }
-    }
-
-    clearAllHistory() {
-        if (confirm('آیا از پاک کردن تاریخچه مطمئن هستید؟')) {
-            Storage.clearHistory();
-            this.loadHistory();
-            this.showToast('تاریخچه پاک شد', 'success');
-        }
-    }
-
-    showHistoryDetails(url, timestamp) {
-        const history = Storage.getHistory();
-        const item = history.find(h => h.url === url && h.date === timestamp);
-        if (item) {
-            this.currentResult = item;
-            this.displayResults(item);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }
-
-    formatDate(dateString) {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diff = now - date;
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(diff / 3600000);
-        const days = Math.floor(diff / 86400000);
-
-        if (minutes < 1) return 'هم‌اکنون';
-        if (minutes < 60) return `${minutes} دقیقه پیش`;
-        if (hours < 24) return `${hours} ساعت پیش`;
-        if (days < 7) return `${days} روز پیش`;
-
-        const options = { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        };
-        return date.toLocaleDateString('fa-IR', options);
-    }
-
-    showToast(message, type = 'success') {
-        this.elements.toast.textContent = message;
-        this.elements.toast.className = `toast ${type}`;
-        this.elements.toast.classList.remove('hidden');
-
-        setTimeout(() => {
-            this.elements.toast.classList.add('hidden');
-        }, 3000);
-    }
-}
-
-// راه‌اندازی برنامه
-let app;
-document.addEventListener('DOMContentLoaded', () => {
-    app = new UI();
-});
-
+    a.append(ac);
+    return a;
+  }
+  function renderSites() {
+    let b = $("sites");
+    b.textContent = "";
+    $("clearSites").hidden = !sites.length;
+    if (!sites.length) {
+      let p = document.createElement("p");
+      p.className = "none";
+      p.textContent = t("empty_sites");
+      b.append(p);
+    } else sites.forEach((x) => b.append(item(x, "site")));
+  }
+  function renderHist() {
+    let b = $("history");
+    b.textContent = "";
+    $("clearHist").hidden = !hist.length;
+    if (!hist.length) {
+      let p = document.createElement("p");
+      p.className = "none";
+      p.textContent = t("empty_hist");
+      b.append(p);
+    } else hist.forEach((x) => b.append(item(x, "hist")));
+  }
+  async function confirm(msg) {
+    let d = $("confirm");
+    $("confirmtext").textContent = msg;
+    return await new Promise((r) => {
+      let f = () => {
+        d.removeEventListener("close", f);
+        r(d.returnValue === "yes");
+      };
+      d.addEventListener("close", f);
+      d.showModal();
+    });
+  }
+  async function boot() {
+    try {
+      dict = await (await fetch("assets/translations.json")).json();
+    } catch (e) {}
+    try {
+      sites = normSites(JSON.parse(localStorage.getItem(SK)));
+    } catch (e) {}
+    try {
+      hist = normHist(JSON.parse(localStorage.getItem(HK)));
+    } catch (e) {}
+    apply();
+    $("check").onclick = () => {
+      let h = hostOf($("url").value);
+      if (!h) {
+        toast(t("err_url"), true);
+        return;
+      }
+      $("url").value = h;
+      check(h);
+    };
+    $("url").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") $("check").click();
+    });
+    $("save").onclick = () => {
+      if (!cur) {
+        toast(t("err_first"), true);
+        return;
+      }
+      if (sites.some((x) => x.url === cur.url)) {
+        toast(t("exists"), true);
+        return;
+      }
+      sites.unshift({ url: cur.url, ts: Date.now() });
+      save();
+      renderSites();
+      toast(t("saved"));
+    };
+    $("clearSites").onclick = async () => {
+      if (await confirm(t("confirm_sites"))) {
+        sites = [];
+        save();
+        renderSites();
+      }
+    };
+    $("clearHist").onclick = async () => {
+      if (await confirm(t("confirm_hist"))) {
+        hist = [];
+        save();
+        renderHist();
+      }
+    };
+    $("confirm").addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) e.currentTarget.close();
+    });
+    window.addEventListener("languageChanged", (e) => {
+      lang = e.detail === "en" ? "en" : "fa";
+      apply();
+    });
+  }
+  document.addEventListener("DOMContentLoaded", boot);
+})();
