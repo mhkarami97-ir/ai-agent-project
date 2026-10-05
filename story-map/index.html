@@ -1,70 +1,86 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Story Map</title>
-    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="appTitle">نقشه استوری</title>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-    <div id="app">
-        <header class="header">
-            <div class="header-content">
-                <h1 class="app-title" data-i18n="appTitle">Story Map</h1>
-                <div class="header-actions">
-                    <select id="viewModeSelector" class="view-mode-selector">
-                        <option value="storymap" data-i18n="viewStoryMap">Story Map</option>
-                        <option value="roadmap" data-i18n="viewRoadmap">Product Roadmap</option>
-                    </select>
-                    <select id="boardSelector" class="board-selector">
-                        <option value="" data-i18n="selectBoard">انتخاب برد</option>
-                    </select>
-                    <button id="newBoardBtn" class="btn btn-primary" data-i18n="newBoard">برد جدید</button>
-                    <button id="exportBtn" class="btn btn-secondary" data-i18n="export">خروجی</button>
-                    <button id="importBtn" class="btn btn-secondary" data-i18n="import">ورودی</button>
-                    <button id="clearBoardBtn" class="btn btn-danger" data-i18n="clearBoard">پاک‌سازی برد</button>
-                </div>
-            </div>
-        </header>
-
-        <main class="main-content">
-            <div id="boardContainer" class="board-container">
-                <div class="empty-state">
-                    <div class="empty-icon">📋</div>
-                    <h2 data-i18n="emptyStateTitle">هیچ بردی انتخاب نشده</h2>
-                    <p data-i18n="emptyStateText">یک برد جدید ایجاد کنید یا برد موجود را انتخاب کنید</p>
-                </div>
-            </div>
-        </main>
-
-        <div id="addColumnBtn" class="add-column-btn" style="display: none;">
-            <button class="btn btn-add" data-i18n="addColumn">+ افزودن ستون</button>
-        </div>
+<div id="app">
+<header class="header">
+  <div class="header-content">
+    <h1 class="app-title" data-i18n="appTitle">نقشه استوری</h1>
+    <div class="header-actions">
+      <label class="sr-only" for="viewModeSelector" data-i18n="viewLabel">نمای نمایش</label>
+      <select id="viewModeSelector" class="view-mode-selector">
+        <option value="storymap" data-i18n="viewStoryMap">Story Map</option>
+        <option value="roadmap" data-i18n="viewRoadmap">Product Roadmap</option>
+      </select>
+      <label class="sr-only" for="boardSelector" data-i18n="selectBoard">انتخاب برد</label>
+      <select id="boardSelector" class="board-selector"></select>
+      <button id="newBoardBtn" class="btn btn-primary" type="button" data-i18n="newBoard">برد جدید</button>
+      <button id="renameBoardBtn" class="btn btn-secondary" type="button" data-i18n="renameBoard">تغییر نام</button>
+      <button id="duplicateBoardBtn" class="btn btn-secondary" type="button" data-i18n="duplicateBoard">کپی برد</button>
+      <button id="exportBtn" class="btn btn-secondary" type="button" data-i18n="export">خروجی</button>
+      <button id="importBtn" class="btn btn-secondary" type="button" data-i18n="import">ورودی</button>
+      <button id="clearBoardBtn" class="btn btn-danger" type="button" data-i18n="clearBoard">پاک‌سازی برد</button>
+      <button id="deleteBoardBtn" class="btn btn-danger" type="button" data-i18n="deleteBoard">حذف برد</button>
     </div>
+  </div>
+  <div id="statsBar" class="stats-bar" hidden>
+    <span id="statsText"></span>
+    <div id="statsProgress" class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"><span id="statsFill" class="progress-fill"></span></div>
+  </div>
+</header>
 
-    <div id="modalOverlay" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 id="modalTitle" class="modal-title"></h2>
-                <button id="modalClose" class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="modalContent"></div>
-            </div>
-            <div class="modal-footer">
-                <button id="modalCancel" class="btn btn-secondary" data-i18n="cancel">انصراف</button>
-                <button id="modalConfirm" class="btn btn-primary" data-i18n="confirm">تأیید</button>
-            </div>
-        </div>
+<main class="main-content"><div id="boardContainer" class="board-container"></div></main>
+<div id="addColumnBtn" class="add-column-btn" hidden><button class="btn btn-add" type="button" data-i18n="addColumn">+ افزودن ستون</button></div>
+</div>
+
+<dialog id="nameDialog" aria-labelledby="nameTitle">
+  <form method="dialog" novalidate>
+    <h3 id="nameTitle"></h3>
+    <label for="nameInput" id="nameLabel"></label>
+    <input type="text" id="nameInput" maxlength="80" autocomplete="off">
+    <p class="dlg-error" role="alert" hidden></p>
+    <div class="dlg-actions"><button type="button" class="btn btn-secondary" data-close data-i18n="cancel">انصراف</button><button type="submit" class="btn btn-primary" data-i18n="confirm">تأیید</button></div>
+  </form>
+</dialog>
+
+<dialog id="storyDialog" aria-labelledby="storyDlgTitle">
+  <form method="dialog" novalidate>
+    <h3 id="storyDlgTitle"></h3>
+    <label for="storyTitleInput" data-i18n="storyTitle">عنوان استوری</label>
+    <input type="text" id="storyTitleInput" maxlength="120" autocomplete="off" data-i18n-placeholder="storyTitlePlaceholder">
+    <label for="storyDescInput" data-i18n="storyDescription">توضیحات</label>
+    <textarea id="storyDescInput" rows="3" maxlength="1000" data-i18n-placeholder="storyDescriptionPlaceholder"></textarea>
+    <div class="row">
+      <div><label for="storyPointsInput" data-i18n="storyPoints">امتیاز</label><input type="number" id="storyPointsInput" min="0" max="1000" step="1" value="0" inputmode="numeric"></div>
+      <div><label for="storyColumnSelect" data-i18n="storyColumn">ستون</label><select id="storyColumnSelect"></select></div>
     </div>
+    <fieldset><legend data-i18n="storyStatus">وضعیت</legend><div id="storyStatusGroup" class="form-radio-group"></div></fieldset>
+    <p class="dlg-error" role="alert" hidden></p>
+    <div class="dlg-actions"><button type="button" class="btn btn-secondary" data-close data-i18n="cancel">انصراف</button><button type="submit" class="btn btn-primary" data-i18n="confirm">تأیید</button></div>
+  </form>
+</dialog>
 
-    <input type="file" id="fileInput" accept=".json" style="display: none;">
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <form method="dialog" novalidate>
+    <h3 id="confirmTitle" data-i18n="confirmTitle">تأیید</h3>
+    <p id="confirmMessage"></p>
+    <div class="dlg-actions"><button type="button" class="btn btn-secondary" data-close data-i18n="cancel">انصراف</button><button type="submit" class="btn btn-danger" data-i18n="confirm">تأیید</button></div>
+  </form>
+</dialog>
 
-    <script src="assets/script.js"></script>
-    <script src="../assets/tool-wrapper.js"></script>
+<input type="file" id="fileInput" accept=".json,application/json" hidden>
+<div id="toast" class="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastAction" class="toast-action" type="button" hidden></button></div>
+
+<script src="assets/core.js"></script>
+<script src="assets/script.js"></script>
+<script src="../assets/tool-wrapper.js"></script>
 </body>
 </html>
-

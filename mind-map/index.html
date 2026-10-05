@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
 <link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="ابزار رسم نقشه ذهنی آنلاین" name="description"/>
@@ -15,82 +13,77 @@
 <body>
 <div class="container">
 <header>
-<h1 data-i18n="heading_0">نقشه ذهنی</h1>
-<div class="toolbar">
-<button class="btn btn-primary" data-i18n="button_0" id="addNodeBtn" title="افزودن نود جدید">
-<span>➕</span> افزودن نود
-                </button>
-<button class="btn btn-success" data-i18n="button_1" id="saveBtn" title="ذخیره نقشه">
-<span>💾</span> ذخیره
-                </button>
-<button class="btn btn-info" data-i18n="button_2" id="loadBtn" title="بارگذاری نقشه">
-<span>📂</span> بارگذاری
-                </button>
-<button class="btn btn-secondary" data-i18n="button_3" id="exportBtn" title="دانلود JSON">
-<span>⬇️</span> دانلود
-                </button>
-<button class="btn btn-secondary" data-i18n="button_4" id="importBtn" title="آپلود JSON">
-<span>⬆️</span> آپلود
-                </button>
-<input accept=".json" id="importFile" style="display: none;" type="file"/>
-<button class="btn btn-danger" data-i18n="button_5" id="clearBtn" title="پاک کردن همه">
-<span>🗑️</span> پاک کردن
-                </button>
-<button class="btn btn-mode" data-i18n="button_6" id="toggleModeBtn" title="تغییر حالت">
-<span>🔗</span> اتصال
-                </button>
-</div>
+  <h1 data-i18n="title">نقشه ذهنی</h1>
+  <div class="toolbar" role="toolbar">
+    <button class="btn btn-primary" id="addNodeBtn" type="button"><span aria-hidden="true">➕</span> <span data-i18n="addNode">افزودن نود</span></button>
+    <button class="btn btn-mode" id="toggleModeBtn" type="button" aria-pressed="false"><span aria-hidden="true">🔗</span> <span id="modeLabel" data-i18n="connect">اتصال</span></button>
+    <button class="btn btn-secondary" id="deleteEdgeBtn" type="button" disabled><span aria-hidden="true">✂️</span> <span data-i18n="deleteEdge">حذف اتصال</span></button>
+    <span class="sep" aria-hidden="true"></span>
+    <button class="btn btn-icon" id="zoomOutBtn" type="button" data-i18n-title="zoomOut">−</button>
+    <button class="btn btn-icon" id="zoomInBtn" type="button" data-i18n-title="zoomIn">+</button>
+    <button class="btn btn-secondary" id="fitBtn" type="button"><span aria-hidden="true">⤢</span> <span data-i18n="fitView">نمایش همه</span></button>
+    <span class="sep" aria-hidden="true"></span>
+    <button class="btn btn-secondary" id="exportBtn" type="button"><span aria-hidden="true">⬇️</span> <span data-i18n="download">دانلود</span></button>
+    <button class="btn btn-secondary" id="importBtn" type="button"><span aria-hidden="true">⬆️</span> <span data-i18n="upload">آپلود</span></button>
+    <input accept=".json,application/json" id="importFile" type="file" hidden/>
+    <button class="btn btn-danger" id="clearBtn" type="button"><span aria-hidden="true">🗑️</span> <span data-i18n="clear">پاک کردن</span></button>
+    <span class="save-status" id="saveStatus" role="status" aria-live="polite"></span>
+  </div>
 </header>
-<div class="canvas-container">
-<canvas id="canvas"></canvas>
-<div id="nodesContainer"></div>
+
+<div class="canvas-container" id="canvas" tabindex="-1">
+  <div class="world" id="world">
+    <svg class="edges" id="edges" width="1" height="1" aria-hidden="false"></svg>
+    <div id="nodesContainer"></div>
+  </div>
+  <div class="empty-hint" id="emptyHint" hidden data-i18n="emptyHint">برای شروع، «افزودن نود» را بزنید</div>
 </div>
-<div class="info-panel">
-<p>
-<strong>راهنما:</strong>
-<span class="help-text" data-i18n="text_help_text_0">برای افزودن نود روی دکمه "افزودن نود" کلیک کنید</span>
-<span class="help-text" data-i18n="text_help_text_1">برای اتصال دو نود، حالت "اتصال" را فعال کنید و روی دو نود کلیک کنید</span>
-<span class="help-text" data-i18n="text_help_text_2">برای جابجایی نود، آن را بکشید</span>
-<span class="help-text" data-i18n="text_help_text_3">برای حذف نود، روی دکمه × کلیک کنید</span>
-</p>
+
+<div class="info-panel"><p>
+  <strong data-i18n="helpLabel">راهنما:</strong>
+  <span class="help-text" data-i18n="help1">با «افزودن نود» نود جدید بسازید؛ دکمهٔ ＋ روی هر نود، زیرمجموعه می‌سازد</span>
+  <span class="help-text" data-i18n="help2">برای اتصال، حالت «اتصال» را روشن کنید و روی دو نود کلیک کنید</span>
+  <span class="help-text" data-i18n="help3">نود را بکشید تا جابه‌جا شود؛ پس‌زمینه را بکشید تا نقشه حرکت کند؛ با چرخ ماوس زوم کنید</span>
+  <span class="help-text" data-i18n="help4">روی یک اتصال کلیک کنید و با Delete حذفش کنید؛ روی نود با کلیدهای جهت جابه‌جا و با Enter ویرایش کنید</span>
+</p></div>
 </div>
-</div>
-<!-- Modal for Node Edit -->
-<div class="modal" id="nodeModal">
-<div class="modal-content">
-<span class="modal-close">×</span>
-<h2 data-i18n="heading_1">ویرایش نود</h2>
-<form id="nodeForm">
-<div class="form-group">
-<label data-i18n="label_0" for="nodeTitle">عنوان:</label>
-<input class="form-control" id="nodeTitle" required="" type="text"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_1" for="nodeDescription">توضیحات:</label>
-<textarea class="form-control" id="nodeDescription" rows="3"></textarea>
-</div>
-<div class="form-group">
-<label data-i18n="label_2" for="nodeColor">رنگ:</label>
-<select class="form-control" id="nodeColor">
-<option value="#4A90E2">آبی</option>
-<option value="#7ED321">سبز</option>
-<option value="#F5A623">نارنجی</option>
-<option value="#D0021B">قرمز</option>
-<option value="#9013FE">بنفش</option>
-<option value="#50E3C2">فیروزه‌ای</option>
-<option value="#F8E71C">زرد</option>
-<option value="#BD10E0">صورتی</option>
-</select>
-</div>
-<div class="form-actions">
-<button class="btn btn-primary" data-i18n="button_7" type="submit">ذخیره</button>
-<button class="btn btn-secondary" data-i18n="button_8" id="cancelBtn" type="button">انصراف</button>
-</div>
-</form>
-</div>
-</div>
-<!-- Toast Notification -->
-<div class="toast" id="toast"></div>
+
+<dialog id="nodeDialog" aria-labelledby="nodeDlgTitle">
+  <form id="nodeForm" method="dialog" novalidate>
+    <h2 id="nodeDlgTitle" data-i18n="editNode">ویرایش نود</h2>
+    <div class="form-group"><label for="nodeTitle" data-i18n="nodeTitleLabel">عنوان:</label>
+      <input class="form-control" id="nodeTitle" type="text" maxlength="120" autocomplete="off"/></div>
+    <div class="form-group"><label for="nodeDescription" data-i18n="nodeDescriptionLabel">توضیحات:</label>
+      <textarea class="form-control" id="nodeDescription" rows="3" maxlength="1000"></textarea></div>
+    <div class="form-group"><label for="nodeColor" data-i18n="nodeColorLabel">رنگ:</label>
+      <select class="form-control" id="nodeColor">
+        <option value="#4A90E2" data-i18n="colorBlue">آبی</option><option value="#7ED321" data-i18n="colorGreen">سبز</option>
+        <option value="#F5A623" data-i18n="colorOrange">نارنجی</option><option value="#D0021B" data-i18n="colorRed">قرمز</option>
+        <option value="#9013FE" data-i18n="colorPurple">بنفش</option><option value="#50E3C2" data-i18n="colorTeal">فیروزه‌ای</option>
+        <option value="#F8E71C" data-i18n="colorYellow">زرد</option><option value="#BD10E0" data-i18n="colorPink">صورتی</option>
+      </select></div>
+    <p class="form-error" id="nodeError" role="alert" hidden></p>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit" data-i18n="save">ذخیره</button>
+      <button class="btn btn-secondary" type="button" id="cancelBtn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <form method="dialog" novalidate>
+    <h2 id="confirmTitle" data-i18n="confirmTitle">تأیید</h2>
+    <p id="confirmMessage"></p>
+    <div class="form-actions">
+      <button class="btn btn-danger" type="submit" data-i18n="yes">بله</button>
+      <button class="btn btn-secondary" type="button" data-close data-i18n="no">خیر</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastAction" class="toast-action" type="button" hidden></button></div>
+
+<script src="assets/core.js"></script>
 <script src="assets/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

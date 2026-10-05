@@ -126,15 +126,6 @@
     icon: "🗜️",
   },
   {
-    path: "compress-file",
-    category: "dev",
-    faName: "فشرده‌ساز فایل",
-    enName: "File Compressor",
-    faDesc: "فشرده‌سازی HTML, CSS, JS",
-    enDesc: "Compress HTML, CSS, JS files",
-    icon: "📦",
-  },
-  {
     path: "qr",
     category: "daily",
     faName: "کیوآر کد",

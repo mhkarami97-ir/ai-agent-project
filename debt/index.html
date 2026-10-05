@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
 <link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title data-i18n="title">محاسبه‌گر واقعی سود وام</title>
@@ -14,133 +12,134 @@
 <body>
 <div class="container">
 <header>
-<h1 data-i18n="heading_0">محاسبه‌گر واقعی سود وام بانکی</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">محاسبه دقیق هزینه واقعی وام‌های بانکی در ایران</p>
+  <h1 data-i18n="appName">محاسبه‌گر واقعی سود وام بانکی</h1>
+  <p class="subtitle" data-i18n="subtitle">محاسبهٔ هزینهٔ واقعی وام با احتساب کارمزد، کسورات، سپرده و تورم</p>
 </header>
-<div class="main-content">
-<section class="input-section">
-<h2 data-i18n="heading_1">اطلاعات وام</h2>
-<div class="form-group">
-<label data-i18n="label_0" for="bankName">نام بانک:</label>
-<input id="bankName" placeholder="مثال: بانک ملی" type="text"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_1" for="loanAmount">مبلغ وام (تومان):</label>
-<input id="loanAmount" min="0" placeholder="مثال: 100000000" type="number"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_2" for="depositAmount">مبلغ سپرده قبلی (تومان):</label>
-<input id="depositAmount" min="0" placeholder="مثال: 20000000" type="number" value="0"/>
-<small>مبلغی که باید قبل از دریافت وام در بانک سپرده‌گذاری کنید</small>
-</div>
-<div class="form-group">
-<label data-i18n="label_3" for="depositPeriod">مدت سپرده‌گذاری (ماه):</label>
-<input id="depositPeriod" min="0" placeholder="مثال: 6" type="number" value="0"/>
-<small>مدت زمانی که باید پول را قبل از وام نگه دارید</small>
-</div>
-<div class="form-group">
-<label data-i18n="label_4" for="interestRate">نرخ سود بانک (درصد سالانه):</label>
-<input id="interestRate" min="0" placeholder="مثال: 18" step="0.1" type="number"/>
-<small>نرخ سودی که بانک اعلام می‌کند</small>
-</div>
-<div class="form-group">
-<label data-i18n="label_5" for="loanPeriod">مدت بازپرداخت (ماه):</label>
-<input id="loanPeriod" min="1" placeholder="مثال: 60" type="number"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_6" for="commissionPercent">کارمزد اولیه (درصد):</label>
-<input id="commissionPercent" min="0" placeholder="مثال: 2" step="0.1" type="number" value="0"/>
-<small>کارمزدی که بانک هنگام پرداخت وام کسر می‌کند</small>
-</div>
-<div class="form-group">
-<label data-i18n="label_7" for="upfrontDeduction">کسر اولیه بانک (تومان):</label>
-<input id="upfrontDeduction" min="0" placeholder="مثال: 5000000" type="number" value="0"/>
-<small>مبلغی که بانک در ابتدا از وام کسر می‌کند</small>
-</div>
-<div class="form-group">
-<label data-i18n="label_8" for="insurancePercent">بیمه وام (درصد سالانه):</label>
-<input id="insurancePercent" min="0" placeholder="مثال: 0.5" step="0.1" type="number" value="0"/>
-<small>هزینه بیمه وام که به اقساط اضافه می‌شود</small>
-</div>
-<div class="form-group">
-<label data-i18n="label_9" for="inflationRate">نرخ تورم پیش‌بینی (درصد سالانه):</label>
-<input id="inflationRate" min="0" placeholder="مثال: 40" step="0.1" type="number" value="0"/>
-<small>برای محاسبه ارزش واقعی پول</small>
-</div>
-<div class="form-group">
-<label data-i18n="label_10" for="calculationMethod">روش محاسبه سود:</label>
-<select id="calculationMethod">
-<option value="reducing">سود متناقص (کاهشی)</option>
-<option value="flat">سود ثابت</option>
-</select>
-<small>سود متناقص: سود روی مانده بدهی محاسبه می‌شود</small>
-</div>
-<button class="btn-primary" data-i18n="button_0" id="calculateBtn">محاسبه کن</button>
-<button class="btn-secondary" data-i18n="button_1" id="saveBtn">ذخیره محاسبه</button>
+
+<main class="main-content">
+<section class="card" aria-labelledby="formTitle">
+  <h2 id="formTitle" data-i18n="loanInfo">اطلاعات وام</h2>
+  <form id="loanForm" novalidate>
+    <div class="grid">
+      <div class="form-group span2"><label for="bankName" data-i18n="bankName">نام بانک</label>
+        <input id="bankName" type="text" maxlength="60" data-i18n-ph="bankPh"/></div>
+
+      <div class="form-group"><label for="loanAmount" data-i18n="loanAmount">مبلغ وام (تومان)</label>
+        <input id="loanAmount" type="text" inputmode="decimal" autocomplete="off" data-i18n-ph="loanAmountPh" aria-describedby="loanAmountHint"/>
+        <small class="hint" id="loanAmountHint"></small></div>
+      <div class="form-group"><label for="loanPeriod" data-i18n="loanPeriod">مدت بازپرداخت (ماه)</label>
+        <input id="loanPeriod" type="text" inputmode="numeric" autocomplete="off" placeholder="60"/></div>
+
+      <div class="form-group"><label for="interestRate" data-i18n="interestRate">نرخ سود بانک (درصد سالانه)</label>
+        <input id="interestRate" type="text" inputmode="decimal" autocomplete="off" placeholder="18" aria-describedby="interestHelp"/>
+        <small class="hint" id="interestHelp" data-i18n="interestHelp"></small></div>
+      <div class="form-group"><label for="calculationMethod" data-i18n="method">روش محاسبه سود</label>
+        <select id="calculationMethod" aria-describedby="methodHelp">
+          <option value="reducing" data-i18n="methodReducing">سود کاهشی (روی مانده بدهی)</option>
+          <option value="flat" data-i18n="methodFlat">سود ثابت (روی اصل وام)</option>
+        </select>
+        <small class="hint" id="methodHelp" data-i18n="methodHelp"></small></div>
+
+      <div class="form-group"><label for="commissionPercent" data-i18n="commission">کارمزد اولیه (درصد)</label>
+        <input id="commissionPercent" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="commissionHelp"/>
+        <small class="hint" id="commissionHelp" data-i18n="commissionHelp"></small></div>
+      <div class="form-group"><label for="upfrontDeduction" data-i18n="upfront">کسر اولیه بانک (تومان)</label>
+        <input id="upfrontDeduction" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="upfrontHelp"/>
+        <small class="hint" id="upfrontHelp" data-i18n="upfrontHelp"></small></div>
+
+      <div class="form-group"><label for="insurancePercent" data-i18n="insurance">بیمه وام (درصد سالانه)</label>
+        <input id="insurancePercent" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="insuranceHelp"/>
+        <small class="hint" id="insuranceHelp" data-i18n="insuranceHelp"></small></div>
+      <div class="form-group"><label for="inflationRate" data-i18n="inflation">نرخ تورم پیش‌بینی (درصد سالانه)</label>
+        <input id="inflationRate" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="inflationHelp"/>
+        <small class="hint" id="inflationHelp" data-i18n="inflationHelp"></small></div>
+    </div>
+
+    <fieldset class="deposit">
+      <legend data-i18n="depositLegend">سپردهٔ پیش از وام (اختیاری)</legend>
+      <div class="grid">
+        <div class="form-group"><label for="depositAmount" data-i18n="depositAmount">مبلغ سپرده (تومان)</label>
+          <input id="depositAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="depositAmountHint"/>
+          <small class="hint" id="depositAmountHint"></small></div>
+        <div class="form-group"><label for="depositPeriod" data-i18n="depositPeriod">مدت سپرده‌گذاری پیش از وام (ماه)</label>
+          <input id="depositPeriod" type="text" inputmode="numeric" autocomplete="off" placeholder="0"/></div>
+        <div class="form-group"><label for="depositLock" data-i18n="depositLock">وضعیت سپرده پس از دریافت وام</label>
+          <select id="depositLock">
+            <option value="release" data-i18n="lockRelease">آزاد می‌شود</option>
+            <option value="locked" data-i18n="lockUntilEnd">تا پایان بازپرداخت می‌ماند</option>
+          </select></div>
+        <div class="form-group"><label for="depositRate" data-i18n="depositRate">سود سپرده (درصد سالانه)</label>
+          <input id="depositRate" type="text" inputmode="decimal" autocomplete="off" placeholder="0"/></div>
+        <div class="form-group span2"><label for="opportunityRate" data-i18n="opportunityRate">بازده جایگزین پول (درصد سالانه)</label>
+          <input id="opportunityRate" type="text" inputmode="decimal" autocomplete="off" aria-describedby="opportunityHelp"/>
+          <small class="hint" id="opportunityHelp" data-i18n="opportunityHelp"></small></div>
+      </div>
+    </fieldset>
+
+    <p class="form-error" id="formError" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-primary" id="calculateBtn" type="submit" data-i18n="calculate">محاسبه کن</button>
+      <button class="btn btn-secondary" id="saveBtn" type="button" disabled data-i18n="save">ذخیره محاسبه</button>
+    </div>
+  </form>
 </section>
-<section class="results-section" id="resultsSection" style="display: none;">
-<h2 data-i18n="heading_2">نتایج محاسبه</h2>
-<div class="result-card highlight">
-<h3 data-i18n="heading_3">نرخ سود واقعی</h3>
-<div class="result-value" id="realInterestRate">-</div>
-<p class="result-description" data-i18n="text_result_description_1">نرخ سود واقعی که پرداخت می‌کنید (APR)</p>
-</div>
-<div class="result-grid">
-<div class="result-card">
-<h4>مبلغ دریافتی واقعی</h4>
-<div class="result-value small" id="actualReceived">-</div>
-<p>پولی که واقعاً دریافت می‌کنید</p>
-</div>
-<div class="result-card">
-<h4>قسط ماهانه</h4>
-<div class="result-value small" id="monthlyPayment">-</div>
-<p>مبلغ پرداختی هر ماه</p>
-</div>
-<div class="result-card">
-<h4>کل بازپرداخت</h4>
-<div class="result-value small" id="totalPayment">-</div>
-<p>مجموع مبالغ پرداختی</p>
-</div>
-<div class="result-card">
-<h4>کل سود پرداختی</h4>
-<div class="result-value small" id="totalInterest">-</div>
-<p>سودی که به بانک می‌دهید</p>
-</div>
-<div class="result-card">
-<h4>تاریخ پایان</h4>
-<div class="result-value small" id="endDate">-</div>
-<p>زمان پایان وام</p>
-</div>
-<div class="result-card">
-<h4>هزینه فرصت سپرده</h4>
-<div class="result-value small" id="opportunityCost">-</div>
-<p>سودی که از سپرده قبلی از دست دادید</p>
-</div>
-</div>
-<div class="result-card recommendation" id="recommendation">
-<h3 data-i18n="heading_4">توصیه</h3>
-<p id="recommendationText">-</p>
-</div>
-<div class="chart-container">
-<h3 data-i18n="heading_5">نمودار اقساط ماهانه</h3>
-<canvas id="paymentChart"></canvas>
-</div>
-<div class="amortization-container">
-<h3 data-i18n="heading_6">جدول اقساط</h3>
-<button class="btn-secondary" data-i18n="button_2" id="toggleAmortization">نمایش جدول کامل</button>
-<div id="amortizationTable" style="display: none;"></div>
-</div>
+
+<section class="card" id="resultsSection" aria-labelledby="resultsTitle" hidden>
+  <h2 id="resultsTitle" data-i18n="results">نتایج محاسبه</h2>
+  <div class="result-card highlight" aria-live="polite">
+    <h3 data-i18n="effectiveRate">هزینهٔ مؤثر سالانه</h3>
+    <div class="result-value" id="effRate">-</div>
+    <p data-i18n="effectiveDesc"></p>
+  </div>
+  <div class="result-grid">
+    <div class="result-card"><h4 data-i18n="nominalRate">نرخ اسمی همه‌چیز‌شمول</h4><div class="result-value small" id="nomRate">-</div><p data-i18n="nominalDesc"></p></div>
+    <div class="result-card"><h4 data-i18n="actualReceived">مبلغ دریافتی واقعی</h4><div class="result-value small" id="received">-</div><p data-i18n="actualReceivedDesc"></p></div>
+    <div class="result-card"><h4 data-i18n="monthlyPayment">قسط ماهانه</h4><div class="result-value small" id="monthly">-</div><p id="monthlySub" data-i18n="monthlyPaymentDesc"></p></div>
+    <div class="result-card"><h4 data-i18n="totalPayment">کل بازپرداخت</h4><div class="result-value small" id="totalPay">-</div><p id="totalPaySub"></p></div>
+    <div class="result-card"><h4 data-i18n="totalInterest">کل سود پرداختی</h4><div class="result-value small" id="totalInt">-</div><p id="totalIntSub"></p></div>
+    <div class="result-card"><h4 data-i18n="upfrontFees">کارمزد و کسورات اولیه</h4><div class="result-value small" id="fees">-</div><p data-i18n="upfrontFeesDesc"></p></div>
+    <div class="result-card"><h4 data-i18n="endDate">تاریخ پایان</h4><div class="result-value small" id="endDate">-</div><p data-i18n="endDateDesc"></p></div>
+    <div class="result-card" id="oppCard"><h4 data-i18n="oppCost">هزینهٔ فرصت سپرده</h4><div class="result-value small" id="oppCost">-</div><p data-i18n="oppCostDesc"></p></div>
+    <div class="result-card" id="realCard"><h4 data-i18n="realRate">نرخ واقعی پس از تورم</h4><div class="result-value small" id="realRate">-</div><p data-i18n="realRateDesc"></p></div>
+    <div class="result-card" id="pvCard"><h4 data-i18n="pvPayments">ارزش امروزی اقساط</h4><div class="result-value small" id="pvPay">-</div><p data-i18n="pvPaymentsDesc"></p></div>
+  </div>
+
+  <div class="summary">
+    <h3 data-i18n="summary">خلاصه</h3>
+    <ul id="summaryList"></ul>
+    <p class="disclaimer" data-i18n="disclaimer"></p>
+  </div>
+
+  <div class="chart-container">
+    <h3 data-i18n="chartTitle">ترکیب اقساط</h3>
+    <canvas id="paymentChart" role="img"></canvas>
+    <div class="legend"><span class="sw sw-principal"></span><span data-i18n="chartPrincipal">اصل وام</span><span class="sw sw-interest"></span><span data-i18n="chartInterest">سود و بیمه</span></div>
+  </div>
+
+  <div class="amortization-container">
+    <h3 data-i18n="tableTitle">جدول اقساط</h3>
+    <button class="btn btn-secondary" id="toggleAmortization" type="button" aria-expanded="false" aria-controls="amortizationTable" data-i18n="showTable">نمایش جدول کامل</button>
+    <div id="amortizationTable" class="table-wrap" tabindex="0" hidden></div>
+  </div>
 </section>
-<section class="history-section">
-<h2 data-i18n="heading_7">تاریخچه محاسبات</h2>
-<button class="btn-secondary" data-i18n="button_3" id="clearHistoryBtn">پاک کردن تاریخچه</button>
-<div id="historyList"></div>
+
+<section class="card" aria-labelledby="historyTitle">
+  <div class="section-head"><h2 id="historyTitle" data-i18n="history">تاریخچه محاسبات</h2>
+    <button class="btn btn-danger" id="clearHistoryBtn" type="button" data-i18n="clearHistory">پاک کردن تاریخچه</button></div>
+  <div id="historyList" class="history-list"></div>
 </section>
+</main>
 </div>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
-</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <h3 id="confirmTitle" data-i18n="confirmTitle">تایید</h3>
+  <p id="confirmMessage"></p>
+  <div class="actions"><button class="btn btn-danger" id="confirmYes" type="button" data-i18n="yes">بله</button>
+  <button class="btn btn-secondary" id="confirmNo" type="button" data-i18n="no">خیر</button></div>
+</dialog>
+
+<script src="assets/calc.js"></script>
 <script src="assets/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

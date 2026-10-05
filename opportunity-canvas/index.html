@@ -1,155 +1,145 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>برد فرصت</title>
-    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="app.title">بوم فرصت</title>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <h1 class="app-title" data-i18n="app.title">Opportunity Canvas</h1>
-            <div class="header-controls">
-                <select id="boardSelector" class="board-selector">
-                    <option value="" data-i18n="board.selectBoard">انتخاب بورد</option>
-                </select>
-                <button id="newBoardBtn" class="icon-btn" data-i18n-title="board.new">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                </button>
-                <button id="renameBoardBtn" class="icon-btn" data-i18n-title="board.rename">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                </button>
-                <button id="deleteBoardBtn" class="icon-btn" data-i18n-title="board.delete">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                </button>
-                <div class="divider"></div>
-                <button id="exportBtn" class="icon-btn" data-i18n-title="board.export">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                </button>
-                <button id="importBtn" class="icon-btn" data-i18n-title="board.import">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                </button>
-                <input type="file" id="importFile" accept=".json" style="display: none;">
-                <button id="clearBoardBtn" class="icon-btn danger" data-i18n-title="board.clear">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="15" y1="9" x2="9" y2="15"></line>
-                        <line x1="9" y1="9" x2="15" y2="15"></line>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <main id="canvasContainer">
-        <div class="canvas-grid">
-            <div class="canvas-section" data-section="problems">
-                <div class="section-header">
-                    <h2 data-i18n="canvas.problems">مشکلات و نیازها</h2>
-                    <button class="add-item-btn" data-section="problems">+</button>
-                </div>
-                <div class="items-container" data-section="problems"></div>
-            </div>
-
-            <div class="canvas-section" data-section="solution">
-                <div class="section-header">
-                    <h2 data-i18n="canvas.solution">راه‌حل پیشنهادی</h2>
-                    <button class="add-item-btn" data-section="solution">+</button>
-                </div>
-                <div class="items-container" data-section="solution"></div>
-            </div>
-
-            <div class="canvas-section" data-section="benefits">
-                <div class="section-header">
-                    <h2 data-i18n="canvas.benefits">مزایا و ارزش‌ها</h2>
-                    <button class="add-item-btn" data-section="benefits">+</button>
-                </div>
-                <div class="items-container" data-section="benefits"></div>
-            </div>
-
-            <div class="canvas-section" data-section="users">
-                <div class="section-header">
-                    <h2 data-i18n="canvas.users">کاربران و مشتریان</h2>
-                    <button class="add-item-btn" data-section="users">+</button>
-                </div>
-                <div class="items-container" data-section="users"></div>
-            </div>
-
-            <div class="canvas-section" data-section="metrics">
-                <div class="section-header">
-                    <h2 data-i18n="canvas.metrics">معیارهای موفقیت</h2>
-                    <button class="add-item-btn" data-section="metrics">+</button>
-                </div>
-                <div class="items-container" data-section="metrics"></div>
-            </div>
-
-            <div class="canvas-section" data-section="channels">
-                <div class="section-header">
-                    <h2 data-i18n="canvas.channels">کانال‌های دسترسی</h2>
-                    <button class="add-item-btn" data-section="channels">+</button>
-                </div>
-                <div class="items-container" data-section="channels"></div>
-            </div>
-
-            <div class="canvas-section" data-section="costs">
-                <div class="section-header">
-                    <h2 data-i18n="canvas.costs">هزینه‌ها</h2>
-                    <button class="add-item-btn" data-section="costs">+</button>
-                </div>
-                <div class="items-container" data-section="costs"></div>
-            </div>
-
-            <div class="canvas-section" data-section="revenue">
-                <div class="section-header">
-                    <h2 data-i18n="canvas.revenue">منابع درآمد</h2>
-                    <button class="add-item-btn" data-section="revenue">+</button>
-                </div>
-                <div class="items-container" data-section="revenue"></div>
-            </div>
-        </div>
-    </main>
-
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle"></h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="text" id="modalInput" placeholder="">
-            </div>
-            <div class="modal-footer">
-                <button id="modalCancel" class="btn-secondary" data-i18n="common.cancel">لغو</button>
-                <button id="modalConfirm" class="btn-primary" data-i18n="common.confirm">تایید</button>
-            </div>
-        </div>
+<header>
+  <div class="header-content">
+    <h1 class="app-title" data-i18n="app.title">بوم فرصت</h1>
+    <div class="header-controls">
+      <label class="sr-only" for="boardSelector" data-i18n="board.selectBoard">انتخاب بورد</label>
+      <select id="boardSelector" class="board-selector"></select>
+      <button id="newBoardBtn" class="icon-btn " type="button" data-i18n-title="board.new"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+      <button id="renameBoardBtn" class="icon-btn " type="button" data-i18n-title="board.rename"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+      <button id="deleteBoardBtn" class="icon-btn " type="button" data-i18n-title="board.delete"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+      <div class="divider" aria-hidden="true"></div>
+      <button id="exportBtn" class="icon-btn " type="button" data-i18n-title="board.export"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+      <button id="importBtn" class="icon-btn " type="button" data-i18n-title="board.import"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+      <button id="clearBoardBtn" class="icon-btn danger" type="button" data-i18n-title="board.clear"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg></button>
     </div>
+  </div>
+</header>
 
-    <div id="toast" class="toast"></div>
+<main id="canvasContainer">
+  <div class="canvas-grid">
+    <section class="canvas-section" data-section="problems" aria-labelledby="h-problems">
+      <div class="section-header">
+        <h2 id="h-problems"><span data-i18n="canvas.problems">مشکلات و نیازها</span> <span class="count" data-count="problems"></span></h2>
+        <button class="add-item-btn" data-section="problems" type="button">+</button>
+      </div>
+      <div class="items-container" data-section="problems"></div>
+      <p class="empty-hint" data-empty="problems" data-i18n="item.empty">آیتمی وجود ندارد</p>
+    </section>
+    <section class="canvas-section" data-section="solution" aria-labelledby="h-solution">
+      <div class="section-header">
+        <h2 id="h-solution"><span data-i18n="canvas.solution">راه‌حل پیشنهادی</span> <span class="count" data-count="solution"></span></h2>
+        <button class="add-item-btn" data-section="solution" type="button">+</button>
+      </div>
+      <div class="items-container" data-section="solution"></div>
+      <p class="empty-hint" data-empty="solution" data-i18n="item.empty">آیتمی وجود ندارد</p>
+    </section>
+    <section class="canvas-section" data-section="benefits" aria-labelledby="h-benefits">
+      <div class="section-header">
+        <h2 id="h-benefits"><span data-i18n="canvas.benefits">مزایا و ارزش‌ها</span> <span class="count" data-count="benefits"></span></h2>
+        <button class="add-item-btn" data-section="benefits" type="button">+</button>
+      </div>
+      <div class="items-container" data-section="benefits"></div>
+      <p class="empty-hint" data-empty="benefits" data-i18n="item.empty">آیتمی وجود ندارد</p>
+    </section>
+    <section class="canvas-section" data-section="users" aria-labelledby="h-users">
+      <div class="section-header">
+        <h2 id="h-users"><span data-i18n="canvas.users">کاربران و مشتریان</span> <span class="count" data-count="users"></span></h2>
+        <button class="add-item-btn" data-section="users" type="button">+</button>
+      </div>
+      <div class="items-container" data-section="users"></div>
+      <p class="empty-hint" data-empty="users" data-i18n="item.empty">آیتمی وجود ندارد</p>
+    </section>
+    <section class="canvas-section" data-section="metrics" aria-labelledby="h-metrics">
+      <div class="section-header">
+        <h2 id="h-metrics"><span data-i18n="canvas.metrics">معیارهای موفقیت</span> <span class="count" data-count="metrics"></span></h2>
+        <button class="add-item-btn" data-section="metrics" type="button">+</button>
+      </div>
+      <div class="items-container" data-section="metrics"></div>
+      <p class="empty-hint" data-empty="metrics" data-i18n="item.empty">آیتمی وجود ندارد</p>
+    </section>
+    <section class="canvas-section" data-section="channels" aria-labelledby="h-channels">
+      <div class="section-header">
+        <h2 id="h-channels"><span data-i18n="canvas.channels">کانال‌های دسترسی</span> <span class="count" data-count="channels"></span></h2>
+        <button class="add-item-btn" data-section="channels" type="button">+</button>
+      </div>
+      <div class="items-container" data-section="channels"></div>
+      <p class="empty-hint" data-empty="channels" data-i18n="item.empty">آیتمی وجود ندارد</p>
+    </section>
+    <section class="canvas-section" data-section="costs" aria-labelledby="h-costs">
+      <div class="section-header">
+        <h2 id="h-costs"><span data-i18n="canvas.costs">هزینه‌ها</span> <span class="count" data-count="costs"></span></h2>
+        <button class="add-item-btn" data-section="costs" type="button">+</button>
+      </div>
+      <div class="items-container" data-section="costs"></div>
+      <p class="empty-hint" data-empty="costs" data-i18n="item.empty">آیتمی وجود ندارد</p>
+    </section>
+    <section class="canvas-section" data-section="revenue" aria-labelledby="h-revenue">
+      <div class="section-header">
+        <h2 id="h-revenue"><span data-i18n="canvas.revenue">منابع درآمد</span> <span class="count" data-count="revenue"></span></h2>
+        <button class="add-item-btn" data-section="revenue" type="button">+</button>
+      </div>
+      <div class="items-container" data-section="revenue"></div>
+      <p class="empty-hint" data-empty="revenue" data-i18n="item.empty">آیتمی وجود ندارد</p>
+    </section>
+  </div>
+</main>
 
-    <script src="assets/script.js"></script>
-    <script src="../assets/tool-wrapper.js"></script>
+<dialog id="nameDialog" aria-labelledby="nameTitle">
+  <form method="dialog" novalidate>
+    <h3 id="nameTitle"></h3>
+    <label class="sr-only" for="nameInput" data-i18n="board.nameLabel">نام بورد</label>
+    <input type="text" id="nameInput" maxlength="80" autocomplete="off">
+    <p class="dlg-error" role="alert" hidden></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn-secondary" data-close data-i18n="common.cancel">لغو</button>
+      <button type="submit" class="btn-primary" data-i18n="common.confirm">تایید</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="itemDialog" aria-labelledby="itemTitle">
+  <form method="dialog" novalidate>
+    <h3 id="itemTitle"></h3>
+    <label for="itemText" data-i18n="item.text">متن</label>
+    <textarea id="itemText" rows="4" maxlength="500" data-i18n-placeholder="item.placeholder"></textarea>
+    <label for="itemSection" data-i18n="item.section">بخش</label>
+    <select id="itemSection"></select>
+    <p class="dlg-error" role="alert" hidden></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn-secondary" data-close data-i18n="common.cancel">لغو</button>
+      <button type="submit" class="btn-primary" data-i18n="common.confirm">تایید</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <form method="dialog" novalidate>
+    <h3 id="confirmTitle" data-i18n="common.confirmTitle">تایید</h3>
+    <p id="confirmMessage"></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn-secondary" data-close data-i18n="common.cancel">لغو</button>
+      <button type="submit" class="btn-danger" data-i18n="common.yes">بله</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastAction" class="toast-action" type="button" hidden></button></div>
+
+<script src="assets/core.js"></script>
+<script src="assets/script.js"></script>
+<script src="../assets/tool-wrapper.js"></script>
 </body>
 </html>
-

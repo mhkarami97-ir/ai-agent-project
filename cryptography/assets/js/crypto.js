@@ -1,243 +1,108 @@
-﻿/**
- * ماژول رمزنگاری با استفاده از Web Crypto API
- * استفاده از AES-GCM برای رمزنگاری قوی و PBKDF2 برای تولید کلید از رمز عبور
- */
+(() => {
+'use strict';
+const MAGIC = [0xC7, 0x01];
+const ITER = 250000, LEGACY_ITER = 100000;
+const SALT_LEN = 16, IV_LEN = 12, TAG_LEN = 16;
+const MIN_PW = 8, MAX_CHARS = 5000;
+const MIN_PAYLOAD = MAGIC.length + SALT_LEN + IV_LEN + TAG_LEN + 1;
+const ORDER = ['persian', 'english', 'numbers', 'symbols'];
+const ALPHABETS = {
+  persian: Array.from('آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهیئءأإؤ'),
+  english: Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'),
+  numbers: Array.from('0123456789'),
+  symbols: Array.from('!@#$%^&*()_+-=[]{}|;:,.<>?/~')
+};
+const enc = new TextEncoder(), dec = new TextDecoder('utf-8', { fatal: true });
+const err = code => new Error(code);
 
-class CryptoManager {
-    constructor() {
-        this.algorithm = 'AES-GCM';
-        this.keyLength = 256;
-        this.iterations = 100000; // تعداد تکرار برای PBKDF2
-        
-        // تعریف مجموعه کاراکترها
-        this.charsets = {
-            persian: 'آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهیئ ءأإؤ،؛',
-            english: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-            numbers: '0123456789',
-            symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?/~`'
-        };
-    }
+const concat = (...a) => { const o = new Uint8Array(a.reduce((s, x) => s + x.length, 0)); let p = 0; for (const x of a) { o.set(x, p); p += x.length; } return o; };
+const normalize = s => s.replace(/[\s\u200b-\u200f\u2060\ufeff]/g, '').replace(/\u064a/g, '\u06cc').replace(/\u0643/g, '\u06a9');
 
-    /**
-     * تبدیل رشته به آرایه بایت
-     */
-    stringToArrayBuffer(str) {
-        const encoder = new TextEncoder();
-        return encoder.encode(str);
-    }
-
-    /**
-     * تبدیل آرایه بایت به رشته
-     */
-    arrayBufferToString(buffer) {
-        const decoder = new TextDecoder();
-        return decoder.decode(buffer);
-    }
-
-    /**
-     * تبدیل آرایه بایت به Base64
-     */
-    arrayBufferToBase64(buffer) {
-        const bytes = new Uint8Array(buffer);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return btoa(binary);
-    }
-
-    /**
-     * تبدیل Base64 به آرایه بایت
-     */
-    base64ToArrayBuffer(base64) {
-        const binary = atob(base64);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
-        }
-        return bytes.buffer;
-    }
-
-    /**
-     * تولید کلید رمزنگاری از رمز عبور با استفاده از PBKDF2
-     */
-    async deriveKey(password, salt) {
-        const passwordBuffer = this.stringToArrayBuffer(password);
-        
-        // وارد کردن رمز عبور به عنوان کلید
-        const keyMaterial = await crypto.subtle.importKey(
-            'raw',
-            passwordBuffer,
-            'PBKDF2',
-            false,
-            ['deriveBits', 'deriveKey']
-        );
-
-        // تولید کلید AES از رمز عبور
-        return crypto.subtle.deriveKey(
-            {
-                name: 'PBKDF2',
-                salt: salt,
-                iterations: this.iterations,
-                hash: 'SHA-256'
-            },
-            keyMaterial,
-            {
-                name: this.algorithm,
-                length: this.keyLength
-            },
-            false,
-            ['encrypt', 'decrypt']
-        );
-    }
-
-    /**
-     * رمزنگاری متن
-     */
-    async encrypt(plainText, password) {
-        try {
-            // تولید salt و IV تصادفی
-            const salt = crypto.getRandomValues(new Uint8Array(16));
-            const iv = crypto.getRandomValues(new Uint8Array(12));
-
-            // تولید کلید از رمز عبور
-            const key = await this.deriveKey(password, salt);
-
-            // تبدیل متن به بایت
-            const plainBuffer = this.stringToArrayBuffer(plainText);
-
-            // رمزنگاری
-            const cipherBuffer = await crypto.subtle.encrypt(
-                {
-                    name: this.algorithm,
-                    iv: iv
-                },
-                key,
-                plainBuffer
-            );
-
-            // ترکیب salt + iv + cipher text
-            const resultBuffer = new Uint8Array(
-                salt.byteLength + iv.byteLength + cipherBuffer.byteLength
-            );
-            resultBuffer.set(salt, 0);
-            resultBuffer.set(iv, salt.byteLength);
-            resultBuffer.set(new Uint8Array(cipherBuffer), salt.byteLength + iv.byteLength);
-
-            // تبدیل به Base64
-            return this.arrayBufferToBase64(resultBuffer.buffer);
-        } catch (error) {
-            console.error('خطا در رمزنگاری:', error);
-            throw new Error('رمزنگاری انجام نشد');
-        }
-    }
-
-    /**
-     * رمزگشایی متن
-     */
-    async decrypt(cipherText, password) {
-        try {
-            // تبدیل Base64 به بایت
-            const resultBuffer = this.base64ToArrayBuffer(cipherText);
-            const resultArray = new Uint8Array(resultBuffer);
-
-            // استخراج salt, iv و cipher text
-            const salt = resultArray.slice(0, 16);
-            const iv = resultArray.slice(16, 28);
-            const cipherBuffer = resultArray.slice(28);
-
-            // تولید کلید از رمز عبور
-            const key = await this.deriveKey(password, salt);
-
-            // رمزگشایی
-            const plainBuffer = await crypto.subtle.decrypt(
-                {
-                    name: this.algorithm,
-                    iv: iv
-                },
-                key,
-                cipherBuffer
-            );
-
-            // تبدیل به رشته
-            return this.arrayBufferToString(plainBuffer);
-        } catch (error) {
-            console.error('خطا در رمزگشایی:', error);
-            throw new Error('رمزگشایی انجام نشد. لطفاً کلید صحیح را وارد کنید.');
-        }
-    }
-
-    /**
-     * تبدیل متن رمزنگاری شده به کاراکترهای خاص
-     */
-    encodeToCharset(cipherText, selectedCharsets) {
-        if (selectedCharsets.length === 0) {
-            return cipherText; // اگر هیچ مجموعه‌ای انتخاب نشده، همان Base64 را برگردان
-        }
-
-        // ساخت مجموعه کاراکترهای انتخاب شده
-        let charset = '';
-        selectedCharsets.forEach(type => {
-            if (this.charsets[type]) {
-                charset += this.charsets[type];
-            }
-        });
-
-        if (charset.length === 0) {
-            return cipherText;
-        }
-
-        // تبدیل Base64 به اعداد
-        const bytes = new Uint8Array(this.base64ToArrayBuffer(cipherText));
-        
-        // ذخیره طول اصلی و Base64 اصلی به صورت رمزگذاری شده در انتها
-        const encoded = Array.from(bytes).map(byte => {
-            return charset[byte % charset.length];
-        }).join('');
-
-        // اضافه کردن علامت جداکننده و Base64 اصلی
-        return encoded + '|' + cipherText;
-    }
-
-    /**
-     * تبدیل متن رمزنگاری شده با کاراکترهای خاص به Base64
-     */
-    decodeFromCharset(encodedText) {
-        // جدا کردن قسمت نمایشی از Base64 اصلی
-        const parts = encodedText.split('|');
-        if (parts.length === 2) {
-            // اگر Base64 اصلی موجود است، از آن استفاده کن
-            return parts[1];
-        }
-        
-        // اگر فقط Base64 باشد
-        return encodedText;
-    }
-
-    /**
-     * اعتبارسنجی کلید
-     */
-    validatePassword(password) {
-        if (!password || password.trim().length === 0) {
-            throw new Error('کلید خصوصی نمی‌تواند خالی باشد');
-        }
-        if (password.length < 8) {
-            throw new Error('کلید خصوصی باید حداقل 8 کاراکتر باشد');
-        }
-        return true;
-    }
-
-    /**
-     * اعتبارسنجی متن
-     */
-    validateText(text) {
-        if (!text || text.trim().length === 0) {
-            throw new Error('متن نمی‌تواند خالی باشد');
-        }
-        return true;
-    }
+function alphabetFor(sets) {
+  const chosen = ORDER.filter(k => sets.includes(k));
+  return chosen.flatMap(k => ALPHABETS[k]);
+}
+function bytesToText(bytes, alphabet) {
+  let hex = '';
+  for (const b of bytes) hex += b.toString(16).padStart(2, '0');
+  let v = BigInt('0x' + hex);
+  const n = BigInt(alphabet.length), out = [];
+  while (v > 0n) { out.push(alphabet[Number(v % n)]); v /= n; }
+  return out.reverse().join('');
+}
+function textToBytes(chars, alphabet) {
+  const map = new Map(alphabet.map((c, i) => [c, i]));
+  const n = BigInt(alphabet.length);
+  let v = 0n;
+  for (const c of chars) {
+    const i = map.get(c);
+    if (i === undefined) return null;
+    v = v * n + BigInt(i);
+  }
+  let hex = v.toString(16);
+  if (hex.length % 2) hex = '0' + hex;
+  const out = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16);
+  return out;
 }
 
-// ایجاد نمونه سراسری
-const cryptoManager = new CryptoManager();
+async function deriveKey(pw, salt, iter) {
+  const base = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
 
+function validatePassword(pw) { if (typeof pw !== 'string' || pw.length < MIN_PW) throw err('SHORT_KEY'); }
+
+async function encrypt(plain, password, sets) {
+  if (typeof plain !== 'string' || plain.trim() === '') throw err('EMPTY_TEXT');
+  if (plain.length > MAX_CHARS) throw err('TOO_LONG');
+  validatePassword(password);
+  const alphabet = alphabetFor(sets || []);
+  if (!alphabet.length) throw err('NO_CHARSET');
+  const header = Uint8Array.from(MAGIC);
+  const salt = crypto.getRandomValues(new Uint8Array(SALT_LEN));
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LEN));
+  const key = await deriveKey(password.normalize('NFKC'), salt, ITER);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: header }, key, enc.encode(plain)));
+  return bytesToText(concat(header, salt, iv, ct), alphabet);
+}
+
+async function openPayload(bytes, password) {
+  const salt = bytes.slice(2, 2 + SALT_LEN), iv = bytes.slice(2 + SALT_LEN, 2 + SALT_LEN + IV_LEN), ct = bytes.slice(2 + SALT_LEN + IV_LEN);
+  const key = await deriveKey(password.normalize('NFKC'), salt, ITER);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv, additionalData: Uint8Array.from(MAGIC) }, key, ct);
+  return dec.decode(pt);
+}
+async function openLegacy(b64, password) {
+  const bin = atob(b64), bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  if (bytes.length < SALT_LEN + IV_LEN + TAG_LEN) throw err('DECRYPT_FAILED');
+  const key = await deriveKey(password, bytes.slice(0, SALT_LEN), LEGACY_ITER);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes.slice(SALT_LEN, SALT_LEN + IV_LEN) }, key, bytes.slice(SALT_LEN + IV_LEN));
+  return dec.decode(pt);
+}
+
+async function decrypt(text, password) {
+  if (typeof text !== 'string' || text.trim() === '') throw err('EMPTY_TEXT');
+  validatePassword(password);
+  const clean = normalize(text), chars = Array.from(clean);
+  const candidates = [];
+  for (let mask = 1; mask < 16; mask++) {
+    const sets = ORDER.filter((_, i) => mask & (1 << i));
+    const alphabet = alphabetFor(sets);
+    const set = new Set(alphabet);
+    if (!chars.every(c => set.has(c))) continue;
+    const bytes = textToBytes(chars, alphabet);
+    if (bytes && bytes.length >= MIN_PAYLOAD && bytes[0] === MAGIC[0] && bytes[1] === MAGIC[1]) candidates.push(bytes);
+  }
+  for (const bytes of candidates) {
+    try { return await openPayload(bytes, password); } catch (e) { /* try next */ }
+  }
+  const tail = clean.includes('|') ? clean.slice(clean.lastIndexOf('|') + 1) : clean;
+  if (/^[A-Za-z0-9+/]{40,}={0,2}$/.test(tail)) {
+    try { return await openLegacy(tail, password); } catch (e) { /* fall through */ }
+  }
+  throw err('DECRYPT_FAILED');
+}
+
+window.cryptoManager = { encrypt, decrypt, ALPHABETS, ORDER, MAX_CHARS, MIN_PW, _normalize: normalize };
+})();

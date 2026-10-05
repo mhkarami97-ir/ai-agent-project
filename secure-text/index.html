@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
 <link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title data-i18n="title">امن‌ساز یادداشت‌ها</title>
@@ -12,189 +10,141 @@
 <link href="../assets/tool-wrapper.css" rel="stylesheet"/>
 </head>
 <body>
-<!-- Login/Setup Screen -->
-<div class="screen" id="loginScreen">
-<div class="container">
-<div class="card">
-<div class="header">
-<h1 data-i18n="heading_0">🔒 امن‌ساز یادداشت‌ها</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">یادداشت‌های شما با رمزنگاری محافظت می‌شوند</p>
-</div>
-<div class="form-container" id="setupMode">
-<h2 data-i18n="heading_1">ایجاد رمز عبور</h2>
-<p class="info-text" data-i18n="text_info_text_1">یک رمز عبور قوی برای محافظت از یادداشت‌های خود ایجاد کنید</p>
-<div class="form-group">
-<label data-i18n="label_0" for="setupPassword">رمز عبور:</label>
-<div class="password-input-wrapper">
-<input autocomplete="new-password" id="setupPassword" placeholder="رمز عبور خود را وارد کنید" type="password"/>
-<button class="toggle-password" data-i18n="button_0" data-target="setupPassword" type="button">
-<span class="eye-icon">👁️</span>
-</button>
-</div>
-</div>
-<div class="form-group">
-<label data-i18n="label_1" for="confirmPassword">تایید رمز عبور:</label>
-<div class="password-input-wrapper">
-<input autocomplete="new-password" id="confirmPassword" placeholder="رمز عبور را دوباره وارد کنید" type="password"/>
-<button class="toggle-password" data-i18n="button_1" data-target="confirmPassword" type="button">
-<span class="eye-icon">👁️</span>
-</button>
-</div>
-</div>
-<button class="btn btn-primary" data-i18n="button_2" id="setupBtn">ایجاد و ورود</button>
-</div>
-<div class="form-container" id="loginMode" style="display: none;">
-<h2 data-i18n="heading_2">ورود به یادداشت‌ها</h2>
-<p class="info-text" data-i18n="text_info_text_4">برای دسترسی به یادداشت‌های خود، رمز عبور را وارد کنید</p>
-<div class="form-group">
-<label data-i18n="label_2" for="loginPassword">رمز عبور:</label>
-<div class="password-input-wrapper">
-<input autocomplete="current-password" id="loginPassword" placeholder="رمز عبور خود را وارد کنید" type="password"/>
-<button class="toggle-password" data-i18n="button_3" data-target="loginPassword" type="button">
-<span class="eye-icon">👁️</span>
-</button>
-</div>
-</div>
-<button class="btn btn-primary" data-i18n="button_4" id="loginBtn">ورود</button>
-<div class="warning-box">
-<strong>⚠️ توجه:</strong> در صورت فراموشی رمز عبور، امکان بازیابی یادداشت‌ها وجود ندارد.
-                    </div>
-</div>
-<div class="error-msg" id="errorMsg" style="display: none;"></div>
-</div>
-</div>
-</div>
-<!-- Main App Screen -->
-<div class="screen" id="appScreen" style="display: none;">
-<!-- Header -->
-<header class="app-header">
-<div class="container">
-<div class="header-content">
-<h1 data-i18n="heading_3">🔒 امن‌ساز یادداشت‌ها</h1>
-<div class="header-actions">
-<div class="auto-lock-status" id="autoLockStatus">
-<span class="lock-timer">⏱️ <span id="lockTimer"></span></span>
-</div>
-<button class="btn btn-icon" data-i18n="button_5" id="settingsBtn" title="تنظیمات">⚙️</button>
-<button class="btn btn-icon" data-i18n="button_6" id="lockBtn" title="قفل کردن">🔒</button>
-</div>
-</div>
-</div>
-</header>
-<!-- Main Content -->
-<main class="main-content">
-<div class="container">
-<div class="content-wrapper">
-<!-- Sidebar -->
-<aside class="sidebar">
-<div class="sidebar-header">
-<button class="btn btn-primary btn-block" data-i18n="button_7" id="newNoteBtn">
-                                ➕ یادداشت جدید
-                            </button>
-</div>
-<div class="search-box">
-<input id="searchInput" placeholder="🔍 جستجو در یادداشت‌ها..." type="text"/>
-</div>
-<div class="notes-list" id="notesList">
-<!-- Notes will be dynamically added here -->
-</div>
-<div class="notes-count">
-<span id="notesCount">0 یادداشت</span>
-</div>
-</aside>
-<!-- Editor -->
-<section class="editor-section">
-<div class="empty-state" id="emptyState">
-<div class="empty-state-icon">📝</div>
-<h2 data-i18n="heading_4">یادداشتی انتخاب نشده</h2>
-<p>یک یادداشت انتخاب کنید یا یادداشت جدید ایجاد کنید</p>
-</div>
-<div class="editor-container" id="editorContainer" style="display: none;">
-<div class="editor-header">
-<input class="note-title-input" id="noteTitle" placeholder="عنوان یادداشت..." type="text"/>
-<div class="editor-actions">
-<button class="btn btn-success" data-i18n="button_8" id="saveNoteBtn">💾 ذخیره</button>
-<button class="btn btn-danger" data-i18n="button_9" id="deleteNoteBtn">🗑️ حذف</button>
-</div>
-</div>
-<div class="editor-body">
-<textarea id="noteContent" placeholder="محتوای یادداشت خود را اینجا بنویسید..."></textarea>
-</div>
-<div class="editor-footer">
-<span class="last-modified" id="lastModified"></span>
-<span class="char-count" data-i18n="text_char_count_8" id="charCount">0 کاراکتر</span>
-</div>
-</div>
+<section class="screen login" id="loginScreen">
+  <div class="card">
+    <header class="card-head">
+      <h1 data-i18n="appName">🔒 امن‌ساز یادداشت‌ها</h1>
+      <p class="muted" data-i18n="subtitle">یادداشت‌های شما با رمزنگاری محافظت می‌شوند</p>
+    </header>
+
+    <form id="setupForm" autocomplete="off" hidden>
+      <h2 data-i18n="createPwTitle">ایجاد رمز عبور</h2>
+      <p class="muted" data-i18n="createPwInfo"></p>
+      <div class="field">
+        <label for="setupPassword" data-i18n="password">رمز عبور</label>
+        <div class="pw-wrap">
+          <input id="setupPassword" type="password" autocomplete="new-password" required/>
+          <button class="toggle-pw" type="button" data-target="setupPassword" data-i18n-aria="showPassword" aria-pressed="false">👁️</button>
+        </div>
+        <div class="strength" id="strength" data-level="-1"><div class="bar"></div><span id="strengthText" aria-live="polite"></span></div>
+      </div>
+      <div class="field">
+        <label for="confirmPassword" data-i18n="confirmPassword">تایید رمز عبور</label>
+        <div class="pw-wrap">
+          <input id="confirmPassword" type="password" autocomplete="new-password" required/>
+          <button class="toggle-pw" type="button" data-target="confirmPassword" data-i18n-aria="showPassword" aria-pressed="false">👁️</button>
+        </div>
+      </div>
+      <button class="btn primary block" id="setupBtn" type="submit" data-i18n="createEnter">ایجاد و ورود</button>
+      <p class="notice warn" data-i18n="forgotWarn"></p>
+    </form>
+
+    <form id="loginForm" autocomplete="off" hidden>
+      <h2 data-i18n="loginTitle">ورود به یادداشت‌ها</h2>
+      <p class="muted" data-i18n="loginInfo"></p>
+      <p class="notice info" id="legacyNote" data-i18n="legacyNote" hidden></p>
+      <div class="field">
+        <label for="loginPassword" data-i18n="password">رمز عبور</label>
+        <div class="pw-wrap">
+          <input id="loginPassword" type="password" autocomplete="current-password" required/>
+          <button class="toggle-pw" type="button" data-target="loginPassword" data-i18n-aria="showPassword" aria-pressed="false">👁️</button>
+        </div>
+      </div>
+      <button class="btn primary block" id="loginBtn" type="submit" data-i18n="login">ورود</button>
+      <p class="notice warn" data-i18n="forgotWarn"></p>
+    </form>
+
+    <p class="notice error" id="errorMsg" role="alert" hidden></p>
+  </div>
 </section>
-</div>
-</div>
-</main>
-</div>
-<!-- Settings Modal -->
-<div class="modal" id="settingsModal">
-<div class="modal-content">
-<div class="modal-header">
-<h2 data-i18n="heading_5">⚙️ تنظیمات</h2>
-<button class="modal-close" data-i18n="button_10" id="closeSettingsBtn">×</button>
-</div>
-<div class="modal-body">
-<div class="settings-group">
-<h3 data-i18n="heading_6">قفل خودکار</h3>
-<p class="settings-description" data-i18n="text_settings_description_9">پس از مدت زمان مشخص بدون فعالیت، برنامه به طور خودکار قفل می‌شود</p>
-<div class="form-group">
-<label data-i18n="label_3" for="autoLockTime">زمان قفل خودکار (دقیقه):</label>
-<select class="form-select" id="autoLockTime">
-<option value="1">1 دقیقه</option>
-<option value="2">2 دقیقه</option>
-<option selected="" value="5">5 دقیقه</option>
-<option value="10">10 دقیقه</option>
-<option value="15">15 دقیقه</option>
-<option value="30">30 دقیقه</option>
-<option value="60">60 دقیقه</option>
-<option value="0">غیرفعال</option>
-</select>
-</div>
-</div>
-<div class="settings-group">
-<h3 data-i18n="heading_7">تغییر رمز عبور</h3>
-<p class="settings-description" data-i18n="text_settings_description_10">رمز عبور فعلی خود را تغییر دهید</p>
-<div class="form-group">
-<label data-i18n="label_4" for="currentPassword">رمز عبور فعلی:</label>
-<input id="currentPassword" placeholder="رمز عبور فعلی" type="password"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_5" for="newPassword">رمز عبور جدید:</label>
-<input id="newPassword" placeholder="رمز عبور جدید" type="password"/>
-</div>
-<div class="form-group">
-<label data-i18n="label_6" for="confirmNewPassword">تایید رمز عبور جدید:</label>
-<input id="confirmNewPassword" placeholder="تایید رمز عبور جدید" type="password"/>
-</div>
-<button class="btn btn-primary" data-i18n="button_11" id="changePasswordBtn">تغییر رمز عبور</button>
-</div>
-<div class="settings-group danger-zone">
-<h3 data-i18n="heading_8">⚠️ منطقه خطر</h3>
-<p class="settings-description" data-i18n="text_settings_description_11">حذف تمام یادداشت‌ها و بازنشانی برنامه</p>
-<button class="btn btn-danger" data-i18n="button_12" id="resetAppBtn">حذف همه داده‌ها</button>
-</div>
-</div>
-</div>
-</div>
-<!-- Confirmation Modal -->
-<div class="modal" id="confirmModal">
-<div class="modal-content modal-small">
-<div class="modal-header">
-<h2 data-i18n="heading_9" id="confirmTitle">تایید</h2>
-</div>
-<div class="modal-body">
-<p id="confirmMessage"></p>
-</div>
-<div class="modal-footer">
-<button class="btn btn-danger" data-i18n="button_13" id="confirmYes">بله</button>
-<button class="btn btn-secondary" data-i18n="button_14" id="confirmNo">خیر</button>
-</div>
-</div>
-</div>
+
+<section class="screen app" id="appScreen" hidden>
+  <header class="app-header">
+    <div class="wrap bar-row">
+      <h1 data-i18n="appName">🔒 امن‌ساز یادداشت‌ها</h1>
+      <div class="actions">
+        <span class="chip" id="lockStatus" aria-live="off">⏱️ <span id="lockTimer"></span></span>
+        <button class="btn icon" id="settingsBtn" type="button" data-i18n-aria="settings" data-i18n-title="settings">⚙️</button>
+        <button class="btn icon" id="lockBtn" type="button" data-i18n-aria="lock" data-i18n-title="lock">🔒</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap layout">
+    <aside class="sidebar">
+      <button class="btn primary block" id="newNoteBtn" type="button" data-i18n="newNote">➕ یادداشت جدید</button>
+      <input id="searchInput" type="search" data-i18n-ph="searchPh" data-i18n-aria="searchPh"/>
+      <div class="notes-list" id="notesList"></div>
+      <div class="notes-count muted" id="notesCount" aria-live="polite"></div>
+    </aside>
+
+    <section class="editor-section">
+      <div class="empty" id="emptyState">
+        <div class="empty-icon" aria-hidden="true">📝</div>
+        <h2 data-i18n="emptyTitle">یادداشتی انتخاب نشده</h2>
+        <p class="muted" data-i18n="emptyText"></p>
+      </div>
+      <div class="editor" id="editorContainer" hidden>
+        <div class="editor-head">
+          <input id="noteTitle" class="title-input" type="text" maxlength="200" data-i18n-ph="noteTitlePh" data-i18n-aria="noteTitlePh"/>
+          <div class="actions">
+            <button class="btn success" id="saveNoteBtn" type="button" data-i18n="save">💾 ذخیره</button>
+            <button class="btn danger" id="deleteNoteBtn" type="button" data-i18n="delete">🗑️ حذف</button>
+          </div>
+        </div>
+        <textarea id="noteContent" data-i18n-ph="noteContentPh" data-i18n-aria="noteContentPh"></textarea>
+        <div class="editor-foot muted">
+          <span id="lastModified"></span>
+          <span id="saveStatus" role="status" aria-live="polite"></span>
+          <span id="charCount"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+</section>
+
+<dialog id="settingsModal" aria-labelledby="settingsTitle">
+  <div class="dlg-head">
+    <h2 id="settingsTitle" data-i18n="settings">⚙️ تنظیمات</h2>
+    <button class="close" id="closeSettingsBtn" type="button" data-i18n-aria="close">×</button>
+  </div>
+  <div class="dlg-body">
+    <div class="group">
+      <h3 data-i18n="autoLockTitle">قفل خودکار</h3>
+      <p class="muted" data-i18n="autoLockDesc"></p>
+      <div class="field">
+        <label for="autoLockTime" data-i18n="autoLockLabel">زمان قفل خودکار</label>
+        <select id="autoLockTime"></select>
+      </div>
+    </div>
+    <form class="group" id="changePwForm" autocomplete="off">
+      <h3 data-i18n="changePwTitle">تغییر رمز عبور</h3>
+      <div class="field"><label for="currentPassword" data-i18n="currentPw">رمز عبور فعلی</label>
+        <input id="currentPassword" type="password" autocomplete="current-password"/></div>
+      <div class="field"><label for="newPassword" data-i18n="newPw">رمز عبور جدید</label>
+        <input id="newPassword" type="password" autocomplete="new-password"/></div>
+      <div class="field"><label for="confirmNewPassword" data-i18n="confirmNewPw">تایید رمز عبور جدید</label>
+        <input id="confirmNewPassword" type="password" autocomplete="new-password"/></div>
+      <button class="btn primary" id="changePasswordBtn" type="submit" data-i18n="changePw">تغییر رمز عبور</button>
+      <p class="notice" id="settingsMsg" role="status" hidden></p>
+    </form>
+    <div class="group danger-zone">
+      <h3 data-i18n="dangerTitle">⚠️ منطقه خطر</h3>
+      <p class="muted" data-i18n="dangerDesc"></p>
+      <button class="btn danger" id="resetAppBtn" type="button" data-i18n="resetAll">حذف همه داده‌ها</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="confirmModal" class="small" aria-labelledby="confirmTitle">
+  <div class="dlg-head"><h2 id="confirmTitle" data-i18n="confirmTitle">تایید</h2></div>
+  <div class="dlg-body"><p id="confirmMessage"></p></div>
+  <div class="dlg-foot">
+    <button class="btn danger" id="confirmYes" type="button" data-i18n="yes">بله</button>
+    <button class="btn secondary" id="confirmNo" type="button" data-i18n="no">خیر</button>
+  </div>
+</dialog>
+
 <script src="assets/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

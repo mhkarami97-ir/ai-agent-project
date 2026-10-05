@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
 <meta charset="utf-8"/>
@@ -12,142 +11,109 @@
 </head>
 <body>
 <div class="container">
-<header>
-<h1 data-i18n="heading_0">🔐 رمزنگاری متن امن</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">ارسال پیام‌های محرمانه با رمزنگاری قوی AES-256</p>
-</header>
-<div class="tabs">
-<button class="tab-button active" data-i18n="button_0" data-tab="encrypt">
-<span class="icon">🔒</span>
-                رمزنگاری
-            </button>
-<button class="tab-button" data-i18n="button_1" data-tab="decrypt">
-<span class="icon">🔓</span>
-                رمزگشایی
-            </button>
-<button class="tab-button" data-i18n="button_2" data-tab="history">
-<span class="icon">📜</span>
-                تاریخچه
-            </button>
+  <header>
+    <h1 data-i18n="appName">🔐 رمزنگاری متن امن</h1>
+    <p class="subtitle" data-i18n="subtitle">ارسال پیام‌های محرمانه با AES-256-GCM</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab-button active" id="tab-encrypt" role="tab" aria-selected="true" aria-controls="encrypt-tab" data-tab="encrypt" type="button"><span aria-hidden="true">🔒</span> <span data-i18n="tabEncrypt">رمزنگاری</span></button>
+    <button class="tab-button" id="tab-decrypt" role="tab" aria-selected="false" aria-controls="decrypt-tab" data-tab="decrypt" tabindex="-1" type="button"><span aria-hidden="true">🔓</span> <span data-i18n="tabDecrypt">رمزگشایی</span></button>
+    <button class="tab-button" id="tab-history" role="tab" aria-selected="false" aria-controls="history-tab" data-tab="history" tabindex="-1" type="button"><span aria-hidden="true">📜</span> <span data-i18n="tabHistory">تاریخچه</span></button>
+  </div>
+
+  <section class="tab-content" id="encrypt-tab" role="tabpanel" aria-labelledby="tab-encrypt">
+    <div class="card">
+      <h2 data-i18n="encryptTitle">رمزنگاری متن</h2>
+      <form id="encrypt-form" autocomplete="off">
+        <div class="form-group">
+          <label for="plain-text" data-i18n="plainText">متن اصلی</label>
+          <textarea id="plain-text" rows="6" required data-i18n-ph="plainPh"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="encrypt-key" data-i18n="privateKey">کلید خصوصی</label>
+          <div class="key-input-wrapper">
+            <input id="encrypt-key" type="password" autocomplete="new-password" required data-i18n-ph="keyPh"/>
+            <button class="toggle-password" type="button" data-target="encrypt-key" aria-pressed="false" data-i18n-aria="showKey">👁️</button>
+          </div>
+          <small class="help-text" data-i18n="keyHelp"></small>
+        </div>
+        <fieldset class="form-group">
+          <legend data-i18n="charsetLabel">نوع کاراکترهای خروجی</legend>
+          <div class="checkbox-group">
+            <label class="checkbox-label"><input checked name="charset" type="checkbox" value="persian"/><span data-i18n="csPersian">فارسی</span></label>
+            <label class="checkbox-label"><input name="charset" type="checkbox" value="english"/><span data-i18n="csEnglish">English</span></label>
+            <label class="checkbox-label"><input name="charset" type="checkbox" value="numbers"/><span data-i18n="csNumbers">اعداد</span></label>
+            <label class="checkbox-label"><input name="charset" type="checkbox" value="symbols"/><span data-i18n="csSymbols">علائم</span></label>
+          </div>
+          <small class="help-text" data-i18n="charsetNote"></small>
+        </fieldset>
+        <button class="btn btn-primary" id="encrypt-btn" type="submit"><span aria-hidden="true">🔒</span> <span data-i18n="encryptBtn">رمزنگاری متن</span></button>
+      </form>
+      <div class="result-box" id="encrypt-result" hidden>
+        <label data-i18n="encryptedLabel">متن رمزنگاری‌شده</label>
+        <div class="output-text" id="encrypted-text" dir="auto" tabindex="0"></div>
+        <div class="button-group">
+          <button class="btn btn-secondary" id="copy-encrypted" type="button"><span aria-hidden="true">📋</span> <span data-i18n="copy">کپی</span></button>
+          <button class="btn btn-secondary" id="save-encrypted" type="button"><span aria-hidden="true">💾</span> <span data-i18n="saveHistory">ذخیره در تاریخچه</span></button>
+        </div>
+        <small class="help-text" data-i18n="historyNote"></small>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-content" id="decrypt-tab" role="tabpanel" aria-labelledby="tab-decrypt" hidden>
+    <div class="card">
+      <h2 data-i18n="decryptTitle">رمزگشایی متن</h2>
+      <form id="decrypt-form" autocomplete="off">
+        <div class="form-group">
+          <label for="cipher-text" data-i18n="cipherText">متن رمزنگاری‌شده</label>
+          <textarea id="cipher-text" rows="6" required dir="auto" data-i18n-ph="cipherPh"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="decrypt-key" data-i18n="privateKey">کلید خصوصی</label>
+          <div class="key-input-wrapper">
+            <input id="decrypt-key" type="password" autocomplete="current-password" required data-i18n-ph="keyPh"/>
+            <button class="toggle-password" type="button" data-target="decrypt-key" aria-pressed="false" data-i18n-aria="showKey">👁️</button>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="decrypt-btn" type="submit"><span aria-hidden="true">🔓</span> <span data-i18n="decryptBtn">رمزگشایی متن</span></button>
+      </form>
+      <div class="result-box" id="decrypt-result" hidden>
+        <label data-i18n="decryptedLabel">متن اصلی</label>
+        <div class="output-text" id="decrypted-text" dir="auto" tabindex="0"></div>
+        <div class="button-group">
+          <button class="btn btn-secondary" id="copy-decrypted" type="button"><span aria-hidden="true">📋</span> <span data-i18n="copy">کپی</span></button>
+          <button class="btn btn-secondary" id="hide-decrypted" type="button"><span aria-hidden="true">🙈</span> <span data-i18n="hideResult">پنهان‌کردن نتیجه</span></button>
+        </div>
+      </div>
+      <div class="error-box" id="decrypt-error" role="alert" hidden><span aria-hidden="true">❌</span> <span id="decrypt-error-text"></span></div>
+    </div>
+  </section>
+
+  <section class="tab-content" id="history-tab" role="tabpanel" aria-labelledby="tab-history" hidden>
+    <div class="card">
+      <div class="history-header">
+        <h2 data-i18n="historyTitle">تاریخچه رمزنگاری</h2>
+        <button class="btn btn-danger" id="clear-history" type="button"><span aria-hidden="true">🗑️</span> <span data-i18n="clearAll">پاک کردن همه</span></button>
+      </div>
+      <p class="help-text" data-i18n="historyNote"></p>
+      <div class="history-list" id="history-list"></div>
+    </div>
+  </section>
 </div>
-<div class="tab-content active" id="encrypt-tab">
-<div class="card">
-<h2 data-i18n="heading_1">رمزنگاری متن</h2>
-<form id="encrypt-form">
-<div class="form-group">
-<label data-i18n="label_0" for="plain-text">متن اصلی:</label>
-<textarea id="plain-text" placeholder="متن خود را وارد کنید..." required="" rows="6"></textarea>
-</div>
-<div class="form-group">
-<label data-i18n="label_1" for="encrypt-key">کلید خصوصی:</label>
-<div class="key-input-wrapper">
-<input id="encrypt-key" placeholder="کلید خصوصی خود را وارد کنید..." required="" type="password"/>
-<button class="toggle-password" data-i18n="button_3" data-target="encrypt-key" type="button">
-<span class="eye-icon">👁️</span>
-</button>
-</div>
-<small class="help-text">حداقل 8 کاراکتر - این کلید را به خاطر بسپارید!</small>
-</div>
-<div class="form-group">
-<label data-i18n="label_2">نوع کاراکترهای خروجی:</label>
-<div class="checkbox-group">
-<label class="checkbox-label" data-i18n="label_3">
-<input checked="" name="charset" type="checkbox" value="persian"/>
-<span>فارسی</span>
-</label>
-<label class="checkbox-label" data-i18n="label_4">
-<input name="charset" type="checkbox" value="english"/>
-<span>English</span>
-</label>
-<label class="checkbox-label" data-i18n="label_5">
-<input name="charset" type="checkbox" value="numbers"/>
-<span>اعداد (123)</span>
-</label>
-<label class="checkbox-label" data-i18n="label_6">
-<input name="charset" type="checkbox" value="symbols"/>
-<span>علائم (!@#)</span>
-</label>
-</div>
-</div>
-<button class="btn btn-primary" data-i18n="button_4" type="submit">
-<span class="icon">🔒</span>
-                        رمزنگاری متن
-                    </button>
-</form>
-<div class="result-box" id="encrypt-result" style="display: none;">
-<label data-i18n="label_7">متن رمزنگاری شده:</label>
-<div class="output-text" id="encrypted-text"></div>
-<div class="button-group">
-<button class="btn btn-secondary" data-i18n="button_5" id="copy-encrypted" type="button">
-<span class="icon">📋</span>
-                            کپی
-                        </button>
-<button class="btn btn-secondary" data-i18n="button_6" id="save-encrypted" type="button">
-<span class="icon">💾</span>
-                            ذخیره در تاریخچه
-                        </button>
-</div>
-</div>
-</div>
-</div>
-<div class="tab-content" id="decrypt-tab">
-<div class="card">
-<h2 data-i18n="heading_2">رمزگشایی متن</h2>
-<form id="decrypt-form">
-<div class="form-group">
-<label data-i18n="label_8" for="cipher-text">متن رمزنگاری شده:</label>
-<textarea id="cipher-text" placeholder="متن رمزنگاری شده را وارد کنید..." required="" rows="6"></textarea>
-</div>
-<div class="form-group">
-<label data-i18n="label_9" for="decrypt-key">کلید خصوصی:</label>
-<div class="key-input-wrapper">
-<input id="decrypt-key" placeholder="کلید خصوصی را وارد کنید..." required="" type="password"/>
-<button class="toggle-password" data-i18n="button_7" data-target="decrypt-key" type="button">
-<span class="eye-icon">👁️</span>
-</button>
-</div>
-</div>
-<button class="btn btn-primary" data-i18n="button_8" type="submit">
-<span class="icon">🔓</span>
-                        رمزگشایی متن
-                    </button>
-</form>
-<div class="result-box" id="decrypt-result" style="display: none;">
-<label data-i18n="label_10">متن اصلی:</label>
-<div class="output-text" id="decrypted-text"></div>
-<button class="btn btn-secondary" data-i18n="button_9" id="copy-decrypted" type="button">
-<span class="icon">📋</span>
-                        کپی
-                    </button>
-</div>
-<div class="error-box" id="decrypt-error" style="display: none;">
-<span class="icon">❌</span>
-<span id="decrypt-error-text"></span>
-</div>
-</div>
-</div>
-<div class="tab-content" id="history-tab">
-<div class="card">
-<div class="history-header">
-<h2 data-i18n="heading_3">تاریخچه رمزنگاری</h2>
-<button class="btn btn-danger" data-i18n="button_10" id="clear-history" type="button">
-<span class="icon">🗑️</span>
-                        پاک کردن همه
-                    </button>
-</div>
-<div class="history-list" id="history-list">
-<div class="empty-state">
-<span class="icon">📭</span>
-<p>هنوز هیچ موردی ذخیره نشده است</p>
-</div>
-</div>
-</div>
-</div>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
-</div>
-<div class="toast" id="toast"></div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="confirm-dialog" aria-labelledby="confirm-title">
+  <h3 id="confirm-title" data-i18n="confirmTitle">تایید</h3>
+  <p id="confirm-message"></p>
+  <div class="button-group">
+    <button class="btn btn-danger" id="confirm-yes" type="button" data-i18n="yes">بله</button>
+    <button class="btn btn-secondary" id="confirm-no" type="button" data-i18n="no">خیر</button>
+  </div>
+</dialog>
+
 <script src="assets/js/crypto.js"></script>
 <script src="assets/js/storage.js"></script>
 <script src="assets/js/app.js"></script>

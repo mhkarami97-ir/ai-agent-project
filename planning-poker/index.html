@@ -1,148 +1,145 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پوکر امتیازدهی به تسک</title>
-    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="app.title">پوکر امتیازدهی به تسک</title>
+<link rel="stylesheet" href="../Vazirmatn-font-face.css">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.css">
 </head>
 <body>
-    <header class="app-header">
-        <div class="header-container">
-            <h1 class="app-title" data-i18n="app.title">Planning Poker</h1>
-            <div class="header-controls">
-            </div>
+<header class="app-header"><div class="header-container"><h1 class="app-title" data-i18n="app.title">پوکر امتیازدهی</h1></div></header>
+
+<main class="main-container">
+<section id="homeScreen" class="screen active" aria-labelledby="homeTitle">
+  <div class="welcome-card">
+    <h2 id="homeTitle" data-i18n="home.welcome">خوش آمدید</h2>
+    <p data-i18n="home.description">Planning Poker برای تیم‌های چابک</p>
+    <div class="action-buttons">
+      <button id="createRoomBtn" class="btn btn-primary" type="button"><span aria-hidden="true">＋</span><span data-i18n="home.createRoom">ایجاد اتاق جدید</span></button>
+      <button id="joinRoomBtn" class="btn btn-secondary" type="button"><span aria-hidden="true">⇥</span><span data-i18n="home.joinRoom">پیوستن به اتاق</span></button>
+    </div>
+    <p class="notice" id="scopeNotice" data-i18n="home.scopeNotice"></p>
+    <p class="notice warn" id="volatileNotice" data-i18n="home.volatileNotice" hidden></p>
+  </div>
+</section>
+
+<section id="createRoomScreen" class="screen" aria-labelledby="createTitle">
+  <div class="form-card">
+    <h2 id="createTitle" data-i18n="create.title">ایجاد اتاق جدید</h2>
+    <form id="createRoomForm" novalidate>
+      <div class="form-group"><label for="hostName" data-i18n="create.yourName">نام شما:</label>
+        <input type="text" id="hostName" maxlength="30" autocomplete="nickname" data-i18n-placeholder="create.yourNamePlaceholder"></div>
+      <div class="form-group"><label for="roomName" data-i18n="create.roomName">نام اتاق:</label>
+        <input type="text" id="roomName" maxlength="60" autocomplete="off" data-i18n-placeholder="create.roomNamePlaceholder"></div>
+      <div class="form-group"><label for="deckSelect" data-i18n="create.deck">مجموعه کارت‌ها:</label>
+        <select id="deckSelect">
+          <option value="fibonacci" data-i18n="create.deckFibonacci">فیبوناچی</option>
+          <option value="powers" data-i18n="create.deckPowers">توان‌های ۲</option>
+          <option value="tshirt" data-i18n="create.deckTshirt">اندازه تی‌شرت</option>
+        </select></div>
+      <p class="form-error" id="createError" role="alert" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" data-i18n="create.create">ایجاد</button>
+        <button type="button" id="cancelCreate" class="btn btn-secondary" data-i18n="common.cancel">لغو</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section id="joinRoomScreen" class="screen" aria-labelledby="joinTitle">
+  <div class="form-card">
+    <h2 id="joinTitle" data-i18n="join.title">پیوستن به اتاق</h2>
+    <form id="joinRoomForm" novalidate>
+      <div class="form-group"><label for="participantName" data-i18n="join.yourName">نام شما:</label>
+        <input type="text" id="participantName" maxlength="30" autocomplete="nickname" data-i18n-placeholder="join.yourNamePlaceholder"></div>
+      <div class="form-group"><label for="roomId" data-i18n="join.roomId">شناسه اتاق:</label>
+        <input type="text" id="roomId" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" dir="ltr" data-i18n-placeholder="join.roomIdPlaceholder"></div>
+      <p class="form-error" id="joinError" role="alert" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" data-i18n="join.join">پیوستن</button>
+        <button type="button" id="cancelJoin" class="btn btn-secondary" data-i18n="common.cancel">لغو</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section id="roomScreen" class="screen" aria-labelledby="roomTitle">
+  <div class="room-header">
+    <div class="room-info">
+      <h2 id="roomTitle"></h2>
+      <div class="room-id-container">
+        <span data-i18n="room.roomId">شناسه اتاق:</span>
+        <code id="roomIdDisplay" dir="ltr"></code>
+        <button id="copyRoomId" class="icon-btn-small" type="button" data-i18n-title="common.copy">⧉</button>
+        <button id="copyRoomLink" class="icon-btn-small" type="button" data-i18n-title="room.copyLink">🔗</button>
+      </div>
+    </div>
+    <div class="room-actions"><button id="leaveRoomBtn" class="btn btn-danger" type="button" data-i18n="room.leave">خروج</button></div>
+  </div>
+
+  <div class="room-content">
+    <div class="story-section">
+      <div class="story-header">
+        <h3 data-i18n="room.currentStory">داستان فعلی</h3>
+        <div id="hostControls" class="host-controls" hidden>
+          <button id="revealBtn" class="btn btn-success" type="button" data-i18n="room.reveal">نمایش آرا</button>
+          <button id="revoteBtn" class="btn btn-warning" type="button" data-i18n="room.revote">رای‌گیری مجدد</button>
+          <button id="nextBtn" class="btn btn-secondary" type="button" data-i18n="room.next">داستان بعدی</button>
         </div>
-    </header>
+      </div>
+      <div class="story-input-container">
+        <label for="storyInput" class="sr-only" data-i18n="room.currentStory">داستان فعلی</label>
+        <input type="text" id="storyInput" maxlength="200" autocomplete="off" data-i18n-placeholder="room.storyPlaceholder" disabled>
+        <button id="updateStoryBtn" class="btn btn-primary" type="button" hidden data-i18n="room.update">بروزرسانی</button>
+      </div>
+      <p class="notice warn" id="hostOfflineNotice" hidden><span data-i18n="room.hostOffline">میزبان آفلاین است.</span> <button id="claimHostBtn" class="btn btn-secondary btn-sm" type="button" data-i18n="room.claimHost">گرفتن نقش میزبان</button></p>
+      <div id="votingStatus" class="voting-status" aria-live="polite">
+        <span id="votingLabel" data-i18n="room.votingInProgress">در حال رای‌گیری...</span>
+        <span id="voteCount">0/0</span>
+      </div>
+    </div>
 
-    <main class="main-container">
-        <section id="homeScreen" class="screen active">
-            <div class="welcome-card">
-                <h2 data-i18n="home.welcome">خوش آمدید</h2>
-                <p data-i18n="home.description">Planning Poker برای تیم‌های چابک</p>
-                <div class="action-buttons">
-                    <button id="createRoomBtn" class="btn btn-primary">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        <span data-i18n="home.createRoom">ایجاد اتاق جدید</span>
-                    </button>
-                    <button id="joinRoomBtn" class="btn btn-secondary">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
-                        </svg>
-                        <span data-i18n="home.joinRoom">پیوستن به اتاق</span>
-                    </button>
-                </div>
-            </div>
-        </section>
+    <div class="cards-section">
+      <h3 data-i18n="room.selectCard">کارت خود را انتخاب کنید</h3>
+      <div id="cardsContainer" class="cards-container" role="group" data-i18n-aria="room.selectCard"></div>
+    </div>
 
-        <section id="createRoomScreen" class="screen">
-            <div class="form-card">
-                <h2 data-i18n="create.title">ایجاد اتاق جدید</h2>
-                <form id="createRoomForm">
-                    <div class="form-group">
-                        <label for="hostName" data-i18n="create.yourName">نام شما:</label>
-                        <input type="text" id="hostName" required placeholder="">
-                    </div>
-                    <div class="form-group">
-                        <label for="roomName" data-i18n="create.roomName">نام اتاق:</label>
-                        <input type="text" id="roomName" required placeholder="">
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" data-i18n="create.create">ایجاد</button>
-                        <button type="button" id="cancelCreate" class="btn btn-secondary" data-i18n="common.cancel">لغو</button>
-                    </div>
-                </form>
-            </div>
-        </section>
+    <div class="participants-section">
+      <h3 data-i18n="room.participants">شرکت‌کنندگان</h3>
+      <div id="participantsList" class="participants-list"></div>
+    </div>
 
-        <section id="joinRoomScreen" class="screen">
-            <div class="form-card">
-                <h2 data-i18n="join.title">پیوستن به اتاق</h2>
-                <form id="joinRoomForm">
-                    <div class="form-group">
-                        <label for="participantName" data-i18n="join.yourName">نام شما:</label>
-                        <input type="text" id="participantName" required placeholder="">
-                    </div>
-                    <div class="form-group">
-                        <label for="roomId" data-i18n="join.roomId">شناسه اتاق:</label>
-                        <input type="text" id="roomId" required placeholder="">
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" data-i18n="join.join">پیوستن</button>
-                        <button type="button" id="cancelJoin" class="btn btn-secondary" data-i18n="common.cancel">لغو</button>
-                    </div>
-                </form>
-            </div>
-        </section>
+    <div id="resultsSection" class="results-section" hidden>
+      <h3 data-i18n="room.results">نتایج</h3>
+      <div id="resultsContent" class="results-content"></div>
+      <div id="statisticsContent" class="statistics-content"></div>
+    </div>
 
-        <section id="roomScreen" class="screen">
-            <div class="room-header">
-                <div class="room-info">
-                    <h2 id="roomTitle"></h2>
-                    <div class="room-id-container">
-                        <span data-i18n="room.roomId">شناسه اتاق:</span>
-                        <code id="roomIdDisplay"></code>
-                        <button id="copyRoomId" class="icon-btn-small" title="کپی">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="room-actions">
-                    <button id="leaveRoomBtn" class="btn btn-danger" data-i18n="room.leave">خروج</button>
-                </div>
-            </div>
+    <div id="historySection" class="history-section" hidden>
+      <h3 data-i18n="room.history">تاریخچهٔ داستان‌ها</h3>
+      <ol id="historyList" class="history-list"></ol>
+    </div>
+  </div>
+</section>
+</main>
 
-            <div class="room-content">
-                <div class="story-section">
-                    <div class="story-header">
-                        <h3 data-i18n="room.currentStory">داستان فعلی</h3>
-                        <div id="hostControls" class="host-controls" style="display: none;">
-                            <button id="revealBtn" class="btn btn-success" data-i18n="room.reveal">نمایش آرا</button>
-                            <button id="resetBtn" class="btn btn-warning" data-i18n="room.reset">ریست</button>
-                        </div>
-                    </div>
-                    <div class="story-input-container">
-                        <label for="storyInput" style="display: none;">Story Input</label>
-                        <input type="text" id="storyInput" placeholder="" data-i18n-placeholder="room.storyPlaceholder" disabled>
-                        <button id="updateStoryBtn" class="btn btn-primary" style="display: none;" data-i18n="room.update">بروزرسانی</button>
-                    </div>
-                    <div id="votingStatus" class="voting-status">
-                        <span data-i18n="room.votingInProgress">در حال رای‌گیری...</span>
-                        <span id="voteCount">0/0</span>
-                    </div>
-                </div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <form method="dialog" novalidate>
+    <h3 id="confirmTitle" data-i18n="common.confirmTitle">تایید</h3>
+    <p id="confirmMessage"></p>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-danger" data-i18n="common.yes">بله</button>
+      <button type="button" class="btn btn-secondary" data-close data-i18n="common.no">خیر</button>
+    </div>
+  </form>
+</dialog>
 
-                <div class="cards-section">
-                    <h3 data-i18n="room.selectCard">کارت خود را انتخاب کنید</h3>
-                    <div id="cardsContainer" class="cards-container"></div>
-                </div>
-
-                <div class="participants-section">
-                    <h3 data-i18n="room.participants">شرکت‌کنندگان</h3>
-                    <div id="participantsList" class="participants-list"></div>
-                </div>
-
-                <div id="resultsSection" class="results-section" style="display: none;">
-                    <h3 data-i18n="room.results">نتایج</h3>
-                    <div id="resultsContent" class="results-content"></div>
-                    <div id="statisticsContent" class="statistics-content"></div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <div id="toast" class="toast"></div>
-
-    <script src="assets/script.js"></script>
-    <script src="../assets/tool-wrapper.js"></script>
+<script src="assets/core.js"></script>
+<script src="assets/script.js"></script>
+<script src="../assets/tool-wrapper.js"></script>
 </body>
 </html>
-

@@ -1,752 +1,353 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
-    }
+(() => {
+'use strict';
+const LS = { vault:'secureNotes.vault', lock:'secureNotes.autoLock', legacyHash:'appPassHash', legacyNotes:'encryptedNotes', legacyLock:'autoLockTime' };
+const ITER = 250000, MIN_PW = 8, AUTOSAVE_MS = 1200;
+const $ = id => document.getElementById(id);
+const enc = new TextEncoder(), dec = new TextDecoder();
+let T = {}, lang = localStorage.getItem('lang') || 'fa';
+const st = { key:null, salt:null, iter:ITER, notes:[], currentId:null, query:'', dirty:false, last:Date.now(), lockMin:5, locking:false };
+let saveChain = Promise.resolve(), saveTimer = null;
 
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
-    }
+const t = (k, v) => {
+  let s = (T[lang] && T[lang][k]) ?? (T.fa && T.fa[k]) ?? k;
+  if (v) for (const [a, b] of Object.entries(v)) s = s.replace('{' + a + '}', b);
+  return s;
+};
+const locale = () => lang === 'fa' ? 'fa-IR' : 'en-US';
+const num = n => Number(n).toLocaleString(locale());
+const fmtDate = (iso, o) => new Date(iso).toLocaleString(locale(), o || { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
 
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
-    }
-
-    getTheme() {
-        return this.currentTheme;
-    }
+function applyTheme(th) {
+  const v = th === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', v);
+  document.body.setAttribute('data-theme', v);
+}
+function applyI18n() {
+  const r = document.documentElement;
+  r.lang = lang; r.dir = lang === 'fa' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(e => { e.placeholder = t(e.dataset.i18nPh); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(e => { e.setAttribute('aria-label', t(e.dataset.i18nAria)); });
+  document.querySelectorAll('[data-i18n-title]').forEach(e => { e.title = t(e.dataset.i18nTitle); });
+  document.title = t('title');
+  buildLockOptions(); updateStrength(); updateTimer();
+  if (st.key) { renderList(); refreshEditorMeta(); }
 }
 
-const themeManager = new ThemeManager();
+const b64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
-    }
-
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
-        }
-    }
-
-    t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
-        }
-        
-        return value;
-    }
-
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
-        });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
-        }
-    }
-
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
-    }
+async function deriveKey(pw, salt, iter) {
+  const base = await crypto.subtle.importKey('raw', enc.encode(pw.normalize('NFKC')), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name:'PBKDF2', salt, iterations:iter, hash:'SHA-256' }, base, { name:'AES-GCM', length:256 }, false, ['encrypt', 'decrypt']);
+}
+async function encryptNotes(key, notes) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, enc.encode(JSON.stringify(notes)));
+  return { iv:b64(iv), data:b64(new Uint8Array(ct)) };
+}
+async function decryptNotes(key, iv, data) {
+  const pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv:unb64(iv) }, key, unb64(data));
+  const notes = JSON.parse(dec.decode(pt));
+  if (!Array.isArray(notes)) throw new Error('bad');
+  return notes;
+}
+function readVault() {
+  const raw = localStorage.getItem(LS.vault);
+  if (!raw) return null;
+  const v = JSON.parse(raw);
+  if (v.v !== 2 || !v.salt || !v.iv || !v.data || !Number.isInteger(v.iter)) throw new Error('bad');
+  return v;
+}
+function persist() {
+  saveChain = saveChain.catch(() => {}).then(async () => {
+    if (!st.key) return;
+    const e = await encryptNotes(st.key, st.notes);
+    localStorage.setItem(LS.vault, JSON.stringify({ v:2, iter:st.iter, salt:b64(st.salt), iv:e.iv, data:e.data }));
+  });
+  return saveChain;
 }
 
-const i18n = new I18n();
+const sha256hex = async s => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(s)))).map(b => b.toString(16).padStart(2, '0')).join('');
+function legacyDecrypt(b, pw) {
+  const e = unb64(b), k = enc.encode(pw);
+  return new TextDecoder('utf-8', { fatal:true }).decode(e.map((x, i) => x ^ k[i % k.length]));
+}
+const hasVault = () => !!localStorage.getItem(LS.vault);
+const hasLegacy = () => !hasVault() && !!localStorage.getItem(LS.legacyHash);
 
+function showError(m) { const e = $('errorMsg'); e.textContent = m; e.hidden = false; }
+function hideError() { $('errorMsg').hidden = true; }
+function showLogin() {
+  $('appScreen').hidden = true; $('loginScreen').hidden = false;
+  const setup = !hasVault() && !hasLegacy();
+  $('setupForm').hidden = !setup; $('loginForm').hidden = setup;
+  $('legacyNote').hidden = !hasLegacy();
+  ['setupPassword', 'confirmPassword', 'loginPassword'].forEach(id => { $(id).value = ''; $(id).type = 'password'; });
+  document.querySelectorAll('.toggle-pw').forEach(b => { b.setAttribute('aria-pressed', 'false'); b.textContent = '👁️'; });
+  updateStrength();
+  (setup ? $('setupPassword') : $('loginPassword')).focus();
+}
+function setBusy(b) { ['setupBtn', 'loginBtn', 'changePasswordBtn'].forEach(id => { $(id).disabled = b; }); }
 
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-// Encryption & Storage Manager
-class CryptoManager {
-    constructor() {
-        this.passphrase = null;
-    }
-
-    // Hash the passphrase using SHA-256
-    async hashPassphrase(passphrase) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(passphrase);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    // Simple XOR-based encryption for client-side storage
-    encrypt(text, passphrase) {
-        // Convert text to UTF-8 bytes
-        const encoder = new TextEncoder();
-        const textBytes = encoder.encode(text);
-        const passphraseBytes = encoder.encode(passphrase);
-        
-        // XOR encryption
-        const encrypted = new Uint8Array(textBytes.length);
-        for (let i = 0; i < textBytes.length; i++) {
-            encrypted[i] = textBytes[i] ^ passphraseBytes[i % passphraseBytes.length];
-        }
-        
-        // Convert to base64 using proper Unicode handling
-        let binary = '';
-        for (let i = 0; i < encrypted.length; i++) {
-            binary += String.fromCharCode(encrypted[i]);
-        }
-        return btoa(binary);
-    }
-
-    decrypt(encryptedText, passphrase) {
-        try {
-            // Decode from base64
-            const binary = atob(encryptedText);
-            const encrypted = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {
-                encrypted[i] = binary.charCodeAt(i);
-            }
-            
-            // XOR decryption
-            const encoder = new TextEncoder();
-            const passphraseBytes = encoder.encode(passphrase);
-            const decrypted = new Uint8Array(encrypted.length);
-            for (let i = 0; i < encrypted.length; i++) {
-                decrypted[i] = encrypted[i] ^ passphraseBytes[i % passphraseBytes.length];
-            }
-            
-            // Convert bytes back to UTF-8 string
-            const decoder = new TextDecoder();
-            return decoder.decode(decrypted);
-        } catch (e) {
-            throw new Error('رمزگشایی ناموفق بود');
-        }
-    }
-
-    async setPassphrase(passphrase) {
-        this.passphrase = passphrase;
-        const hash = await this.hashPassphrase(passphrase);
-        localStorage.setItem('appPassHash', hash);
-    }
-
-    async verifyPassphrase(passphrase) {
-        const hash = await this.hashPassphrase(passphrase);
-        const storedHash = localStorage.getItem('appPassHash');
-        return hash === storedHash;
-    }
-
-    setCurrentPassphrase(passphrase) {
-        this.passphrase = passphrase;
-    }
-
-    isSetup() {
-        return localStorage.getItem('appPassHash') !== null;
-    }
+function strengthLevel(pw) {
+  let pool = 0;
+  if (/[a-z]/.test(pw)) pool += 26; if (/[A-Z]/.test(pw)) pool += 26; if (/\d/.test(pw)) pool += 10; if (/[^A-Za-z0-9]/.test(pw)) pool += 33;
+  const bits = pw.length * Math.log2(pool || 1);
+  return bits < 40 ? 0 : bits < 60 ? 1 : bits < 80 ? 2 : 3;
+}
+function updateStrength() {
+  const pw = $('setupPassword').value, box = $('strength');
+  if (!pw) { box.dataset.level = '-1'; $('strengthText').textContent = ''; return; }
+  const l = strengthLevel(pw);
+  box.dataset.level = String(l);
+  $('strengthText').textContent = t('strengthLabel') + ' ' + t('strength' + l);
 }
 
-// Notes Manager
-class NotesManager {
-    constructor(cryptoManager) {
-        this.crypto = cryptoManager;
-        this.notes = [];
-        this.currentNoteId = null;
-    }
-
-    loadNotes() {
-        const encryptedNotes = localStorage.getItem('encryptedNotes');
-        if (!encryptedNotes) {
-            this.notes = [];
-            return;
-        }
-
-        try {
-            const decryptedData = this.crypto.decrypt(encryptedNotes, this.crypto.passphrase);
-            this.notes = JSON.parse(decryptedData);
-        } catch (e) {
-            console.error('Failed to load notes:', e);
-            this.notes = [];
-        }
-    }
-
-    saveNotes() {
-        const notesJson = JSON.stringify(this.notes);
-        const encrypted = this.crypto.encrypt(notesJson, this.crypto.passphrase);
-        localStorage.setItem('encryptedNotes', encrypted);
-    }
-
-    createNote() {
-        const note = {
-            id: Date.now().toString(),
-            title: 'یادداشت بدون عنوان',
-            content: '',
-            createdAt: new Date().toISOString(),
-            modifiedAt: new Date().toISOString()
-        };
-        this.notes.unshift(note);
-        this.saveNotes();
-        return note;
-    }
-
-    getNote(id) {
-        return this.notes.find(note => note.id === id);
-    }
-
-    updateNote(id, title, content) {
-        const note = this.getNote(id);
-        if (note) {
-            note.title = title || 'یادداشت بدون عنوان';
-            note.content = content;
-            note.modifiedAt = new Date().toISOString();
-            this.saveNotes();
-        }
-    }
-
-    deleteNote(id) {
-        this.notes = this.notes.filter(note => note.id !== id);
-        this.saveNotes();
-    }
-
-    searchNotes(query) {
-        if (!query) return this.notes;
-        const lowerQuery = query.toLowerCase();
-        return this.notes.filter(note =>
-            note.title.toLowerCase().includes(lowerQuery) ||
-            note.content.toLowerCase().includes(lowerQuery)
-        );
-    }
-
-    getAllNotes() {
-        return this.notes;
-    }
+async function enter(key, salt, iter, notes) {
+  Object.assign(st, { key, salt, iter, notes, currentId:null, dirty:false, last:Date.now(), query:'' });
+  $('searchInput').value = '';
+  hideError();
+  $('loginScreen').hidden = true; $('appScreen').hidden = false;
+  clearEditor(); renderList(); updateTimer();
 }
 
-// Auto-lock Manager
-class AutoLockManager {
-    constructor(lockCallback) {
-        this.lockCallback = lockCallback;
-        this.timeout = null;
-        this.lockTime = parseInt(localStorage.getItem('autoLockTime')) || 5;
-        this.lastActivity = Date.now();
-        this.timerInterval = null;
-    }
-
-    setLockTime(minutes) {
-        this.lockTime = minutes;
-        localStorage.setItem('autoLockTime', minutes.toString());
-        this.resetTimer();
-    }
-
-    getLockTime() {
-        return this.lockTime;
-    }
-
-    resetTimer() {
-        this.lastActivity = Date.now();
-        
-        if (this.timeout) {
-            clearTimeout(this.timeout);
-        }
-
-        if (this.lockTime > 0) {
-            this.timeout = setTimeout(() => {
-                this.lockCallback();
-            }, this.lockTime * 60 * 1000);
-        }
-    }
-
-    startTimer() {
-        this.resetTimer();
-        this.updateTimerDisplay();
-        
-        // Update timer display every second
-        this.timerInterval = setInterval(() => {
-            this.updateTimerDisplay();
-        }, 1000);
-
-        // Track user activity
-        const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
-        events.forEach(event => {
-            document.addEventListener(event, () => this.resetTimer());
-        });
-    }
-
-    updateTimerDisplay() {
-        const timerElement = document.getElementById('lockTimer');
-        if (!timerElement || this.lockTime === 0) {
-            if (timerElement) timerElement.textContent = 'غیرفعال';
-            return;
-        }
-
-        const elapsed = Date.now() - this.lastActivity;
-        const remaining = (this.lockTime * 60 * 1000) - elapsed;
-
-        if (remaining <= 0) {
-            timerElement.textContent = 'در حال قفل...';
-            return;
-        }
-
-        const minutes = Math.floor(remaining / 60000);
-        const seconds = Math.floor((remaining % 60000) / 1000);
-        timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }
-
-    stopTimer() {
-        if (this.timeout) {
-            clearTimeout(this.timeout);
-        }
-        if (this.timerInterval) {
-            clearInterval(this.timerInterval);
-        }
-    }
+async function onSetup(e) {
+  e.preventDefault(); hideError();
+  const pw = $('setupPassword').value;
+  if (pw.length < MIN_PW) return showError(t('errMinLen'));
+  if (pw !== $('confirmPassword').value) return showError(t('errMismatch'));
+  setBusy(true);
+  try {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await deriveKey(pw, salt, ITER);
+    st.key = key; st.salt = salt; st.iter = ITER; st.notes = [];
+    await persist();
+    await enter(key, salt, ITER, []);
+  } catch (err) { st.key = null; showError(t('saveFailed')); } finally { setBusy(false); }
 }
 
-// Main App Controller
-class SecureNotesApp {
-    constructor() {
-        this.crypto = new CryptoManager();
-        this.notes = new NotesManager(this.crypto);
-        this.autoLock = new AutoLockManager(() => this.lock());
-        this.init();
+async function onLogin(e) {
+  e.preventDefault(); hideError();
+  const pw = $('loginPassword').value;
+  if (!pw) return showError(t('errEnterPw'));
+  setBusy(true);
+  try {
+    if (hasVault()) {
+      let v;
+      try { v = readVault(); } catch { return showError(t('errCorrupt')); }
+      const salt = unb64(v.salt);
+      const key = await deriveKey(pw, salt, v.iter);
+      let notes;
+      try { notes = await decryptNotes(key, v.iv, v.data); } catch { return showError(t('errWrongPw')); }
+      await enter(key, salt, v.iter, notes);
+    } else if (hasLegacy()) {
+      if (await sha256hex(pw) !== localStorage.getItem(LS.legacyHash)) return showError(t('errWrongPw'));
+      let notes = [];
+      const old = localStorage.getItem(LS.legacyNotes);
+      if (old) { try { notes = JSON.parse(legacyDecrypt(old, pw)); if (!Array.isArray(notes)) notes = []; } catch { return showError(t('errCorrupt')); } }
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const key = await deriveKey(pw, salt, ITER);
+      st.key = key; st.salt = salt; st.iter = ITER; st.notes = notes;
+      await persist();
+      localStorage.removeItem(LS.legacyHash); localStorage.removeItem(LS.legacyNotes);
+      await enter(key, salt, ITER, notes);
     }
-
-    init() {
-        this.setupEventListeners();
-        this.checkSetupStatus();
-    }
-
-    setupEventListeners() {
-        // Login/Setup
-        document.getElementById('setupBtn').addEventListener('click', () => this.handleSetup());
-        document.getElementById('loginBtn').addEventListener('click', () => this.handleLogin());
-        
-        // Password visibility toggles
-        document.querySelectorAll('.toggle-password').forEach(btn => {
-            btn.addEventListener('click', (e) => this.togglePasswordVisibility(e.target));
-        });
-
-        // Enter key on password fields
-        document.getElementById('setupPassword').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('setupBtn').click();
-        });
-        document.getElementById('confirmPassword').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('setupBtn').click();
-        });
-        document.getElementById('loginPassword').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('loginBtn').click();
-        });
-
-        // App actions
-        document.getElementById('newNoteBtn').addEventListener('click', () => this.createNewNote());
-        document.getElementById('saveNoteBtn').addEventListener('click', () => this.saveCurrentNote());
-        document.getElementById('deleteNoteBtn').addEventListener('click', () => this.deleteCurrentNote());
-        document.getElementById('lockBtn').addEventListener('click', () => this.lock());
-        document.getElementById('settingsBtn').addEventListener('click', () => this.openSettings());
-
-        // Search
-        document.getElementById('searchInput').addEventListener('input', (e) => this.handleSearch(e.target.value));
-
-        // Editor
-        document.getElementById('noteTitle').addEventListener('input', () => this.handleEditorChange());
-        document.getElementById('noteContent').addEventListener('input', (e) => {
-            this.handleEditorChange();
-            this.updateCharCount(e.target.value);
-        });
-
-        // Settings
-        document.getElementById('closeSettingsBtn').addEventListener('click', () => this.closeSettings());
-        document.getElementById('autoLockTime').addEventListener('change', (e) => this.updateAutoLockTime(e.target.value));
-        document.getElementById('changePasswordBtn').addEventListener('click', () => this.changePassword());
-        document.getElementById('resetAppBtn').addEventListener('click', () => this.resetApp());
-
-        // Confirmation modal
-        document.getElementById('confirmNo').addEventListener('click', () => this.closeConfirmModal());
-
-        // Close modals on outside click
-        document.getElementById('settingsModal').addEventListener('click', (e) => {
-            if (e.target.id === 'settingsModal') this.closeSettings();
-        });
-        document.getElementById('confirmModal').addEventListener('click', (e) => {
-            if (e.target.id === 'confirmModal') this.closeConfirmModal();
-        });
-    }
-
-    checkSetupStatus() {
-        if (this.crypto.isSetup()) {
-            document.getElementById('setupMode').style.display = 'none';
-            document.getElementById('loginMode').style.display = 'block';
-        } else {
-            document.getElementById('setupMode').style.display = 'block';
-            document.getElementById('loginMode').style.display = 'none';
-        }
-    }
-
-    async handleSetup() {
-        const password = document.getElementById('setupPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-
-        if (!password || password.length < 4) {
-            this.showError('رمز عبور باید حداقل ۴ کاراکتر باشد');
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            this.showError('رمز عبور و تایید آن مطابقت ندارند');
-            return;
-        }
-
-        await this.crypto.setPassphrase(password);
-        this.crypto.setCurrentPassphrase(password);
-        this.showApp();
-    }
-
-    async handleLogin() {
-        const password = document.getElementById('loginPassword').value;
-
-        if (!password) {
-            this.showError('لطفاً رمز عبور را وارد کنید');
-            return;
-        }
-
-        const isValid = await this.crypto.verifyPassphrase(password);
-        if (!isValid) {
-            this.showError('رمز عبور اشتباه است');
-            return;
-        }
-
-        this.crypto.setCurrentPassphrase(password);
-        this.showApp();
-    }
-
-    showApp() {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('appScreen').style.display = 'block';
-        this.notes.loadNotes();
-        this.renderNotesList();
-        this.autoLock.setLockTime(this.autoLock.getLockTime());
-        this.autoLock.startTimer();
-    }
-
-    lock() {
-        this.autoLock.stopTimer();
-        this.crypto.setCurrentPassphrase(null);
-        document.getElementById('appScreen').style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('loginPassword').value = '';
-        this.hideError();
-        this.clearEditor();
-    }
-
-    showError(message) {
-        const errorMsg = document.getElementById('errorMsg');
-        errorMsg.textContent = message;
-        errorMsg.style.display = 'block';
-    }
-
-    hideError() {
-        document.getElementById('errorMsg').style.display = 'none';
-    }
-
-    togglePasswordVisibility(button) {
-        const targetId = button.closest('.toggle-password').dataset.target;
-        const input = document.getElementById(targetId);
-        
-        if (input.type === 'password') {
-            input.type = 'text';
-            button.querySelector('.eye-icon').textContent = '🙈';
-        } else {
-            input.type = 'password';
-            button.querySelector('.eye-icon').textContent = '👁️';
-        }
-    }
-
-    createNewNote() {
-        const note = this.notes.createNote();
-        this.renderNotesList();
-        this.openNote(note.id);
-    }
-
-    openNote(noteId) {
-        this.notes.currentNoteId = noteId;
-        const note = this.notes.getNote(noteId);
-        
-        if (!note) return;
-
-        document.getElementById('emptyState').style.display = 'none';
-        document.getElementById('editorContainer').style.display = 'flex';
-        
-        document.getElementById('noteTitle').value = note.title;
-        document.getElementById('noteContent').value = note.content;
-        
-        this.updateLastModified(note.modifiedAt);
-        this.updateCharCount(note.content);
-        this.updateActiveNote(noteId);
-    }
-
-    saveCurrentNote() {
-        if (!this.notes.currentNoteId) return;
-
-        const title = document.getElementById('noteTitle').value.trim();
-        const content = document.getElementById('noteContent').value;
-
-        this.notes.updateNote(this.notes.currentNoteId, title, content);
-        this.renderNotesList();
-        this.updateActiveNote(this.notes.currentNoteId);
-        
-        const note = this.notes.getNote(this.notes.currentNoteId);
-        this.updateLastModified(note.modifiedAt);
-
-        // Show save feedback
-        const saveBtn = document.getElementById('saveNoteBtn');
-        const originalText = saveBtn.textContent;
-        saveBtn.textContent = '✓ ذخیره شد';
-        setTimeout(() => {
-            saveBtn.textContent = originalText;
-        }, 2000);
-    }
-
-    deleteCurrentNote() {
-        if (!this.notes.currentNoteId) return;
-
-        this.showConfirmModal(
-            'حذف یادداشت',
-            'آیا مطمئن هستید که می‌خواهید این یادداشت را حذف کنید؟',
-            () => {
-                this.notes.deleteNote(this.notes.currentNoteId);
-                this.notes.currentNoteId = null;
-                this.renderNotesList();
-                this.clearEditor();
-                this.closeConfirmModal();
-            }
-        );
-    }
-
-    clearEditor() {
-        document.getElementById('emptyState').style.display = 'flex';
-        document.getElementById('editorContainer').style.display = 'none';
-        document.getElementById('noteTitle').value = '';
-        document.getElementById('noteContent').value = '';
-        this.notes.currentNoteId = null;
-    }
-
-    handleEditorChange() {
-        // Auto-save functionality could be added here
-    }
-
-    updateCharCount(text) {
-        const count = text.length;
-        document.getElementById('charCount').textContent = `${count.toLocaleString('fa-IR')} کاراکتر`;
-    }
-
-    updateLastModified(dateString) {
-        const date = new Date(dateString);
-        const formatted = date.toLocaleDateString('fa-IR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        document.getElementById('lastModified').textContent = `آخرین تغییر: ${formatted}`;
-    }
-
-    renderNotesList() {
-        const notesList = document.getElementById('notesList');
-        const notes = this.notes.getAllNotes();
-
-        if (notes.length === 0) {
-            notesList.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">هیچ یادداشتی وجود ندارد</div>';
-        } else {
-            notesList.innerHTML = notes.map(note => this.createNoteItemHTML(note)).join('');
-            
-            // Add click event listeners
-            notesList.querySelectorAll('.note-item').forEach(item => {
-                item.addEventListener('click', () => this.openNote(item.dataset.id));
-            });
-        }
-
-        this.updateNotesCount(notes.length);
-    }
-
-    createNoteItemHTML(note) {
-        const date = new Date(note.modifiedAt);
-        const formatted = date.toLocaleDateString('fa-IR', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-
-        const preview = note.content.substring(0, 50) + (note.content.length > 50 ? '...' : '');
-
-        return `
-            <div class="note-item" data-id="${note.id}">
-                <div class="note-item-title">${this.escapeHtml(note.title)}</div>
-                <div class="note-item-preview">${this.escapeHtml(preview)}</div>
-                <div class="note-item-date">${formatted}</div>
-            </div>
-        `;
-    }
-
-    updateActiveNote(noteId) {
-        document.querySelectorAll('.note-item').forEach(item => {
-            item.classList.toggle('active', item.dataset.id === noteId);
-        });
-    }
-
-    updateNotesCount(count) {
-        document.getElementById('notesCount').textContent = `${count.toLocaleString('fa-IR')} یادداشت`;
-    }
-
-    handleSearch(query) {
-        const notes = this.notes.searchNotes(query);
-        const notesList = document.getElementById('notesList');
-
-        if (notes.length === 0) {
-            notesList.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">یادداشتی یافت نشد</div>';
-        } else {
-            notesList.innerHTML = notes.map(note => this.createNoteItemHTML(note)).join('');
-            
-            notesList.querySelectorAll('.note-item').forEach(item => {
-                item.addEventListener('click', () => this.openNote(item.dataset.id));
-            });
-        }
-    }
-
-    openSettings() {
-        document.getElementById('settingsModal').classList.add('show');
-        document.getElementById('autoLockTime').value = this.autoLock.getLockTime();
-    }
-
-    closeSettings() {
-        document.getElementById('settingsModal').classList.remove('show');
-        // Clear password fields
-        document.getElementById('currentPassword').value = '';
-        document.getElementById('newPassword').value = '';
-        document.getElementById('confirmNewPassword').value = '';
-    }
-
-    updateAutoLockTime(minutes) {
-        this.autoLock.setLockTime(parseInt(minutes));
-    }
-
-    async changePassword() {
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
-
-        if (!currentPassword || !newPassword || !confirmNewPassword) {
-            alert('لطفاً تمام فیلدها را پر کنید');
-            return;
-        }
-
-        const isValid = await this.crypto.verifyPassphrase(currentPassword);
-        if (!isValid) {
-            alert('رمز عبور فعلی اشتباه است');
-            return;
-        }
-
-        if (newPassword.length < 4) {
-            alert('رمز عبور جدید باید حداقل ۴ کاراکتر باشد');
-            return;
-        }
-
-        if (newPassword !== confirmNewPassword) {
-            alert('رمز عبور جدید و تایید آن مطابقت ندارند');
-            return;
-        }
-
-        // Re-encrypt all notes with new password
-        const notesData = JSON.stringify(this.notes.notes);
-
-        await this.crypto.setPassphrase(newPassword);
-        this.crypto.setCurrentPassphrase(newPassword);
-
-        // Encrypt notes with new password
-        const newEncrypted = this.crypto.encrypt(notesData, newPassword);
-        localStorage.setItem('encryptedNotes', newEncrypted);
-
-        alert('رمز عبور با موفقیت تغییر کرد');
-        this.closeSettings();
-    }
-
-    resetApp() {
-        this.showConfirmModal(
-            '⚠️ حذف همه داده‌ها',
-            'این عملیات تمام یادداشت‌ها و تنظیمات را حذف می‌کند و قابل بازگشت نیست. آیا مطمئن هستید؟',
-            () => {
-                localStorage.clear();
-                location.reload();
-            }
-        );
-    }
-
-    showConfirmModal(title, message, onConfirm) {
-        document.getElementById('confirmTitle').textContent = title;
-        document.getElementById('confirmMessage').textContent = message;
-        document.getElementById('confirmModal').classList.add('show');
-        
-        const yesBtn = document.getElementById('confirmYes');
-        const newYesBtn = yesBtn.cloneNode(true);
-        yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
-        
-        newYesBtn.addEventListener('click', onConfirm);
-    }
-
-    closeConfirmModal() {
-        document.getElementById('confirmModal').classList.remove('show');
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
+  } catch (err) { showError(t('errCorrupt')); } finally { setBusy(false); $('loginPassword').value = ''; }
 }
 
-// Initialize the app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    new SecureNotesApp();
-});
+async function lock() {
+  if (!st.key || st.locking) return;
+  st.locking = true;
+  clearTimeout(saveTimer);
+  try { commitEditor(); await saveChain; } catch {}
+  Object.assign(st, { key:null, salt:null, notes:[], currentId:null, dirty:false, query:'' });
+  clearEditor();
+  $('notesList').replaceChildren(); $('searchInput').value = '';
+  ['settingsModal', 'confirmModal'].forEach(id => { if ($(id).open) $(id).close(); });
+  ['currentPassword', 'newPassword', 'confirmNewPassword'].forEach(id => { $(id).value = ''; });
+  st.locking = false;
+  showLogin();
+}
 
+function newId() { return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function getNote(id) { return st.notes.find(n => n.id === id); }
+function setSaveStatus(msg, isErr) { const s = $('saveStatus'); s.textContent = msg; s.style.color = isErr ? 'var(--danger)' : ''; }
+
+function renderList() {
+  const list = $('notesList'); list.replaceChildren();
+  const q = st.query.trim().toLowerCase();
+  const items = st.notes.filter(n => !q || (n.title + '\n' + n.content).toLowerCase().includes(q)).sort((a, b) => b.modifiedAt.localeCompare(a.modifiedAt));
+  if (!items.length) {
+    const d = document.createElement('div'); d.className = 'list-empty';
+    d.textContent = st.notes.length ? t('noMatch') : t('noNotes'); list.append(d);
+  }
+  for (const n of items) {
+    const b = document.createElement('button'); b.type = 'button';
+    b.className = 'note-item' + (n.id === st.currentId ? ' active' : ''); b.dataset.id = n.id;
+    const a = document.createElement('div'); a.className = 't'; a.textContent = n.title || t('untitled');
+    const p = document.createElement('div'); p.className = 'p'; p.textContent = n.content.slice(0, 60);
+    const d = document.createElement('div'); d.className = 'd'; d.textContent = fmtDate(n.modifiedAt, { year:'numeric', month:'short', day:'numeric' });
+    b.append(a, p, d);
+    b.addEventListener('click', () => openNote(n.id));
+    list.append(b);
+  }
+  $('notesCount').textContent = t('notesCount', { n:num(st.notes.length) });
+}
+function refreshEditorMeta() {
+  const n = getNote(st.currentId);
+  if (!n) return;
+  $('lastModified').textContent = t('lastModified', { d:fmtDate(n.modifiedAt) });
+  $('charCount').textContent = t('chars', { n:num($('noteContent').value.length) });
+}
+function clearEditor() {
+  $('emptyState').hidden = false; $('editorContainer').hidden = true;
+  $('noteTitle').value = ''; $('noteContent').value = ''; setSaveStatus('');
+  $('lastModified').textContent = ''; $('charCount').textContent = '';
+  st.currentId = null; st.dirty = false;
+}
+function commitEditor() {
+  clearTimeout(saveTimer);
+  if (!st.key || !st.currentId || !st.dirty) return;
+  const n = getNote(st.currentId); if (!n) return;
+  n.title = $('noteTitle').value.trim();
+  n.content = $('noteContent').value;
+  n.modifiedAt = new Date().toISOString();
+  st.dirty = false;
+  persist().then(() => setSaveStatus(t('saved'))).catch(() => setSaveStatus(t('saveFailed'), true));
+  renderList(); refreshEditorMeta();
+}
+function openNote(id) {
+  commitEditor();
+  const n = getNote(id); if (!n) return;
+  st.currentId = id;
+  $('emptyState').hidden = true; $('editorContainer').hidden = false;
+  $('noteTitle').value = n.title; $('noteContent').value = n.content;
+  setSaveStatus(''); refreshEditorMeta(); renderList();
+}
+function createNote() {
+  commitEditor();
+  const now = new Date().toISOString();
+  const n = { id:newId(), title:'', content:'', createdAt:now, modifiedAt:now };
+  st.notes.unshift(n);
+  persist().catch(() => setSaveStatus(t('saveFailed'), true));
+  openNote(n.id); $('noteTitle').focus();
+}
+function onEditorInput() {
+  st.dirty = true; setSaveStatus(t('unsaved'));
+  $('charCount').textContent = t('chars', { n:num($('noteContent').value.length) });
+  clearTimeout(saveTimer); saveTimer = setTimeout(commitEditor, AUTOSAVE_MS);
+}
+function askConfirm(title, msg) {
+  return new Promise(res => {
+    const d = $('confirmModal'); $('confirmTitle').textContent = title; $('confirmMessage').textContent = msg;
+    const done = v => { $('confirmYes').onclick = null; $('confirmNo').onclick = null; d.onclose = null; if (d.open) d.close(); res(v); };
+    $('confirmYes').onclick = () => done(true); $('confirmNo').onclick = () => done(false); d.onclose = () => done(false);
+    d.showModal();
+  });
+}
+async function deleteCurrent() {
+  const id = st.currentId; if (!id) return;
+  if (!await askConfirm(t('delNoteTitle'), t('delNoteMsg'))) return;
+  clearTimeout(saveTimer); st.dirty = false;
+  st.notes = st.notes.filter(n => n.id !== id);
+  clearEditor(); renderList();
+  persist().catch(() => showError(t('saveFailed')));
+}
+
+function buildLockOptions() {
+  const sel = $('autoLockTime'); sel.replaceChildren();
+  for (const m of [1, 2, 5, 10, 15, 30, 60, 0]) {
+    const o = document.createElement('option'); o.value = String(m);
+    o.textContent = m ? t('minutes', { n:num(m) }) : t('disabled'); sel.append(o);
+  }
+  sel.value = String(st.lockMin);
+}
+function loadLockMin() {
+  const raw = localStorage.getItem(LS.lock) ?? localStorage.getItem(LS.legacyLock);
+  const n = parseInt(raw, 10);
+  st.lockMin = [0, 1, 2, 5, 10, 15, 30, 60].includes(n) ? n : 5;
+}
+function updateTimer() {
+  const el = $('lockTimer'); if (!el) return;
+  if (!st.lockMin) { el.textContent = t('lockOff'); return; }
+  const rem = Math.max(0, st.lockMin * 60000 - (Date.now() - st.last));
+  el.textContent = Math.floor(rem / 60000) + ':' + String(Math.floor(rem % 60000 / 1000)).padStart(2, '0');
+}
+function tick() {
+  if (!st.key) return;
+  if (st.lockMin && Date.now() - st.last >= st.lockMin * 60000) { lock(); return; }
+  updateTimer();
+}
+
+function settingsMsg(msg, cls) { const m = $('settingsMsg'); m.textContent = msg; m.className = 'notice ' + cls; m.hidden = !msg; }
+async function changePassword(e) {
+  e.preventDefault(); settingsMsg('', '');
+  const cur = $('currentPassword').value, nw = $('newPassword').value, cf = $('confirmNewPassword').value;
+  if (!cur || !nw || !cf) return settingsMsg(t('errFillAll'), 'error');
+  if (nw.length < MIN_PW) return settingsMsg(t('errMinLen'), 'error');
+  if (nw !== cf) return settingsMsg(t('errMismatch'), 'error');
+  if (nw === cur) return settingsMsg(t('errSame'), 'error');
+  setBusy(true);
+  try {
+    commitEditor(); await saveChain.catch(() => {});
+    const v = readVault();
+    try { await decryptNotes(await deriveKey(cur, unb64(v.salt), v.iter), v.iv, v.data); } catch { return settingsMsg(t('errWrongPw'), 'error'); }
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await deriveKey(nw, salt, ITER);
+    const prev = { key:st.key, salt:st.salt, iter:st.iter };
+    Object.assign(st, { key, salt, iter:ITER });
+    try { await persist(); } catch (err) { Object.assign(st, prev); throw err; }
+    ['currentPassword', 'newPassword', 'confirmNewPassword'].forEach(id => { $(id).value = ''; });
+    settingsMsg(t('pwChanged'), 'ok');
+  } catch (err) { settingsMsg(t('saveFailed'), 'error'); } finally { setBusy(false); }
+}
+async function resetApp() {
+  if (!await askConfirm(t('resetTitle'), t('resetMsg'))) return;
+  [LS.vault, LS.lock, LS.legacyHash, LS.legacyNotes, LS.legacyLock].forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+
+function bind() {
+  $('setupForm').addEventListener('submit', onSetup);
+  $('loginForm').addEventListener('submit', onLogin);
+  $('setupPassword').addEventListener('input', updateStrength);
+  document.querySelectorAll('.toggle-pw').forEach(b => b.addEventListener('click', () => {
+    const i = $(b.dataset.target), show = i.type === 'password';
+    i.type = show ? 'text' : 'password'; b.textContent = show ? '🙈' : '👁️';
+    b.setAttribute('aria-pressed', String(show)); b.setAttribute('aria-label', t(show ? 'hidePassword' : 'showPassword'));
+  }));
+  $('newNoteBtn').addEventListener('click', createNote);
+  $('saveNoteBtn').addEventListener('click', () => { st.dirty = true; commitEditor(); });
+  $('deleteNoteBtn').addEventListener('click', deleteCurrent);
+  $('lockBtn').addEventListener('click', lock);
+  $('searchInput').addEventListener('input', e => { st.query = e.target.value; renderList(); });
+  $('noteTitle').addEventListener('input', onEditorInput);
+  $('noteContent').addEventListener('input', onEditorInput);
+  $('settingsBtn').addEventListener('click', () => { settingsMsg('', ''); $('autoLockTime').value = String(st.lockMin); $('settingsModal').showModal(); });
+  $('closeSettingsBtn').addEventListener('click', () => $('settingsModal').close());
+  $('settingsModal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  $('settingsModal').addEventListener('close', () => ['currentPassword', 'newPassword', 'confirmNewPassword'].forEach(id => { $(id).value = ''; }));
+  $('autoLockTime').addEventListener('change', e => { st.lockMin = parseInt(e.target.value, 10); localStorage.setItem(LS.lock, String(st.lockMin)); st.last = Date.now(); updateTimer(); });
+  $('changePwForm').addEventListener('submit', changePassword);
+  $('resetAppBtn').addEventListener('click', resetApp);
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && st.key && st.currentId) { e.preventDefault(); st.dirty = true; commitEditor(); }
+  });
+  ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { if (st.key) st.last = Date.now(); }, { passive:true, capture:true }));
+  setInterval(tick, 1000);
+  window.addEventListener('themeChanged', e => applyTheme(e.detail));
+  window.addEventListener('languageChanged', e => { lang = e.detail === 'en' ? 'en' : 'fa'; localStorage.setItem('lang', lang); applyI18n(); });
+}
+
+async function init() {
+  applyTheme(localStorage.getItem('theme'));
+  try { T = await (await fetch('assets/translations.json')).json(); } catch (e) { console.error('translations', e); }
+  loadLockMin(); applyI18n(); bind();
+  if (!(window.crypto && crypto.subtle)) {
+    $('setupForm').hidden = true; $('loginForm').hidden = true; showError(t('errNoCrypto')); return;
+  }
+  showLogin();
+}
+init();
+})();

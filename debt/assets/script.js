@@ -1,705 +1,291 @@
-// Theme Manager
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.applyTheme();
-    }
+(() => {
+'use strict';
+const C = window.LoanCalc;
+const $ = id => document.getElementById(id);
+const DB_NAME = 'LoanCalculatorDB', STORE = 'calculations', MAX_ITEMS = 100;
+let T = {}, lang = localStorage.getItem('lang') || 'fa', cur = null, toastTimer = null, resizeTimer = null, db = null;
 
-    applyTheme() {
-        document.body.setAttribute('data-theme', this.currentTheme);
-    }
+const t = (k, v) => {
+  let s = (T[lang] && T[lang][k]) ?? (T.fa && T.fa[k]) ?? k;
+  if (v) for (const [a, b] of Object.entries(v)) s = s.split('{' + a + '}').join(b);
+  return s;
+};
+const locale = () => lang === 'fa' ? 'fa-IR' : 'en-US';
+const fmt = n => new Intl.NumberFormat(locale(), { maximumFractionDigits: 0 }).format(Math.round(n));
+const fmtDec = (n, d = 2) => new Intl.NumberFormat(locale(), { maximumFractionDigits: d }).format(n);
+const pct = x => x === null || x === undefined ? '—' : (x > 100 ? t('hugeRate') : new Intl.NumberFormat(locale(), { style: 'percent', maximumFractionDigits: 1 }).format(x));
+const money = n => fmt(n) + ' ' + t('toman');
+const fmtDate = d => new Intl.DateTimeFormat(locale(), { year: 'numeric', month: 'long', day: 'numeric' }).format(d);
 
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.applyTheme();
-    }
-
-    getTheme() {
-        return this.currentTheme;
-    }
+function applyTheme(th) {
+  const v = th === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', v);
+  document.body.setAttribute('data-theme', v);
+}
+function applyI18n() {
+  const r = document.documentElement;
+  r.lang = lang; r.dir = lang === 'fa' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(e => { e.placeholder = t(e.dataset.i18nPh); });
+  document.title = t('title');
+  updateHints(); render(); loadHistory();
+  const open = !$('amortizationTable').hidden;
+  $('toggleAmortization').textContent = t(open ? 'hideTable' : 'showTable');
 }
 
-const themeManager = new ThemeManager();
-
-// I18n System
-class I18n {
-    constructor() {
-        this.translations = {};
-        this.currentLang = localStorage.getItem('lang') || 'fa';
-        this.loadTranslations();
-    }
-
-    async loadTranslations() {
-        try {
-            const response = await fetch('assets/translations.json');
-            this.translations = await response.json();
-            this.applyTranslations();
-        } catch (error) {
-            console.error('Failed to load translations:', error);
-        }
-    }
-
-    t(key) {
-        const keys = key.split('.');
-        let value = this.translations[this.currentLang];
-        
-        for (const k of keys) {
-            if (value && value[k]) {
-                value = value[k];
-            } else {
-                return key;
-            }
-        }
-        
-        return value;
-    }
-
-    applyTranslations() {
-        const html = document.documentElement;
-        html.setAttribute('lang', this.currentLang);
-        html.setAttribute('dir', this.currentLang === 'fa' ? 'rtl' : 'ltr');
-        
-        // Update all elements with data-i18n
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            
-            if (element.tagName === 'INPUT' && element.type !== 'checkbox') {
-                element.placeholder = translation;
-            } else {
-                element.textContent = translation;
-            }
-        });
-        
-        // Update document title
-        const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
-        if (titleKey) {
-            document.title = this.t(titleKey);
-        }
-    }
-
-    switchLanguage() {
-        this.currentLang = this.currentLang === 'fa' ? 'en' : 'fa';
-        localStorage.setItem('lang', this.currentLang);
-        this.applyTranslations();
-    }
+function toast(msg, type = 'success') {
+  const el = $('toast'); el.textContent = msg; el.className = 'toast show ' + type;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+function askConfirm(msg) {
+  return new Promise(res => {
+    const d = $('confirmDialog'); $('confirmMessage').textContent = msg;
+    const done = v => { $('confirmYes').onclick = $('confirmNo').onclick = null; d.onclose = null; if (d.open) d.close(); res(v); };
+    $('confirmYes').onclick = () => done(true); $('confirmNo').onclick = () => done(false); d.onclose = () => done(false);
+    d.showModal();
+  });
 }
 
-const i18n = new I18n();
+const SPECS = [
+  ['loanAmount', { min: 1, max: 1e15, req: true, err: 'errLoan' }],
+  ['loanPeriod', { min: 1, max: 600, int: true, req: true, err: 'errPeriod' }],
+  ['interestRate', { min: 0, max: 200, req: true, err: 'errRate' }],
+  ['commissionPercent', { min: 0, max: 100, def: 0, err: 'errCommission' }],
+  ['upfrontDeduction', { min: 0, max: 1e15, def: 0, err: 'errDeduction' }],
+  ['insurancePercent', { min: 0, max: 100, def: 0, err: 'errInsurance' }],
+  ['inflationRate', { min: 0, max: 500, def: 0, err: 'errInflation' }],
+  ['depositAmount', { min: 0, max: 1e15, def: 0, err: 'errDeposit' }],
+  ['depositPeriod', { min: 0, max: 120, int: true, def: 0, err: 'errDepositPeriod' }],
+  ['depositRate', { min: 0, max: 200, def: 0, err: 'errDepositRate' }],
+  ['opportunityRate', { min: 0, max: 500, def: null, err: 'errOpportunity' }]
+];
+class FieldError extends Error { constructor(id, key) { super(key); this.id = id; } }
 
+function readInputs() {
+  const x = {};
+  for (const [id, s] of SPECS) {
+    const raw = $(id).value.trim();
+    $(id).removeAttribute('aria-invalid');
+    if (raw === '') { if (s.req) throw new FieldError(id, s.err); x[id] = s.def; continue; }
+    const v = C.parseNumber(raw);
+    if (!isFinite(v) || v < s.min || v > s.max || (s.int && !Number.isInteger(v))) throw new FieldError(id, s.err);
+    x[id] = v;
+  }
+  x.bankName = $('bankName').value.trim().slice(0, 60);
+  x.calculationMethod = $('calculationMethod').value;
+  x.depositLock = $('depositLock').value;
+  if (x.loanAmount * x.commissionPercent / 100 + x.upfrontDeduction >= x.loanAmount) throw new FieldError('upfrontDeduction', 'errFees');
+  return x;
+}
+function showFormError(id, key) {
+  const e = $('formError'); e.textContent = t(key); e.hidden = false;
+  if (id) { $(id).setAttribute('aria-invalid', 'true'); $(id).focus(); }
+}
+function clearFormError() { $('formError').hidden = true; }
 
-
-// Listen to tool-wrapper theme changes
-window.addEventListener('themeChanged', (e) => {
-    themeManager.currentTheme = e.detail;
-    themeManager.applyTheme();
-});
-
-// Listen to tool-wrapper language changes
-window.addEventListener('languageChanged', (e) => {
-    const newLang = e.detail;
-    localStorage.setItem('lang', newLang);
-    // Reload page to apply language changes
-    location.reload();
-});
-
-
-// Database Management using IndexedDB
-class LoanDatabase {
-    constructor() {
-        this.dbName = 'LoanCalculatorDB';
-        this.version = 1;
-        this.db = null;
-    }
-
-    async init() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(this.dbName, this.version);
-
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => {
-                this.db = request.result;
-                resolve(this.db);
-            };
-
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains('calculations')) {
-                    const objectStore = db.createObjectStore('calculations', { 
-                        keyPath: 'id', 
-                        autoIncrement: true 
-                    });
-                    objectStore.createIndex('timestamp', 'timestamp', { unique: false });
-                    objectStore.createIndex('bankName', 'bankName', { unique: false });
-                }
-            };
-        });
-    }
-
-    async saveCalculation(data) {
-        const transaction = this.db.transaction(['calculations'], 'readwrite');
-        const store = transaction.objectStore('calculations');
-        return new Promise((resolve, reject) => {
-            const request = store.add(data);
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    async getAllCalculations() {
-        const transaction = this.db.transaction(['calculations'], 'readonly');
-        const store = transaction.objectStore('calculations');
-        return new Promise((resolve, reject) => {
-            const request = store.getAll();
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    async deleteCalculation(id) {
-        const transaction = this.db.transaction(['calculations'], 'readwrite');
-        const store = transaction.objectStore('calculations');
-        return new Promise((resolve, reject) => {
-            const request = store.delete(id);
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    async clearAll() {
-        const transaction = this.db.transaction(['calculations'], 'readwrite');
-        const store = transaction.objectStore('calculations');
-        return new Promise((resolve, reject) => {
-            const request = store.clear();
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
-    }
+function onSubmit(ev) {
+  ev.preventDefault(); clearFormError();
+  try {
+    const inputs = readInputs();
+    cur = { inputs, results: C.compute(inputs), timestamp: new Date().toISOString() };
+    $('saveBtn').disabled = false;
+    $('resultsSection').hidden = false;
+    render();
+    $('resultsSection').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  } catch (e) {
+    if (e instanceof FieldError) showFormError(e.id, e.message); else { console.error(e); showFormError(null, 'errUnexpected'); }
+  }
 }
 
-// Loan Calculator Class
-class LoanCalculator {
-    constructor() {
-        this.db = new LoanDatabase();
-        this.initializeElements();
-        this.attachEventListeners();
-        this.init();
-    }
+function setText(id, v) { $(id).textContent = v; }
+function render() {
+  if (!cur) return;
+  const { inputs: x, results: r } = cur;
+  const noRate = r.effective === null;
+  setText('effRate', noRate ? t('irrFail') : pct(r.effective));
+  setText('nomRate', noRate ? '—' : pct(r.nominal));
+  setText('received', money(r.received));
+  setText('monthly', money(r.monthlyPayment));
+  const varies = Math.abs(r.lastPayment - r.monthlyPayment) > 1;
+  setText('monthlySub', varies ? t('lastPaymentNote', { v: money(r.lastPayment) }) : t('monthlyPaymentDesc'));
+  setText('totalPay', money(r.totalPayment));
+  setText('totalPaySub', r.ratio === null ? '' : t('ratioNote', { v: fmtDec(r.ratio, 2) }));
+  setText('totalInt', money(r.totalInterest));
+  setText('totalIntSub', r.totalInsurance > 0 ? t('insuranceNote', { v: money(r.totalInsurance) }) : t('totalInterestDesc'));
+  setText('fees', money(r.fees));
+  setText('endDate', fmtDate(C.addMonths(new Date(), x.loanPeriod)));
+  $('oppCard').hidden = x.depositAmount <= 0;
+  setText('oppCost', money(r.opportunityCost));
+  $('realCard').hidden = r.realRate === null;
+  $('pvCard').hidden = r.pv === null;
+  if (r.realRate !== null) setText('realRate', pct(r.realRate));
+  if (r.pv !== null) setText('pvPay', money(r.pv));
 
-    initializeElements() {
-        this.elements = {
-            bankName: document.getElementById('bankName'),
-            loanAmount: document.getElementById('loanAmount'),
-            depositAmount: document.getElementById('depositAmount'),
-            depositPeriod: document.getElementById('depositPeriod'),
-            interestRate: document.getElementById('interestRate'),
-            loanPeriod: document.getElementById('loanPeriod'),
-            commissionPercent: document.getElementById('commissionPercent'),
-            upfrontDeduction: document.getElementById('upfrontDeduction'),
-            insurancePercent: document.getElementById('insurancePercent'),
-            inflationRate: document.getElementById('inflationRate'),
-            calculationMethod: document.getElementById('calculationMethod'),
-            calculateBtn: document.getElementById('calculateBtn'),
-            saveBtn: document.getElementById('saveBtn'),
-            resultsSection: document.getElementById('resultsSection'),
-            realInterestRate: document.getElementById('realInterestRate'),
-            actualReceived: document.getElementById('actualReceived'),
-            monthlyPayment: document.getElementById('monthlyPayment'),
-            totalPayment: document.getElementById('totalPayment'),
-            totalInterest: document.getElementById('totalInterest'),
-            endDate: document.getElementById('endDate'),
-            opportunityCost: document.getElementById('opportunityCost'),
-            recommendation: document.getElementById('recommendation'),
-            recommendationText: document.getElementById('recommendationText'),
-            toggleAmortization: document.getElementById('toggleAmortization'),
-            amortizationTable: document.getElementById('amortizationTable'),
-            historyList: document.getElementById('historyList'),
-            clearHistoryBtn: document.getElementById('clearHistoryBtn')
-        };
-        this.currentCalculation = null;
-    }
+  const ul = $('summaryList'); ul.replaceChildren();
+  const add = s => { const li = document.createElement('li'); li.textContent = s; ul.append(li); };
+  if (!noRate) add(t('sumRate', { eff: pct(r.effective), nom: pct(x.interestRate / 100) }));
+  else add(t('irrFail'));
+  add(t('sumRatio', { recv: money(r.received), pay: money(r.totalPayment), ratio: fmtDec(r.ratio, 2) }));
+  if (r.fees > 0) add(t('sumFees', { v: money(r.fees) }));
+  if (x.depositAmount > 0) add(t('sumDeposit', { d: money(x.depositAmount), n: fmt(x.depositPeriod), c: money(r.opportunityCost) }));
+  if (r.realRate !== null) add(t('sumInflation', { i: pct(x.inflationRate / 100), real: pct(r.realRate), pv: money(r.pv) }));
 
-    async init() {
-        await this.db.init();
-        this.loadHistory();
-    }
-
-    attachEventListeners() {
-        this.elements.calculateBtn.addEventListener('click', () => this.calculate());
-        this.elements.saveBtn.addEventListener('click', () => this.saveCalculation());
-        this.elements.toggleAmortization.addEventListener('click', () => this.toggleAmortizationTable());
-        this.elements.clearHistoryBtn.addEventListener('click', () => this.clearHistory());
-        
-        // Enter key to calculate
-        Object.values(this.elements).forEach(element => {
-            if (element.tagName === 'INPUT') {
-                element.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.calculate();
-                });
-            }
-        });
-    }
-
-    getInputValues() {
-        return {
-            bankName: this.elements.bankName.value.trim() || 'بانک',
-            loanAmount: parseFloat(this.elements.loanAmount.value) || 0,
-            depositAmount: parseFloat(this.elements.depositAmount.value) || 0,
-            depositPeriod: parseFloat(this.elements.depositPeriod.value) || 0,
-            interestRate: parseFloat(this.elements.interestRate.value) || 0,
-            loanPeriod: parseFloat(this.elements.loanPeriod.value) || 0,
-            commissionPercent: parseFloat(this.elements.commissionPercent.value) || 0,
-            upfrontDeduction: parseFloat(this.elements.upfrontDeduction.value) || 0,
-            insurancePercent: parseFloat(this.elements.insurancePercent.value) || 0,
-            inflationRate: parseFloat(this.elements.inflationRate.value) || 0,
-            calculationMethod: this.elements.calculationMethod.value
-        };
-    }
-
-    validateInputs(inputs) {
-        if (inputs.loanAmount <= 0) {
-            alert('لطفاً مبلغ وام را وارد کنید');
-            return false;
-        }
-        if (inputs.interestRate < 0) {
-            alert('لطفاً نرخ سود را وارد کنید');
-            return false;
-        }
-        if (inputs.loanPeriod <= 0) {
-            alert('لطفاً مدت بازپرداخت را وارد کنید');
-            return false;
-        }
-        return true;
-    }
-
-    calculate() {
-        const inputs = this.getInputValues();
-        
-        if (!this.validateInputs(inputs)) return;
-
-        const results = this.performCalculations(inputs);
-        this.currentCalculation = {
-            inputs,
-            results,
-            timestamp: new Date().toISOString()
-        };
-
-        this.displayResults(results, inputs);
-        this.generateAmortizationSchedule(results.amortizationSchedule, inputs);
-    }
-
-    performCalculations(inputs) {
-        const {
-            loanAmount,
-            depositAmount,
-            depositPeriod,
-            interestRate,
-            loanPeriod,
-            commissionPercent,
-            upfrontDeduction,
-            insurancePercent,
-            inflationRate,
-            calculationMethod
-        } = inputs;
-
-        // Calculate actual received amount
-        const commissionAmount = (loanAmount * commissionPercent) / 100;
-        const actualReceived = loanAmount - commissionAmount - upfrontDeduction;
-
-        // Calculate monthly payment based on method
-        let monthlyPayment, totalPayment, totalInterest, amortizationSchedule;
-        
-        if (calculationMethod === 'reducing') {
-            const result = this.calculateReducingBalance(
-                loanAmount, 
-                interestRate, 
-                loanPeriod, 
-                insurancePercent
-            );
-            monthlyPayment = result.monthlyPayment;
-            totalPayment = result.totalPayment;
-            totalInterest = result.totalInterest;
-            amortizationSchedule = result.schedule;
-        } else {
-            const result = this.calculateFlatRate(
-                loanAmount, 
-                interestRate, 
-                loanPeriod, 
-                insurancePercent
-            );
-            monthlyPayment = result.monthlyPayment;
-            totalPayment = result.totalPayment;
-            totalInterest = result.totalInterest;
-            amortizationSchedule = result.schedule;
-        }
-
-        // Calculate opportunity cost of deposit
-        const opportunityCost = depositAmount > 0 ? 
-            this.calculateOpportunityCost(depositAmount, depositPeriod, inflationRate) : 0;
-
-        // Calculate real interest rate (APR)
-        const realInterestRate = this.calculateRealAPR(
-            actualReceived,
-            monthlyPayment,
-            loanPeriod,
-            opportunityCost
-        );
-
-        // Calculate end date
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + loanPeriod);
-
-        // Calculate real value considering inflation
-        const realValueLost = inflationRate > 0 ? 
-            this.calculateInflationImpact(totalPayment, loanPeriod, inflationRate) : 0;
-
-        return {
-            actualReceived,
-            monthlyPayment,
-            totalPayment,
-            totalInterest,
-            opportunityCost,
-            realInterestRate,
-            endDate: this.formatDate(endDate),
-            amortizationSchedule,
-            realValueLost,
-            totalCost: totalPayment + opportunityCost
-        };
-    }
-
-    calculateReducingBalance(principal, annualRate, months, insuranceRate) {
-        const monthlyRate = (annualRate / 12) / 100;
-        const insuranceMonthlyRate = (insuranceRate / 12) / 100;
-        const totalMonthlyRate = monthlyRate + insuranceMonthlyRate;
-        
-        // Monthly payment formula: P * r * (1 + r)^n / ((1 + r)^n - 1)
-        const monthlyPayment = principal * 
-            (totalMonthlyRate * Math.pow(1 + totalMonthlyRate, months)) / 
-            (Math.pow(1 + totalMonthlyRate, months) - 1);
-
-        let balance = principal;
-        const schedule = [];
-        let totalInterestPaid = 0;
-
-        for (let month = 1; month <= months; month++) {
-            const interestPayment = balance * totalMonthlyRate;
-            const principalPayment = monthlyPayment - interestPayment;
-            balance -= principalPayment;
-            totalInterestPaid += interestPayment;
-
-            schedule.push({
-                month,
-                payment: monthlyPayment,
-                principal: principalPayment,
-                interest: interestPayment,
-                balance: Math.max(0, balance)
-            });
-        }
-
-        return {
-            monthlyPayment,
-            totalPayment: monthlyPayment * months,
-            totalInterest: totalInterestPaid,
-            schedule
-        };
-    }
-
-    calculateFlatRate(principal, annualRate, months, insuranceRate) {
-        const totalRate = annualRate + insuranceRate;
-        const totalInterest = (principal * totalRate * (months / 12)) / 100;
-        const totalPayment = principal + totalInterest;
-        const monthlyPayment = totalPayment / months;
-
-        const schedule = [];
-        const monthlyPrincipal = principal / months;
-        const monthlyInterest = totalInterest / months;
-        let balance = principal;
-
-        for (let month = 1; month <= months; month++) {
-            balance -= monthlyPrincipal;
-            schedule.push({
-                month,
-                payment: monthlyPayment,
-                principal: monthlyPrincipal,
-                interest: monthlyInterest,
-                balance: Math.max(0, balance)
-            });
-        }
-
-        return {
-            monthlyPayment,
-            totalPayment,
-            totalInterest,
-            schedule
-        };
-    }
-
-    calculateOpportunityCost(depositAmount, depositPeriod, inflationRate) {
-        // Calculate the real value lost due to inflation during deposit period
-        const monthlyInflationRate = (inflationRate / 12) / 100;
-        const realValueLost = depositAmount * (1 - Math.pow(1 + monthlyInflationRate, -depositPeriod));
-        return realValueLost;
-    }
-
-    calculateRealAPR(actualReceived, monthlyPayment, months, opportunityCost) {
-        // Use Newton-Raphson method to find IRR
-        const totalPaid = monthlyPayment * months + opportunityCost;
-        
-        if (actualReceived <= 0 || months <= 0) return 0;
-        
-        // Simple approximation
-        const totalInterest = totalPaid - actualReceived;
-        const avgBalance = actualReceived / 2;
-        const years = months / 12;
-        const apr = (totalInterest / avgBalance / years) * 100;
-        
-        return apr;
-    }
-
-    calculateInflationImpact(totalPayment, months, inflationRate) {
-        const monthlyInflationRate = (inflationRate / 12) / 100;
-        const futureValue = totalPayment * Math.pow(1 + monthlyInflationRate, months);
-        return futureValue - totalPayment;
-    }
-
-    displayResults(results, inputs) {
-        this.elements.resultsSection.style.display = 'block';
-        
-        // Animate numbers
-        this.animateNumber(this.elements.realInterestRate, results.realInterestRate, '%', 1);
-        this.animateNumber(this.elements.actualReceived, results.actualReceived, ' تومان');
-        this.animateNumber(this.elements.monthlyPayment, results.monthlyPayment, ' تومان');
-        this.animateNumber(this.elements.totalPayment, results.totalPayment, ' تومان');
-        this.animateNumber(this.elements.totalInterest, results.totalInterest, ' تومان');
-        this.animateNumber(this.elements.opportunityCost, results.opportunityCost, ' تومان');
-        
-        this.elements.endDate.textContent = results.endDate;
-
-        // Display recommendation
-        this.displayRecommendation(results, inputs);
-
-        // Scroll to results
-        this.elements.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    displayRecommendation(results, inputs) {
-        const { realInterestRate, actualReceived, totalCost } = results;
-        const { loanAmount, interestRate } = inputs;
-        
-        let recommendation = '';
-        let cssClass = '';
-
-        const costRatio = (totalCost / actualReceived - 1) * 100;
-        
-        if (realInterestRate < 15) {
-            cssClass = 'good';
-            recommendation = `✅ این وام شرایط نسبتاً خوبی دارد. نرخ سود واقعی ${realInterestRate.toFixed(1)}% است که در شرایط فعلی قابل قبول است. `;
-        } else if (realInterestRate < 25) {
-            cssClass = '';
-            recommendation = `⚠️ این وام شرایط متوسطی دارد. نرخ سود واقعی ${realInterestRate.toFixed(1)}% است. `;
-        } else {
-            cssClass = 'bad';
-            recommendation = `❌ این وام شرایط مناسبی ندارد! نرخ سود واقعی ${realInterestRate.toFixed(1)}% بسیار بالاست. `;
-        }
-
-        recommendation += `\n\nشما در مجموع ${costRatio.toFixed(1)}% بیشتر از آنچه دریافت می‌کنید باید پرداخت کنید. `;
-        
-        if (inputs.depositAmount > 0) {
-            recommendation += `\n\nتوجه: شما ${this.formatNumber(inputs.depositAmount)} تومان باید ${inputs.depositPeriod} ماه قبل از دریافت وام سپرده‌گذاری کنید که هزینه فرصت آن ${this.formatNumber(results.opportunityCost)} تومان است.`;
-        }
-
-        if (inputs.commissionPercent > 2 || inputs.upfrontDeduction > 0) {
-            recommendation += `\n\nهزینه‌های اولیه (کارمزد و کسورات) نیز بالا است و باعث کاهش مبلغ دریافتی شده است.`;
-        }
-
-        this.elements.recommendation.className = `result-card recommendation ${cssClass}`;
-        this.elements.recommendationText.textContent = recommendation;
-    }
-
-    generateAmortizationSchedule(schedule, inputs) {
-        let html = '<table class="amortization-table"><thead><tr>';
-        html += '<th>ماه</th>';
-        html += '<th>قسط</th>';
-        html += '<th>اصل وام</th>';
-        html += '<th>سود</th>';
-        html += '<th>مانده</th>';
-        html += '</tr></thead><tbody>';
-
-        schedule.forEach(row => {
-            html += '<tr>';
-            html += `<td>${row.month}</td>`;
-            html += `<td>${this.formatNumber(row.payment)}</td>`;
-            html += `<td>${this.formatNumber(row.principal)}</td>`;
-            html += `<td>${this.formatNumber(row.interest)}</td>`;
-            html += `<td>${this.formatNumber(row.balance)}</td>`;
-            html += '</tr>';
-        });
-
-        html += '</tbody></table>';
-        this.elements.amortizationTable.innerHTML = html;
-    }
-
-    toggleAmortizationTable() {
-        const table = this.elements.amortizationTable;
-        const button = this.elements.toggleAmortization;
-        
-        if (table.style.display === 'none') {
-            table.style.display = 'block';
-            button.textContent = 'پنهان کردن جدول';
-        } else {
-            table.style.display = 'none';
-            button.textContent = 'نمایش جدول کامل';
-        }
-    }
-
-    async saveCalculation() {
-        if (!this.currentCalculation) {
-            alert('ابتدا محاسبات را انجام دهید');
-            return;
-        }
-
-        try {
-            await this.db.saveCalculation(this.currentCalculation);
-            alert('محاسبات ذخیره شد');
-            this.loadHistory();
-        } catch (error) {
-            console.error('Error saving calculation:', error);
-            alert('خطا در ذخیره‌سازی');
-        }
-    }
-
-    async loadHistory() {
-        try {
-            const calculations = await this.db.getAllCalculations();
-            this.displayHistory(calculations.reverse()); // Show newest first
-        } catch (error) {
-            console.error('Error loading history:', error);
-        }
-    }
-
-    displayHistory(calculations) {
-        if (calculations.length === 0) {
-            this.elements.historyList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">هنوز محاسبه‌ای ذخیره نشده است</p>';
-            return;
-        }
-
-        let html = '';
-        calculations.forEach(calc => {
-            const date = new Date(calc.timestamp);
-            html += `<div class="history-item" data-id="${calc.id}">`;
-            html += `<h4>${calc.inputs.bankName} - ${this.formatNumber(calc.inputs.loanAmount)} تومان</h4>`;
-            html += `<p>📅 تاریخ: ${this.formatDate(date)}</p>`;
-            html += `<p>💰 قسط ماهانه: ${this.formatNumber(calc.results.monthlyPayment)} تومان</p>`;
-            html += `<p>📊 نرخ سود واقعی: ${calc.results.realInterestRate.toFixed(2)}%</p>`;
-            html += `<p>⏱️ مدت: ${calc.inputs.loanPeriod} ماه</p>`;
-            html += `<button class="delete-btn" onclick="calculator.deleteCalculation(${calc.id})">حذف</button>`;
-            html += `</div>`;
-        });
-
-        this.elements.historyList.innerHTML = html;
-
-        // Add click handlers to load calculation
-        document.querySelectorAll('.history-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                if (!e.target.classList.contains('delete-btn')) {
-                    const id = parseInt(item.dataset.id);
-                    this.loadCalculation(id, calculations);
-                }
-            });
-        });
-    }
-
-    loadCalculation(id, calculations) {
-        const calc = calculations.find(c => c.id === id);
-        if (!calc) return;
-
-        // Load inputs
-        this.elements.bankName.value = calc.inputs.bankName;
-        this.elements.loanAmount.value = calc.inputs.loanAmount;
-        this.elements.depositAmount.value = calc.inputs.depositAmount;
-        this.elements.depositPeriod.value = calc.inputs.depositPeriod;
-        this.elements.interestRate.value = calc.inputs.interestRate;
-        this.elements.loanPeriod.value = calc.inputs.loanPeriod;
-        this.elements.commissionPercent.value = calc.inputs.commissionPercent;
-        this.elements.upfrontDeduction.value = calc.inputs.upfrontDeduction;
-        this.elements.insurancePercent.value = calc.inputs.insurancePercent;
-        this.elements.inflationRate.value = calc.inputs.inflationRate;
-        this.elements.calculationMethod.value = calc.inputs.calculationMethod;
-
-        // Recalculate
-        this.calculate();
-
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    async deleteCalculation(id) {
-        if (!confirm('آیا از حذف این محاسبه اطمینان دارید؟')) return;
-
-        try {
-            await this.db.deleteCalculation(id);
-            this.loadHistory();
-        } catch (error) {
-            console.error('Error deleting calculation:', error);
-            alert('خطا در حذف محاسبه');
-        }
-    }
-
-    async clearHistory() {
-        if (!confirm('آیا از حذف تمام تاریخچه محاسبات اطمینان دارید؟')) return;
-
-        try {
-            await this.db.clearAll();
-            this.loadHistory();
-            alert('تاریخچه پاک شد');
-        } catch (error) {
-            console.error('Error clearing history:', error);
-            alert('خطا در پاک کردن تاریخچه');
-        }
-    }
-
-    formatNumber(number) {
-        return new Intl.NumberFormat('fa-IR').format(Math.round(number));
-    }
-
-    formatDate(date) {
-        return new Intl.DateTimeFormat('fa-IR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        }).format(date);
-    }
-
-    animateNumber(element, endValue, suffix = '', decimals = 0) {
-        const duration = 1000;
-        const startValue = 0;
-        const startTime = performance.now();
-
-        const updateNumber = (currentTime) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            
-            // Easing function
-            const easeOutQuad = progress * (2 - progress);
-            const currentValue = startValue + (endValue - startValue) * easeOutQuad;
-            
-            element.textContent = this.formatNumber(currentValue) + suffix;
-            
-            if (progress < 1) {
-                requestAnimationFrame(updateNumber);
-            } else {
-                element.textContent = this.formatNumber(endValue) + suffix;
-            }
-        };
-
-        requestAnimationFrame(updateNumber);
-    }
+  buildTable(r.rows);
+  requestAnimationFrame(drawChart);
 }
 
-// Initialize the calculator when DOM is loaded
-let calculator;
-document.addEventListener('DOMContentLoaded', () => {
-    calculator = new LoanCalculator();
-});
+function buildTable(rows) {
+  const wrap = $('amortizationTable'); wrap.replaceChildren();
+  const tb = document.createElement('table'); tb.className = 'amortization-table';
+  const cap = document.createElement('caption'); cap.className = 'sr-only'; cap.textContent = t('tableTitle'); tb.append(cap);
+  const hr = tb.createTHead().insertRow();
+  ['colMonth', 'colPayment', 'colPrincipal', 'colInterest', 'colInsurance', 'colBalance'].forEach(k => { const th = document.createElement('th'); th.scope = 'col'; th.textContent = t(k); hr.append(th); });
+  const body = tb.createTBody();
+  for (const r of rows) {
+    const tr = body.insertRow();
+    [r.month, r.payment, r.principal, r.interest, r.insurance, r.balance].forEach((v, i) => { tr.insertCell().textContent = i === 0 ? fmt(v) : fmt(v); });
+  }
+  wrap.append(tb);
+}
 
+function drawChart() {
+  if (!cur || $('resultsSection').hidden) return;
+  const rows = cur.results.rows, cv = $('paymentChart');
+  const w = cv.clientWidth || 600, h = 300, dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+  const cs = getComputedStyle(document.documentElement);
+  const col = n => cs.getPropertyValue(n).trim();
+  const bin = rows.length > 96 ? 12 : 1, bars = [];
+  for (let i = 0; i < rows.length; i += bin) {
+    const g = rows.slice(i, i + bin);
+    bars.push({ p: g.reduce((s, r) => s + r.principal, 0), i: g.reduce((s, r) => s + r.interest + r.insurance, 0), label: bin === 1 ? g[0].month : Math.floor(i / 12) + 1 });
+  }
+  const max = Math.max(...bars.map(b => b.p + b.i)) || 1;
+  const L = 52, R = 8, Tp = 10, B = 26, cw = w - L - R, ch = h - Tp - B;
+  const compact = new Intl.NumberFormat(locale(), { notation: 'compact', maximumFractionDigits: 1 });
+  c.font = '11px Vazirmatn, sans-serif'; c.fillStyle = col('--muted'); c.strokeStyle = col('--border'); c.textBaseline = 'middle';
+  c.textAlign = 'right';
+  for (let k = 0; k <= 4; k++) {
+    const y = Tp + ch - ch * k / 4;
+    c.beginPath(); c.moveTo(L, y); c.lineTo(w - R, y); c.stroke();
+    c.fillText(compact.format(max * k / 4), L - 6, y);
+  }
+  const bw = cw / bars.length, gap = Math.min(2, bw * 0.2);
+  bars.forEach((b, idx) => {
+    const x = L + idx * bw + gap / 2, ph = ch * b.p / max, ih = ch * b.i / max;
+    c.fillStyle = col('--c-principal'); c.fillRect(x, Tp + ch - ph, bw - gap, ph);
+    c.fillStyle = col('--c-interest'); c.fillRect(x, Tp + ch - ph - ih, bw - gap, ih);
+  });
+  c.fillStyle = col('--muted'); c.textAlign = 'center'; c.textBaseline = 'top';
+  const every = Math.max(1, Math.ceil(bars.length / Math.max(2, Math.floor(cw / 40))));
+  bars.forEach((b, idx) => { if (idx % every === 0) c.fillText(fmt(b.label), L + idx * bw + bw / 2, Tp + ch + 6); });
+  cv.setAttribute('aria-label', t('chartAria', { n: fmt(rows.length), unit: t(bin === 1 ? 'chartMonth' : 'chartYear') }));
+}
+
+function updateHints() {
+  [['loanAmount', 'loanAmountHint'], ['depositAmount', 'depositAmountHint']].forEach(([id, hid]) => {
+    const v = C.parseNumber($(id).value);
+    $(hid).textContent = isFinite(v) && v > 0 ? money(v) : '';
+  });
+}
+
+/* ---------- storage ---------- */
+const wrap = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+async function dbInit() {
+  if (db) return db;
+  db = await new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onerror = () => rej(r.error); r.onsuccess = () => res(r.result);
+    r.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE)) { const s = d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true }); s.createIndex('timestamp', 'timestamp'); }
+    };
+  });
+  await new Promise((res, rej) => {
+    const tx = db.transaction(STORE, 'readwrite'), cur = tx.objectStore(STORE).openCursor();
+    cur.onsuccess = () => { const c = cur.result; if (!c) return; const v = c.value; if (v.results) { delete v.results; c.update(v); } c.continue(); };
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+  return db;
+}
+async function dbAll() { await dbInit(); const a = await wrap(db.transaction(STORE).objectStore(STORE).getAll()); return a.sort((p, q) => q.timestamp.localeCompare(p.timestamp)); }
+async function dbAdd(rec) {
+  await dbInit();
+  const tx = db.transaction(STORE, 'readwrite'), s = tx.objectStore(STORE);
+  s.add(rec);
+  const keys = await wrap(s.getAllKeys());
+  keys.slice(0, Math.max(0, keys.length - MAX_ITEMS)).forEach(k => s.delete(k));
+  await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+}
+async function dbDel(id) { await dbInit(); const tx = db.transaction(STORE, 'readwrite'); tx.objectStore(STORE).delete(id); await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+async function dbClear() { await dbInit(); const tx = db.transaction(STORE, 'readwrite'); tx.objectStore(STORE).clear(); await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+
+async function saveCurrent() {
+  if (!cur) return toast(t('noCalc'), 'error');
+  try { await dbAdd({ inputs: cur.inputs, timestamp: cur.timestamp }); toast(t('saved')); loadHistory(); }
+  catch { toast(t('errSave'), 'error'); }
+}
+function fillForm(i) {
+  const d = C.defaults(i);
+  const set = (id, v) => { $(id).value = v === null || v === undefined || v === 0 && id !== 'loanAmount' ? (v === 0 ? '0' : '') : String(v); };
+  $('bankName').value = i.bankName || '';
+  ['loanAmount', 'loanPeriod', 'interestRate', 'commissionPercent', 'upfrontDeduction', 'insurancePercent', 'inflationRate', 'depositAmount', 'depositPeriod', 'depositRate'].forEach(id => { $(id).value = String(d[id]); });
+  $('opportunityRate').value = d.opportunityRate === null ? '' : String(d.opportunityRate);
+  $('calculationMethod').value = d.calculationMethod; $('depositLock').value = d.depositLock;
+  updateHints();
+}
+async function loadHistory() {
+  const list = $('historyList'); list.replaceChildren();
+  let items;
+  try { items = await dbAll(); } catch { const p = document.createElement('p'); p.className = 'empty'; p.textContent = t('historyErr'); list.append(p); return; }
+  if (!items.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = t('historyEmpty'); list.append(p); return; }
+  for (const it of items) {
+    let r; try { r = C.compute(it.inputs); } catch { continue; }
+    const x = C.defaults(it.inputs);
+    const card = document.createElement('div'); card.className = 'history-item';
+    const h = document.createElement('h4'); h.textContent = (x.bankName || t('defaultBank')) + ' — ' + money(x.loanAmount); card.append(h);
+    [['📅', new Date(it.timestamp).toLocaleDateString(locale(), { year: 'numeric', month: 'long', day: 'numeric' })],
+     ['💰', t('monthlyPayment') + ': ' + money(r.monthlyPayment)],
+     ['📊', t('effectiveRate') + ': ' + pct(r.effective)],
+     ['⏱️', t('loanPeriod') + ': ' + fmt(x.loanPeriod) + ' ' + t('months')]].forEach(([i, s]) => { const p = document.createElement('p'); p.textContent = i + ' ' + s; card.append(p); });
+    const acts = document.createElement('div'); acts.className = 'actions';
+    const load = document.createElement('button'); load.type = 'button'; load.className = 'btn btn-secondary btn-sm'; load.textContent = t('historyLoad');
+    load.addEventListener('click', () => { fillForm(it.inputs); $('loanForm').requestSubmit(); window.scrollTo({ top: 0 }); });
+    const del = document.createElement('button'); del.type = 'button'; del.className = 'btn btn-danger btn-sm'; del.textContent = t('historyDelete');
+    del.addEventListener('click', async () => {
+      if (!await askConfirm(t('confirmDelete'))) return;
+      try { await dbDel(it.id); toast(t('deleted')); loadHistory(); } catch { toast(t('errSave'), 'error'); }
+    });
+    acts.append(load, del); card.append(acts); list.append(card);
+  }
+}
+async function clearHistory() {
+  if (!await askConfirm(t('confirmClear'))) return;
+  try { await dbClear(); toast(t('cleared')); loadHistory(); } catch { toast(t('errSave'), 'error'); }
+}
+
+function bind() {
+  $('loanForm').addEventListener('submit', onSubmit);
+  $('saveBtn').addEventListener('click', saveCurrent);
+  $('clearHistoryBtn').addEventListener('click', clearHistory);
+  $('toggleAmortization').addEventListener('click', () => {
+    const tbl = $('amortizationTable'), open = tbl.hidden;
+    tbl.hidden = !open; $('toggleAmortization').setAttribute('aria-expanded', String(open));
+    $('toggleAmortization').textContent = t(open ? 'hideTable' : 'showTable');
+  });
+  ['loanAmount', 'depositAmount'].forEach(id => $(id).addEventListener('input', updateHints));
+  document.querySelectorAll('#loanForm input').forEach(i => i.addEventListener('input', () => { i.removeAttribute('aria-invalid'); }));
+  $('confirmDialog').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(drawChart, 150); });
+  window.addEventListener('themeChanged', e => { applyTheme(e.detail); requestAnimationFrame(drawChart); });
+  window.addEventListener('languageChanged', e => { lang = e.detail === 'en' ? 'en' : 'fa'; localStorage.setItem('lang', lang); applyI18n(); });
+}
+
+async function init() {
+  applyTheme(localStorage.getItem('theme'));
+  try { T = await (await fetch('assets/translations.json')).json(); } catch (e) { console.error('translations', e); }
+  bind(); applyI18n();
+}
+init();
+})();

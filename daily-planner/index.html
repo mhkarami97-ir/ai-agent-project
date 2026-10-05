@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="fa">
 <head>
 <link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title data-i18n="title">برنامه‌ریز روزانه</title>
@@ -14,115 +12,108 @@
 <body>
 <div class="container">
 <header>
-<h1 data-i18n="heading_0">📅 برنامه‌ریز روزانه</h1>
-<p class="subtitle" data-i18n="text_subtitle_0">مدیریت هوشمند وظایف روزانه شما</p>
+  <h1 data-i18n="appName">📅 برنامه‌ریز روزانه</h1>
+  <p class="subtitle" data-i18n="subtitle">مدیریت وظایف روزانه با تقویم شمسی</p>
 </header>
+
 <main>
-<!-- Persian Calendar Section -->
-<section class="calendar-section">
-<div class="calendar-header">
-<button class="btn-nav" data-i18n="button_0" id="prevMonth">◄</button>
-<h2 id="currentMonth"></h2>
-<button class="btn-nav" data-i18n="button_1" id="nextMonth">►</button>
-</div>
-<div class="calendar-grid" id="calendar"></div>
-<div class="today-info">
-<p id="todayDate"></p>
-</div>
+<section class="card calendar-section" aria-labelledby="currentMonth">
+  <div class="calendar-header">
+    <button class="btn-nav" id="prevMonth" type="button" data-i18n-aria="prevMonth">◄</button>
+    <h2 id="currentMonth" aria-live="polite"></h2>
+    <button class="btn-nav" id="nextMonth" type="button" data-i18n-aria="nextMonth">►</button>
+  </div>
+  <div class="calendar-grid" id="calendar"></div>
+  <div class="today-info"><p id="todayDate"></p><button class="btn btn-link" id="goToday" type="button" data-i18n="goToday">رفتن به امروز</button></div>
 </section>
-<!-- Task Input Section -->
-<section class="task-input-section">
-<h3 data-i18n="heading_2">افزودن وظیفه جدید</h3>
-<div class="input-group">
-<input class="input-field" id="taskTitle" placeholder="عنوان وظیفه" type="text"/>
-<textarea class="input-field" id="taskDescription" placeholder="توضیحات (اختیاری)" rows="3"></textarea>
-<div class="row">
-<div class="col">
-<label data-i18n="label_0" for="taskDate">تاریخ:</label>
-<input class="input-field" id="taskDate" placeholder="انتخاب از تقویم" readonly="" type="text"/>
-</div>
-<div class="col">
-<label data-i18n="label_1" for="taskTime">زمان:</label>
-<input class="input-field" id="taskTime" type="time"/>
-</div>
-</div>
-<div class="row">
-<div class="col">
-<label data-i18n="label_2" for="taskPriority">اولویت:</label>
-<select class="input-field" id="taskPriority">
-<option value="low">کم</option>
-<option selected="" value="medium">متوسط</option>
-<option value="high">زیاد</option>
-</select>
-</div>
-<div class="col">
-<label data-i18n="label_3" for="taskReminder">یادآوری:</label>
-<select class="input-field" id="taskReminder">
-<option value="none">بدون یادآوری</option>
-<option value="0">در زمان وظیفه</option>
-<option value="5">5 دقیقه قبل</option>
-<option value="15">15 دقیقه قبل</option>
-<option value="30">30 دقیقه قبل</option>
-<option value="60">1 ساعت قبل</option>
-</select>
-</div>
-</div>
-<button class="btn btn-primary" data-i18n="button_2" id="addTaskBtn">افزودن وظیفه</button>
-<button class="btn btn-success" data-i18n="button_3" id="updateTaskBtn" style="display: none;">ذخیره تغییرات</button>
-<button class="btn btn-secondary" data-i18n="button_4" id="cancelEditBtn" style="display: none;">انصراف</button>
-</div>
+
+<section class="card" aria-labelledby="formTitle">
+  <h3 id="formTitle" data-i18n="addTaskTitle">افزودن وظیفه جدید</h3>
+  <form id="taskForm" class="input-group" novalidate>
+    <div class="col"><label for="taskTitle" data-i18n="taskTitle">عنوان</label>
+      <input class="input-field" id="taskTitle" type="text" maxlength="120" autocomplete="off" data-i18n-ph="taskTitlePh"/></div>
+    <div class="col"><label for="taskDescription" data-i18n="taskDesc">توضیحات</label>
+      <textarea class="input-field" id="taskDescription" rows="3" maxlength="1000" data-i18n-ph="taskDescPh"></textarea></div>
+    <div class="row">
+      <div class="col"><label for="taskDate" data-i18n="taskDate">تاریخ</label>
+        <input class="input-field" id="taskDate" type="text" readonly data-i18n-ph="taskDatePh"/></div>
+      <div class="col"><label for="taskTime" data-i18n="taskTime">زمان</label>
+        <input class="input-field" id="taskTime" type="time"/></div>
+    </div>
+    <div class="row">
+      <div class="col"><label for="taskPriority" data-i18n="priority">اولویت</label>
+        <select class="input-field" id="taskPriority">
+          <option value="low" data-i18n="priLow">کم</option>
+          <option value="medium" data-i18n="priMedium" selected>متوسط</option>
+          <option value="high" data-i18n="priHigh">زیاد</option>
+        </select></div>
+      <div class="col"><label for="taskReminder" data-i18n="reminder">یادآوری</label>
+        <select class="input-field" id="taskReminder">
+          <option value="none" data-i18n="remNone">بدون یادآوری</option>
+          <option value="0" data-i18n="rem0">در زمان وظیفه</option>
+          <option value="5" data-i18n="rem5">۵ دقیقه قبل</option>
+          <option value="15" data-i18n="rem15">۱۵ دقیقه قبل</option>
+          <option value="30" data-i18n="rem30">۳۰ دقیقه قبل</option>
+          <option value="60" data-i18n="rem60">۱ ساعت قبل</option>
+        </select></div>
+    </div>
+    <div class="notif-row" id="notifRow">
+      <button class="btn btn-secondary btn-sm" id="notifBtn" type="button" data-i18n="enableNotif">فعال‌سازی اعلان مرورگر</button>
+      <small class="hint" id="notifStatus"></small>
+    </div>
+    <small class="hint" data-i18n="notifHelp"></small>
+    <p class="form-error" id="formError" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-primary" id="addTaskBtn" type="submit" data-i18n="addTask">افزودن وظیفه</button>
+      <button class="btn btn-success" id="updateTaskBtn" type="submit" hidden data-i18n="saveChanges">ذخیره تغییرات</button>
+      <button class="btn btn-secondary" id="cancelEditBtn" type="button" hidden data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
 </section>
-<!-- Filter Section -->
-<section class="filter-section">
-<h3 data-i18n="heading_3">فیلتر وظایف</h3>
-<div class="filter-buttons">
-<button class="btn-filter active" data-filter="all" data-i18n="button_5">همه</button>
-<button class="btn-filter" data-filter="today" data-i18n="button_6">امروز</button>
-<button class="btn-filter" data-filter="week" data-i18n="button_7">این هفته</button>
-<button class="btn-filter" data-filter="completed" data-i18n="button_8">انجام شده</button>
-<button class="btn-filter" data-filter="pending" data-i18n="button_9">در انتظار</button>
-</div>
-<div class="search-box">
-<input class="input-field" id="searchTasks" placeholder="🔍 جستجو در وظایف..." type="text"/>
-</div>
+
+<section class="card" aria-labelledby="filterTitle">
+  <h3 id="filterTitle" data-i18n="filterTitle">فیلتر وظایف</h3>
+  <div class="filter-buttons" role="group" aria-labelledby="filterTitle">
+    <button class="btn-filter active" data-filter="all" aria-pressed="true" type="button" data-i18n="fAll">همه</button>
+    <button class="btn-filter" data-filter="today" aria-pressed="false" type="button" data-i18n="fToday">امروز</button>
+    <button class="btn-filter" data-filter="week" aria-pressed="false" type="button" data-i18n="fWeek">این هفته</button>
+    <button class="btn-filter" data-filter="selected" aria-pressed="false" type="button" data-i18n="fSelected">روز انتخاب‌شده</button>
+    <button class="btn-filter" data-filter="completed" aria-pressed="false" type="button" data-i18n="fCompleted">انجام شده</button>
+    <button class="btn-filter" data-filter="pending" aria-pressed="false" type="button" data-i18n="fPending">در انتظار</button>
+  </div>
+  <label class="sr-only" for="searchTasks" data-i18n="searchPh">جستجو</label>
+  <input class="input-field" id="searchTasks" type="search" data-i18n-ph="searchPh"/>
 </section>
-<!-- Tasks List Section -->
-<section class="tasks-section">
-<div class="tasks-header">
-<h3 data-i18n="heading_4">لیست وظایف</h3>
-<button class="btn btn-danger-outline" data-i18n="button_10" id="clearCompletedBtn">پاک کردن انجام شده‌ها</button>
-</div>
-<div class="tasks-list" id="tasksList">
-<p class="no-tasks" data-i18n="text_no_tasks_1">هیچ وظیفه‌ای وجود ندارد. لطفاً یک وظیفه جدید اضافه کنید.</p>
-</div>
+
+<section class="card" aria-labelledby="listTitle">
+  <div class="tasks-header">
+    <h3 id="listTitle" data-i18n="listTitle">لیست وظایف</h3>
+    <button class="btn btn-danger-outline" id="clearCompletedBtn" type="button" data-i18n="clearCompleted">پاک کردن انجام شده‌ها</button>
+  </div>
+  <ul class="tasks-list" id="tasksList"></ul>
 </section>
-<!-- Statistics Section -->
-<section class="stats-section">
-<h3 data-i18n="heading_5">آمار وظایف</h3>
-<div class="stats-grid">
-<div class="stat-card">
-<div class="stat-number" id="totalTasks">0</div>
-<div class="stat-label">کل وظایف</div>
-</div>
-<div class="stat-card">
-<div class="stat-number" id="completedTasks">0</div>
-<div class="stat-label">انجام شده</div>
-</div>
-<div class="stat-card">
-<div class="stat-number" id="pendingTasks">0</div>
-<div class="stat-label">در انتظار</div>
-</div>
-<div class="stat-card">
-<div class="stat-number" id="todayTasks">0</div>
-<div class="stat-label">وظایف امروز</div>
-</div>
-</div>
+
+<section class="card" aria-labelledby="statsTitle">
+  <h3 id="statsTitle" data-i18n="statsTitle">آمار وظایف</h3>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-number" id="totalTasks">0</div><div class="stat-label" data-i18n="statTotal">کل وظایف</div></div>
+    <div class="stat-card"><div class="stat-number" id="completedTasks">0</div><div class="stat-label" data-i18n="statDone">انجام شده</div></div>
+    <div class="stat-card"><div class="stat-number" id="pendingTasks">0</div><div class="stat-label" data-i18n="statPending">در انتظار</div></div>
+    <div class="stat-card"><div class="stat-number" id="todayTasks">0</div><div class="stat-label" data-i18n="statToday">وظایف امروز</div></div>
+  </div>
 </section>
 </main>
-<footer>
-<p>جعبه ابزار</p>
-</footer>
 </div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <h3 id="confirmTitle" data-i18n="confirmTitle">تایید</h3>
+  <p id="confirmMessage"></p>
+  <div class="actions"><button class="btn btn-danger" id="confirmYes" type="button" data-i18n="yes">بله</button>
+  <button class="btn btn-secondary" id="confirmNo" type="button" data-i18n="no">خیر</button></div>
+</dialog>
+
+<script src="assets/js/core.js"></script>
 <script src="assets/js/script.js"></script>
 <script src="../assets/tool-wrapper.js"></script>
 </body>

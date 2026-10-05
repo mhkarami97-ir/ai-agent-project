@@ -1,7 +1,10 @@
 {
   "fa": {
     "app": {
-      "title": "بوم فرصت"
+      "title": "بوم فرصت",
+      "saveError": "ذخیره‌سازی ناموفق بود",
+      "loadError": "خطا در بارگذاری برنامه. لطفاً صفحه را رفرش کنید.",
+      "volatile": "ذخیره‌سازی مرورگر در دسترس نیست؛ تغییرات با بستن صفحه از بین می‌روند"
     },
     "canvas": {
       "problems": "مشکلات و نیازها",
@@ -11,7 +14,8 @@
       "metrics": "معیارهای موفقیت",
       "channels": "کانال‌های دسترسی",
       "costs": "هزینه‌ها",
-      "revenue": "منابع درآمد"
+      "revenue": "منابع درآمد",
+      "addTo": "افزودن آیتم به «{name}»"
     },
     "board": {
       "selectBoard": "انتخاب بورد",
@@ -23,6 +27,7 @@
       "clear": "پاک کردن بورد",
       "newTitle": "نام بورد جدید",
       "renameTitle": "نام جدید بورد",
+      "nameLabel": "نام بورد",
       "deleteConfirm": "آیا از حذف این بورد اطمینان دارید؟",
       "clearConfirm": "آیا می‌خواهید تمام آیتم‌های این بورد را پاک کنید؟",
       "created": "بورد با موفقیت ایجاد شد",
@@ -31,38 +36,48 @@
       "cleared": "بورد پاک شد",
       "exported": "بورد با موفقیت دانلود شد",
       "imported": "بورد با موفقیت وارد شد",
-      "importError": "خطا در وارد کردن فایل",
+      "importError": "فایل معتبر نیست یا قابل خواندن نبود",
+      "importTooBig": "حجم فایل بیش از ۲ مگابایت است",
       "nameRequired": "نام بورد الزامی است",
       "selectFirst": "ابتدا یک بورد انتخاب کنید",
-      "defaultName": "بورد جدید"
+      "defaultName": "بورد جدید",
+      "untitled": "بدون نام",
+      "copy": "کپی",
+      "limit": "حداکثر ۵۰ بورد مجاز است"
     },
     "item": {
       "add": "افزودن آیتم",
       "edit": "ویرایش آیتم",
       "delete": "حذف آیتم",
+      "text": "متن",
+      "section": "بخش",
       "placeholder": "متن آیتم را وارد کنید...",
       "added": "آیتم اضافه شد",
       "updated": "آیتم به‌روز شد",
       "deleted": "آیتم حذف شد",
-      "moved": "آیتم جابجا شد",
-      "required": "متن آیتم نمی‌تواند خالی باشد"
-    },
-    "settings": {
-      "theme": "تغییر تم",
-      "language": "تغییر زبان"
+      "restored": "آیتم بازگردانده شد",
+      "undo": "بازگرداندن",
+      "moved": "آیتم جابه‌جا شد",
+      "moveUp": "انتقال به بالا",
+      "moveDown": "انتقال به پایین",
+      "required": "متن آیتم نمی‌تواند خالی باشد",
+      "limit": "هر بخش حداکثر ۲۰۰ آیتم دارد",
+      "empty": "آیتمی وجود ندارد"
     },
     "common": {
       "cancel": "لغو",
       "confirm": "تایید",
-      "delete": "حذف",
-      "edit": "ویرایش",
-      "save": "ذخیره",
+      "confirmTitle": "تایید",
+      "yes": "بله",
       "close": "بستن"
     }
   },
   "en": {
     "app": {
-      "title": "Opportunity Canvas"
+      "title": "Opportunity Canvas",
+      "saveError": "Saving failed",
+      "loadError": "Failed to load the app. Please refresh the page.",
+      "volatile": "Browser storage is unavailable; changes are lost when you close the page"
     },
     "canvas": {
       "problems": "Problems and Needs",
@@ -72,7 +87,8 @@
       "metrics": "Success Metrics",
       "channels": "Access Channels",
       "costs": "Costs",
-      "revenue": "Revenue Sources"
+      "revenue": "Revenue Sources",
+      "addTo": "Add item to \"{name}\""
     },
     "board": {
       "selectBoard": "Select Board",
@@ -84,6 +100,7 @@
       "clear": "Clear Board",
       "newTitle": "New Board Name",
       "renameTitle": "New Board Name",
+      "nameLabel": "Board name",
       "deleteConfirm": "Are you sure you want to delete this board?",
       "clearConfirm": "Do you want to clear all items from this board?",
       "created": "Board created successfully",
@@ -92,32 +109,39 @@
       "cleared": "Board cleared",
       "exported": "Board downloaded successfully",
       "imported": "Board imported successfully",
-      "importError": "Error importing file",
+      "importError": "The file is invalid or could not be read",
+      "importTooBig": "The file is larger than 2 MB",
       "nameRequired": "Board name is required",
       "selectFirst": "First select a board",
-      "defaultName": "New Board"
+      "defaultName": "New Board",
+      "untitled": "Untitled",
+      "copy": "copy",
+      "limit": "A maximum of 50 boards is allowed"
     },
     "item": {
       "add": "Add Item",
       "edit": "Edit Item",
       "delete": "Delete Item",
+      "text": "Text",
+      "section": "Section",
       "placeholder": "Enter item text...",
       "added": "Item added",
       "updated": "Item updated",
       "deleted": "Item deleted",
+      "restored": "Item restored",
+      "undo": "Undo",
       "moved": "Item moved",
-      "required": "Item text cannot be empty"
-    },
-    "settings": {
-      "theme": "Change Theme",
-      "language": "Change Language"
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "required": "Item text cannot be empty",
+      "limit": "Each section holds at most 200 items",
+      "empty": "No items yet"
     },
     "common": {
       "cancel": "Cancel",
       "confirm": "Confirm",
-      "delete": "Delete",
-      "edit": "Edit",
-      "save": "Save",
+      "confirmTitle": "Confirmation",
+      "yes": "Yes",
       "close": "Close"
     }
   }
