@@ -604,6 +604,24 @@ const LIST_DATA = Object.freeze({
       category: "games",
       icon: "/assets/icons/game/02.png",
     },
+    {
+      name: "سلامت",
+      id: "mhk.health",
+      category: "health",
+      icon: "/assets/icons/app/24.png",
+    },
+    {
+      name: "سلامت",
+      id: "mhk.wheather",
+      category: "tools",
+      icon: "/assets/icons/app/25.png",
+    },
+    {
+      name: "زبان انگلیسی",
+      id: "mhk.english",
+      category: "tools",
+      icon: "/assets/icons/app/26.png",
+    },
   ],
   bots: [
     {
