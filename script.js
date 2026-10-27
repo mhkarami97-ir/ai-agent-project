@@ -622,6 +622,18 @@ const LIST_DATA = Object.freeze({
       category: "tools",
       icon: "/assets/icons/app/26.png",
     },
+    {
+      name: "خاطره‌نامه",
+      id: "mhk.memory",
+      category: "tools",
+      icon: "/assets/icons/app/27.png",
+    },
+    {
+      name: "هوش‌مصنوعی",
+      id: "mhk.ai.tools",
+      category: "tools",
+      icon: "/assets/icons/app/28.png",
+    },
   ],
   bots: [
     {
