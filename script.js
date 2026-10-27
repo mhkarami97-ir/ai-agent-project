@@ -634,6 +634,12 @@ const LIST_DATA = Object.freeze({
       category: "tools",
       icon: "/assets/icons/app/28.png",
     },
+    {
+      name: "غزل",
+      id: "mhk.ghazal",
+      category: "culture",
+      icon: "/assets/icons/app/29.png",
+    },
   ],
   bots: [
     {
