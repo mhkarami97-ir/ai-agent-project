@@ -1,0 +1,103 @@
+<!doctype html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">محاسبه زمان رسیدن</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+</head>
+<body>
+    <main class="tt page">
+        <header>
+            <h1 data-i18n="title">محاسبه زمان رسیدن</h1>
+            <p class="muted" data-i18n="subtitle"></p>
+        </header>
+
+        <section class="card">
+            <form id="form" novalidate>
+                <div class="lbl"><label for="distance" data-i18n="distance">مسافت (کیلومتر)</label><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_distance">?</button></div>
+                <p class="help-text" id="help_distance" data-i18n="help_distance" hidden></p>
+                <input id="distance" class="input" inputmode="decimal" dir="ltr" autocomplete="off" placeholder="100">
+                <div class="grid">
+                    <div>
+                <div class="lbl"><label for="minSpeed" data-i18n="minSpeed">حداقل سرعت</label><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_minSpeed">?</button></div>
+                <p class="help-text" id="help_minSpeed" data-i18n="help_minSpeed" hidden></p>
+                <div class="stepper">
+                    <button type="button" class="btn" data-field="minSpeed" data-dir="-1" aria-label="-">−</button>
+                    <input id="minSpeed" class="input" inputmode="decimal" dir="ltr" autocomplete="off">
+                    <button type="button" class="btn" data-field="minSpeed" data-dir="1" aria-label="+">+</button>
+                </div>
+                    </div>
+                    <div>
+                <div class="lbl"><label for="maxSpeed" data-i18n="maxSpeed">حداکثر سرعت</label><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_maxSpeed">?</button></div>
+                <p class="help-text" id="help_maxSpeed" data-i18n="help_maxSpeed" hidden></p>
+                <div class="stepper">
+                    <button type="button" class="btn" data-field="maxSpeed" data-dir="-1" aria-label="-">−</button>
+                    <input id="maxSpeed" class="input" inputmode="decimal" dir="ltr" autocomplete="off">
+                    <button type="button" class="btn" data-field="maxSpeed" data-dir="1" aria-label="+">+</button>
+                </div>
+                    </div>
+                    <div>
+                <div class="lbl"><label for="step" data-i18n="step">گام سرعت</label><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_step">?</button></div>
+                <p class="help-text" id="help_step" data-i18n="help_step" hidden></p>
+                <div class="stepper">
+                    <button type="button" class="btn" data-field="step" data-dir="-1" aria-label="-">−</button>
+                    <input id="step" class="input" inputmode="decimal" dir="ltr" autocomplete="off">
+                    <button type="button" class="btn" data-field="step" data-dir="1" aria-label="+">+</button>
+                </div>
+                    </div>
+                </div>
+
+                <p id="error" class="error" role="alert" hidden></p>
+                <div class="actions">
+                    <button class="btn primary" data-i18n="save">محاسبه و ذخیره در تاریخچه</button>
+                    <button type="button" id="resetDefaults" class="btn" data-i18n="resetDefaults">بازنشانی تنظیمات</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="card" aria-live="polite">
+            <div class="title-row">
+                <h2 data-i18n="results">نتیجه</h2>
+                <button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_results">?</button>
+            </div>
+            <p class="help-text" id="help_results" data-i18n="help_results" hidden></p>
+            <p id="summary" class="hint"></p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col" data-i18n="colSpeed">سرعت</th>
+                            <th scope="col" data-i18n="colTime">زمان رسیدن</th>
+                            <th scope="col" data-i18n="colDiff">فاصله با ردیف قبلی</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rows"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="row">
+                <h2 data-i18n="history">تاریخچه</h2>
+                <button type="button" id="clearHistory" class="btn danger small" data-i18n="clearHistory">پاک کردن تاریخچه</button>
+            </div>
+            <div id="history" class="list"></div>
+        </section>
+    </main>
+    <dialog id="confirm">
+        <form method="dialog">
+            <p id="confirmText"></p>
+            <div class="actions"><button value="yes" class="btn danger" data-i18n="yes">بله</button><button value="cancel" class="btn" data-i18n="cancel">انصراف</button></div>
+        </form>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+    <script src="assets/js/app.js"></script>
+    <script src="../assets/tool-wrapper.js"></script>
+</body>
+</html>

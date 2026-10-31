@@ -1,5 +1,23 @@
 ﻿const tools = [
   {
+    path: "travel-time",
+    category: "daily",
+    faName: "محاسبه زمان رسیدن",
+    enName: "Arrival Time Calculator",
+    faDesc: "زمان رسیدن به مقصد با سرعت‌های مختلف",
+    enDesc: "Travel time at different speeds",
+    icon: "🚗",
+  },
+  {
+    path: "used-price",
+    category: "finance",
+    faName: "قیمت دست دوم",
+    enName: "Used Price Estimator",
+    faDesc: "برآورد قیمت تقریبی کالای دست دوم",
+    enDesc: "Estimate second-hand price",
+    icon: "🏷️",
+  },
+  {
     path: "story-map",
     category: "project",
     faName: "نقشه داستان",
@@ -956,7 +974,7 @@ class ListBrowser {
     apps: { url: (id) => `https://cafebazaar.ir/app/${id}`, label: (id) => id },
     bots: { url: (id) => `https://t.me/${id}`, label: (id) => `@${id}` },
     channels: { url: (id) => `https://t.me/${id}`, label: (id) => `@${id}` },
-    sites: { url: (id) => id, label: (item) => item.description }
+    sites: { url: (id) => id, label: (item) => item.description },
   });
 
   static #groupDefs = new Map(
@@ -1019,7 +1037,7 @@ class ListBrowser {
       }));
   }
 
-#buildExternalEntries(key, items) {
+  #buildExternalEntries(key, items) {
     const builder = ListBrowser.#externalBuilders[key];
     return [...items]
       .sort((a, b) => ListBrowser.#compareByGroup(key, a, b, a.name, b.name))
@@ -1034,8 +1052,10 @@ class ListBrowser {
           icon: i.icon,
           external: true,
           group: i.category,
-          searchText: ListBrowser.#normalize(`${i.name} ${i.id} ${i.description || ''}`),
-          telegramId: (key === "apps" || key === "sites") ? null : i.id,
+          searchText: ListBrowser.#normalize(
+            `${i.name} ${i.id} ${i.description || ""}`,
+          ),
+          telegramId: key === "apps" || key === "sites" ? null : i.id,
         };
       });
   }

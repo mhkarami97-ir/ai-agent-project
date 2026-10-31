@@ -1,0 +1,102 @@
+<!doctype html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">قیمت دست دوم</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+</head>
+<body>
+    <main class="up page">
+        <header>
+            <h1 data-i18n="title">محاسبه قیمت تقریبی دست دوم</h1>
+            <p class="muted" data-i18n="subtitle"></p>
+        </header>
+
+        <section class="card">
+            <form id="form" novalidate>
+                <div class="lbl">
+                    <label for="category" data-i18n="category">نوع کالا</label>
+                    <button type="button" class="help" data-help="help_category" aria-expanded="false" aria-controls="help_category" data-i18n-aria="helpLabel" aria-label="راهنما">?</button>
+                </div>
+                <p class="help-text" id="help_category" data-i18n="help_category" hidden></p>
+                <select id="category" class="input"></select>
+                <div class="lbl">
+                    <label for="newPrice" data-i18n="newPrice">قیمت کالای نو (تومان)</label>
+                    <button type="button" class="help" data-help="help_newPrice" aria-expanded="false" aria-controls="help_newPrice" data-i18n-aria="helpLabel" aria-label="راهنما">?</button>
+                </div>
+                <p class="help-text" id="help_newPrice" data-i18n="help_newPrice" hidden></p>
+                <input id="newPrice" class="input" inputmode="numeric" dir="ltr" autocomplete="off" placeholder="25,000,000">
+                <div class="grid"><div>
+                <div class="lbl">
+                    <label for="years" data-i18n="years">مدت استفاده (سال)</label>
+                    <button type="button" class="help" data-help="help_years" aria-expanded="false" aria-controls="help_years" data-i18n-aria="helpLabel" aria-label="راهنما">?</button>
+                </div>
+                <p class="help-text" id="help_years" data-i18n="help_years" hidden></p>
+                <input id="years" class="input" inputmode="decimal" dir="ltr" autocomplete="off" placeholder="2">
+                </div><div>
+                <div class="lbl">
+                    <label for="market" data-i18n="market">تعدیل بازار</label>
+                    <button type="button" class="help" data-help="help_market" aria-expanded="false" aria-controls="help_market" data-i18n-aria="helpLabel" aria-label="راهنما">?</button>
+                </div>
+                <p class="help-text" id="help_market" data-i18n="help_market" hidden></p>
+                <input id="market" class="input" dir="ltr" autocomplete="off" placeholder="0">
+                </div></div>
+
+                <details class="rates">
+                    <summary data-i18n="ratesTitle">تنظیمات پیشرفته</summary>
+                    <div class="grid"><div>
+                <div class="lbl">
+                    <label for="rate" data-i18n="rate">نرخ استهلاک سالانه</label>
+                    <button type="button" class="help" data-help="help_rate" aria-expanded="false" aria-controls="help_rate" data-i18n-aria="helpLabel" aria-label="راهنما">?</button>
+                </div>
+                <p class="help-text" id="help_rate" data-i18n="help_rate" hidden></p>
+                <input id="rate" class="input" inputmode="decimal" dir="ltr" autocomplete="off">
+                    </div><div>
+                <div class="lbl">
+                    <label for="floor" data-i18n="floor">حداقل ارزش باقی‌مانده</label>
+                    <button type="button" class="help" data-help="help_floor" aria-expanded="false" aria-controls="help_floor" data-i18n-aria="helpLabel" aria-label="راهنما">?</button>
+                </div>
+                <p class="help-text" id="help_floor" data-i18n="help_floor" hidden></p>
+                <input id="floor" class="input" inputmode="decimal" dir="ltr" autocomplete="off">
+                    </div></div>
+                    <div class="actions"><button type="button" id="resetRates" class="btn small" data-i18n="resetRates">بازنشانی نرخ‌ها</button></div>
+                </details>
+
+                <p id="error" class="error" role="alert" hidden></p>
+                <div class="actions">
+                    <button class="btn primary" data-i18n="save">محاسبه و ذخیره در تاریخچه</button>
+                </div>
+            </form>
+
+            <div class="result" aria-live="polite">
+                <div class="hint" data-i18n="resultLabel">قیمت تقریبی دست دوم</div>
+                <div id="result" class="value num">—</div>
+                <div id="detail" class="hint"></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="row">
+                <h2 data-i18n="history">تاریخچه</h2>
+                <button type="button" id="clearHistory" class="btn danger small" data-i18n="clearHistory">پاک کردن تاریخچه</button>
+            </div>
+            <div id="history" class="list"></div>
+        </section>
+    </main>
+    <dialog id="confirm">
+        <form method="dialog">
+            <p id="confirmText"></p>
+            <div class="actions"><button value="yes" class="btn danger" data-i18n="yes">بله</button><button value="cancel" class="btn" data-i18n="cancel">انصراف</button></div>
+        </form>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+    <script src="assets/js/app.js"></script>
+    <script src="../assets/tool-wrapper.js"></script>
+</body>
+</html>
