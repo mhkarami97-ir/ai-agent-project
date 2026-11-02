@@ -18,8 +18,11 @@
     minSpeed: 20,
     maxSpeed: 150,
     step: 5,
+    compareA: 100,
+    compareB: 120,
   });
   const FIELDS = Object.freeze(["distance", "minSpeed", "maxSpeed", "step"]);
+  const COMPARE_FIELDS = Object.freeze(["compareA", "compareB"]);
 
   class NumberParser {
     static parse(text) {
@@ -141,6 +144,28 @@
     }
   }
 
+  class SpeedComparison {
+    static validate({ distance, speedA, speedB }) {
+      if (!Number.isFinite(distance) || distance <= 0 || distance > LIMITS.maxDistance) return "errDistance";
+      if (![speedA, speedB].every(Number.isFinite)) return "errCompareNumber";
+      if ([speedA, speedB].some((speed) => speed <= 0 || speed > LIMITS.maxSpeed)) return "errSpeedRange";
+      return null;
+    }
+
+    static compare({ distance, speedA, speedB }) {
+      const hoursA = distance / speedA;
+      const hoursB = distance / speedB;
+      return {
+        minutesA: Math.round(hoursA * 60),
+        minutesB: Math.round(hoursB * 60),
+        deltaMinutes: Math.round((hoursA - hoursB) * 60),
+        isSame: speedA === speedB,
+        overA: speedA > LIMITS.legalSpeed,
+        overB: speedB > LIMITS.legalSpeed,
+      };
+    }
+  }
+
   class DurationFormatter {
     #i18n;
 
@@ -219,7 +244,7 @@
 
     async init() {
       await this.#i18n.load("assets/translations.json");
-      FIELDS.forEach((field) => (this.#inputs[field] = this.#$(field)));
+      [...FIELDS, ...COMPARE_FIELDS].forEach((field) => (this.#inputs[field] = this.#$(field)));
       this.#fillInputs(this.#loadSettings());
       this.#bindEvents();
       this.#applyLanguage();
@@ -230,17 +255,23 @@
     }
 
     #loadSettings() {
-      const merged = { ...DEFAULT_SETTINGS, ...this.#settingsStore.read() };
-      return FIELDS.every((field) => Number.isFinite(merged[field])) ? merged : { ...DEFAULT_SETTINGS };
+      const stored = this.#settingsStore.read() ?? {};
+      const merged = { ...DEFAULT_SETTINGS };
+      [...FIELDS, ...COMPARE_FIELDS].forEach((field) => {
+        if (Number.isFinite(stored[field])) merged[field] = stored[field];
+      });
+      return merged;
     }
 
     #fillInputs(settings) {
-      FIELDS.forEach((field) => (this.#inputs[field].value = settings[field]));
+      Object.keys(this.#inputs).forEach((field) => {
+        if (Number.isFinite(settings[field])) this.#inputs[field].value = settings[field];
+      });
     }
 
-    #readInputs() {
+    #readFields(fields) {
       return Object.fromEntries(
-        FIELDS.map((field) => [field, NumberParser.parse(this.#inputs[field].value)]),
+        fields.map((field) => [field, NumberParser.parse(this.#inputs[field].value)]),
       );
     }
 
@@ -250,7 +281,9 @@
         event.preventDefault();
         this.#commit();
       });
-      form.addEventListener("input", () => this.#refresh({ persist: true }));
+      document.addEventListener("input", (event) => {
+        if (event.target.classList?.contains("input")) this.#refresh({ persist: true });
+      });
       form.addEventListener("click", (event) => this.#handleStepper(event));
       document.addEventListener("click", (event) => this.#toggleHelp(event));
       this.#$("resetDefaults").addEventListener("click", () => {
@@ -282,7 +315,7 @@
       if (!button) return;
       const field = button.dataset.field;
       const direction = Number(button.dataset.dir);
-      const current = this.#readInputs();
+      const current = this.#readFields(FIELDS);
       const delta = field === "step" ? 1 : current.step > 0 ? current.step : DEFAULT_SETTINGS.step;
       const base = Number.isFinite(current[field]) ? current[field] : DEFAULT_SETTINGS[field];
       this.#inputs[field].value = Math.max(1, Math.round((base + direction * delta) * 100) / 100);
@@ -312,11 +345,11 @@
     }
 
     #commit() {
-      const params = this.#readInputs();
+      const params = this.#readFields(FIELDS);
       const errorKey = SpeedTable.validate(params);
       if (errorKey) return this.#showError(errorKey);
 
-      this.#saveSettings(params);
+      this.#saveSettings();
       if (!this.#history.add(params)) this.#toast(this.#i18n.t("errSave"), true);
       this.#refresh();
       this.#renderHistory();
@@ -324,22 +357,25 @@
     }
 
     #refresh({ persist = false } = {}) {
-      const params = this.#readInputs();
+      const params = this.#readFields(FIELDS);
       const errorKey = SpeedTable.validate(params);
       this.#showError(errorKey);
-      if (errorKey) return;
-
-      this.#renderTable(params);
-      if (persist) this.#scheduleSave(params);
+      if (!errorKey) this.#renderTable(params);
+      this.#renderComparison(params.distance);
+      if (persist) this.#scheduleSave();
     }
 
-    #scheduleSave(params) {
+    #scheduleSave() {
       clearTimeout(this.#saveTimer);
-      this.#saveTimer = setTimeout(() => this.#saveSettings(params), LIMITS.saveDelayMs);
+      this.#saveTimer = setTimeout(() => this.#saveSettings(), LIMITS.saveDelayMs);
     }
 
-    #saveSettings(params) {
-      if (!this.#settingsStore.write(params)) this.#toast(this.#i18n.t("errSave"), true);
+    #saveSettings() {
+      const settings = this.#readFields([...FIELDS, ...COMPARE_FIELDS]);
+      const valid = Object.fromEntries(
+        Object.entries(settings).filter(([, value]) => Number.isFinite(value)),
+      );
+      if (!this.#settingsStore.write(valid)) this.#toast(this.#i18n.t("errSave"), true);
     }
 
     #showError(errorKey) {
@@ -356,7 +392,6 @@
     #renderTable(params) {
       const rows = SpeedTable.build(params);
       const fragment = document.createDocumentFragment();
-
       rows.forEach((row) => fragment.append(this.#createRow(row)));
 
       this.#$("rows").replaceChildren(fragment);
@@ -378,7 +413,7 @@
 
       const speedCell = document.createElement("td");
       speedCell.className = "num";
-      speedCell.textContent = this.#i18n.t("speedValue", { n: this.#i18n.formatNumber(speed) });
+      speedCell.textContent = this.#i18n.formatNumber(speed);
       if (overLimit) {
         const badge = document.createElement("span");
         badge.className = "badge";
@@ -396,6 +431,61 @@
 
       tr.append(speedCell, timeCell, diffCell);
       return tr;
+    }
+
+    #renderComparison(distance) {
+      const { compareA: speedA, compareB: speedB } = this.#readFields(COMPARE_FIELDS);
+      const input = { distance, speedA, speedB };
+      const errorKey = SpeedComparison.validate(input);
+      const errorBox = this.#$("compareError");
+      const resultBox = this.#$("compareResult");
+
+      errorBox.hidden = !errorKey;
+      errorBox.textContent = errorKey ? this.#i18n.t(errorKey) : "";
+      resultBox.hidden = Boolean(errorKey);
+      if (errorKey) return;
+
+      const result = SpeedComparison.compare(input);
+      this.#renderCompareLine("compareLineA", speedA, result.minutesA, result.overA);
+      this.#renderCompareLine("compareLineB", speedB, result.minutesB, result.overB);
+
+      const conclusion = this.#$("compareConclusion");
+      conclusion.className = `compare-conclusion ${this.#compareTone(result)}`;
+      conclusion.textContent = this.#compareMessage(result, speedA, speedB);
+
+      const warning = this.#$("compareWarning");
+      warning.hidden = !(result.overA || result.overB);
+      warning.textContent = this.#i18n.t("warning", {
+        limit: this.#i18n.formatNumber(LIMITS.legalSpeed),
+      });
+    }
+
+    #renderCompareLine(id, speed, minutes, isOver) {
+      const line = this.#$(id);
+      line.classList.toggle("over", isOver);
+      const speedLabel = document.createElement("span");
+      speedLabel.textContent =
+        this.#i18n.t("speedValue", { n: this.#i18n.formatNumber(speed) }) + (isOver ? " ⚠" : "");
+      const time = document.createElement("span");
+      time.className = "num";
+      time.textContent = this.#formatter.format(minutes);
+      line.replaceChildren(speedLabel, time);
+    }
+
+    #compareTone({ isSame, deltaMinutes }) {
+      if (isSame || deltaMinutes === 0) return "";
+      return deltaMinutes > 0 ? "later" : "earlier";
+    }
+
+    #compareMessage({ isSame, deltaMinutes }, speedA, speedB) {
+      if (isSame) return this.#i18n.t("compareSame");
+      if (deltaMinutes === 0) return this.#i18n.t("compareTiny");
+      const vars = {
+        a: this.#i18n.formatNumber(speedA),
+        b: this.#i18n.formatNumber(speedB),
+        t: this.#formatter.format(Math.abs(deltaMinutes)),
+      };
+      return this.#i18n.t(deltaMinutes > 0 ? "compareLater" : "compareEarlier", vars);
     }
 
     #renderHistory() {

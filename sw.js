@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "web-tools-v2.1.0";
+﻿const CACHE_NAME = "web-tools-v2.1.1";
 const OFFLINE_PAGE = "/offline.html";
 
 const urlsToCache = [

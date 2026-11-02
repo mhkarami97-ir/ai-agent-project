@@ -74,9 +74,17 @@ html[data-theme="dark"] body { background: #0f1220; }
   background: var(--warnbg); border: 1px solid var(--warnbd); border-radius: 10px;
 }
 .warning[hidden] { display: none; }
+.compare-result { margin-top: 1rem; padding: 1rem; border: 1px solid var(--bd); border-radius: 12px; background: var(--in); }
+.compare-result[hidden] { display: none; }
+.compare-line { display: flex; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
+.compare-line + .compare-line { margin-top: 0.25rem; }
+.compare-line.over { color: var(--warn); font-weight: 700; }
+.compare-conclusion { margin: 0.8rem 0 0; font-size: 1.1rem; font-weight: 800; color: var(--ac); }
+.compare-conclusion.later { color: var(--warn); }
+.compare-conclusion.earlier { color: var(--ok); }
 .table-wrap { overflow-x: auto; margin-top: 0.8rem; border: 1px solid var(--bd); border-radius: 12px; }
 table { width: 100%; border-collapse: collapse; }
-th, td { padding: 0.55rem 0.9rem; text-align: start; border-bottom: 1px solid var(--bd); white-space: nowrap; }
+th, td { padding: 0.55rem 0.9rem; text-align: start; border-bottom: 1px solid var(--bd); vertical-align: top; }
 tbody tr:last-child td { border-bottom: 0; }
 thead th { background: var(--in); }
 tbody tr:nth-child(even) { background: color-mix(in srgb, var(--ac) 6%, transparent); }
@@ -86,7 +94,7 @@ tbody tr.over, tbody tr.over:nth-child(even) {
 [dir="rtl"] tbody tr.over { box-shadow: inset -4px 0 0 var(--warnbd); }
 .badge {
   display: inline-block; margin-inline-start: 0.5rem; padding: 0 0.5rem; font-size: 0.75rem; font-weight: 700;
-  border: 1px solid var(--warnbd); border-radius: 999px;
+  border: 1px solid var(--warnbd); border-radius: 999px; white-space: nowrap;
 }
 .diff { color: var(--mu); }
 tr.over .diff { color: inherit; }
@@ -102,6 +110,15 @@ dialog::backdrop { background: #0008; }
 #toast {
   position: fixed; bottom: 1rem; inset-inline: 1rem; margin: auto; max-width: 400px;
   background: #111827; color: #fff; border-radius: 12px; padding: 0.75rem; text-align: center; font-weight: 600;
+}
+@media (max-width: 560px) {
+  .tt { padding-inline: 0.75rem; }
+  .card { padding: 1rem; }
+  .table-wrap { margin-inline: -0.35rem; }
+  th, td { padding: 0.5rem 0.4rem; font-size: 0.88rem; }
+  th:first-child, td:first-child { padding-inline-start: 0.6rem; }
+  .badge { display: block; width: fit-content; margin: 0.1rem 0 0; font-size: 0.68rem; padding: 0 0.4rem; }
+  .compare-line { flex-direction: column; gap: 0; }
 }
 @media (max-width: 500px) { .row .btn, .actions .btn { flex: 1 1 calc(50% - 0.5rem); } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

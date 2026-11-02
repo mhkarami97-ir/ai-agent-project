@@ -63,6 +63,33 @@
 
         <section class="card" aria-live="polite">
             <div class="title-row">
+                <h2 data-i18n="compareTitle">مقایسه دو سرعت</h2>
+                <button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_compare">?</button>
+            </div>
+            <p class="help-text" id="help_compare" data-i18n="help_compare" hidden></p>
+            <div class="grid">
+                <div>
+                <div class="lbl"><label for="compareA" data-i18n="compareA">سرعت اول</label><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_compareA">?</button></div>
+                <p class="help-text" id="help_compareA" data-i18n="help_compareA" hidden></p>
+                <input id="compareA" class="input" inputmode="decimal" dir="ltr" autocomplete="off" placeholder="100">
+                </div>
+                <div>
+                <div class="lbl"><label for="compareB" data-i18n="compareB">سرعت دوم</label><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_compareB">?</button></div>
+                <p class="help-text" id="help_compareB" data-i18n="help_compareB" hidden></p>
+                <input id="compareB" class="input" inputmode="decimal" dir="ltr" autocomplete="off" placeholder="120">
+                </div>
+            </div>
+            <p id="compareError" class="error" role="alert" hidden></p>
+            <div id="compareResult" class="compare-result" hidden>
+                <div id="compareLineA" class="compare-line"></div>
+                <div id="compareLineB" class="compare-line"></div>
+                <p id="compareConclusion" class="compare-conclusion"></p>
+                <p id="compareWarning" class="warning" role="alert" hidden></p>
+            </div>
+        </section>
+
+        <section class="card" aria-live="polite">
+            <div class="title-row">
                 <h2 data-i18n="results">نتیجه</h2>
                 <button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_results">?</button>
             </div>
