@@ -99,6 +99,15 @@
     icon: "🆘",
   },
   {
+    path: "sleep-calculator",
+    category: "daily",
+    faName: "ساعت خواب و بیداری",
+    enName: "Sleep Calculator",
+    faDesc: "بهترین ساعت‌های خواب و بیدار شدن بر اساس چرخه خواب",
+    enDesc: "Best sleep and wake times by sleep cycles",
+    icon: "😴",
+  },
+  {
     path: "event-logger",
     category: "dev",
     faName: "لاگ رویدادها",

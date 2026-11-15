@@ -1,0 +1,81 @@
+<!doctype html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">محاسبه ساعت خواب و بیداری</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="../assets/tools.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.css">
+</head>
+<body>
+    <main class="sl page">
+        <header>
+            <h1 data-i18n="title">محاسبه ساعت خواب و بیداری</h1>
+            <p class="muted" data-i18n="subtitle"></p>
+        </header>
+
+        <section class="card">
+            <form id="form" novalidate>
+                <div class="lbl"><span class="label-text" data-i18n="mode"></span><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_mode">?</button></div>
+                <p class="help-text" id="help_mode" data-i18n="help_mode" hidden></p>
+                <div class="seg" role="radiogroup" aria-label="mode">
+                    <label class="seg-opt"><input type="radio" name="mode" value="bed"><span data-i18n="modeBed"></span></label>
+                    <label class="seg-opt"><input type="radio" name="mode" value="wake"><span data-i18n="modeWake"></span></label>
+                </div>
+
+                <div class="grid">
+                    <div>
+                <div class="lbl"><label for="time" id="label_time" data-i18n="timeBed"></label><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_time">?</button></div>
+                <p class="help-text" id="help_time" data-i18n="help_timeBed" hidden></p>
+                <div class="time-row"><input id="time" class="input" type="time" dir="ltr" required><button type="button" id="now" class="btn" data-i18n="now"></button></div>
+                    </div>
+                    <div>
+                <div class="lbl"><label for="age" id="label_age" data-i18n="age"></label><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_age">?</button></div>
+                <p class="help-text" id="help_age" data-i18n="help_age" hidden></p>
+                <input id="age" class="input" inputmode="numeric" dir="ltr" autocomplete="off" placeholder="30">
+                    </div>
+                </div>
+
+                <details class="adv">
+                    <summary data-i18n="advanced"></summary>
+                    <div class="grid">
+                        <div>
+                <div class="lbl"><label for="cycleMinutes" id="label_cycleMinutes" data-i18n="cycleMinutes"></label><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_cycleMinutes">?</button></div>
+                <p class="help-text" id="help_cycleMinutes" data-i18n="help_cycleMinutes" hidden></p>
+                <input id="cycleMinutes" class="input" inputmode="numeric" dir="ltr" autocomplete="off">
+                        </div>
+                        <div>
+                <div class="lbl"><label for="latencyMinutes" id="label_latencyMinutes" data-i18n="latencyMinutes"></label><button type="button" class="help" data-i18n-aria="helpLabel" aria-label="راهنما" aria-expanded="false" aria-controls="help_latencyMinutes">?</button></div>
+                <p class="help-text" id="help_latencyMinutes" data-i18n="help_latencyMinutes" hidden></p>
+                <input id="latencyMinutes" class="input" inputmode="numeric" dir="ltr" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="actions"><button type="button" id="resetAdvanced" class="btn" data-i18n="resetAdvanced"></button></div>
+                </details>
+
+                <p id="error" class="error" role="alert" hidden></p>
+            </form>
+        </section>
+
+        <section class="card" aria-live="polite">
+            <div class="title-row">
+                <h2 id="resultsTitle" data-i18n="resultsBed"></h2>
+            </div>
+            <p id="summary" class="hint"></p>
+            <div class="legend">
+                <span><span class="dot ok"></span><span data-i18n="legendOk"></span></span>
+                <span><span class="dot out"></span><span data-i18n="legendOut"></span></span>
+            </div>
+            <ul id="options" class="opts"></ul>
+            <p class="note" data-i18n="disclaimer"></p>
+        </section>
+    </main>
+    <div id="toast" role="status" hidden></div>
+    <script src="assets/js/app.js"></script>
+    <script src="../assets/tool-wrapper.js"></script>
+</body>
+</html>
