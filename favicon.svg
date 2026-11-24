@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#7c5cff" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+
+    <!-- Accent Highlights -->
+    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e2e8f0" />
+    </linearGradient>
+
+    <linearGradient id="boxGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.95" />
+    </linearGradient>
+
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#22d3ee" />
+    </linearGradient>
+
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Base Squircle -->
+  <rect x="24" y="24" width="464" height="464" rx="116" fill="url(#bgGrad)" />
+  <rect x="24" y="24" width="464" height="464" rx="116" fill="none" stroke="rgba(255, 255, 255, 0.28)" stroke-width="4" />
+
+  <!-- Subtle glow inner ring -->
+  <rect x="36" y="36" width="440" height="440" rx="104" fill="none" stroke="rgba(255, 255, 255, 0.12)" stroke-width="2" />
+
+  <!-- Main Toolbox Graphic -->
+  <g filter="url(#shadow)">
+    <!-- Toolbox Handle -->
+    <path d="M 200 135 C 200 112 218 95 240 95 L 272 95 C 294 95 312 112 312 135 L 312 155 L 284 155 L 284 135 C 284 128 278 122 272 122 L 240 122 C 234 122 228 128 228 135 L 228 155 L 200 155 Z" fill="url(#metalGrad)" />
+    
+    <!-- Toolbox Top Lid -->
+    <path d="M 120 185 C 120 168 134 155 152 155 L 360 155 C 378 155 392 168 392 185 L 392 235 L 120 235 Z" fill="#2e1065" />
+    <path d="M 120 185 C 120 168 134 155 152 155 L 360 155 C 378 155 392 168 392 185 L 392 195 L 120 195 Z" fill="rgba(255, 255, 255, 0.15)" />
+
+    <!-- Toolbox Body -->
+    <rect x="110" y="235" width="292" height="155" rx="24" fill="url(#boxGrad)" stroke="rgba(255, 255, 255, 0.18)" stroke-width="2" />
+
+    <!-- Accent Middle Stripe -->
+    <rect x="110" y="248" width="292" height="12" fill="url(#cyanGrad)" />
+
+    <!-- Latches / Clamps -->
+    <rect x="172" y="215" width="28" height="42" rx="6" fill="url(#metalGrad)" stroke="#64748b" stroke-width="1.5" />
+    <circle cx="186" cy="236" r="3" fill="#475569" />
+
+    <rect x="312" y="215" width="28" height="42" rx="6" fill="url(#metalGrad)" stroke="#64748b" stroke-width="1.5" />
+    <circle cx="326" cy="236" r="3" fill="#475569" />
+
+    <!-- Crossed Tools Icon on Body -->
+    <!-- Wrench Head -->
+    <g transform="translate(256, 318)">
+      <!-- Central Gear / Sparkle -->
+      <circle cx="0" cy="0" r="26" fill="rgba(124, 92, 255, 0.25)" stroke="#38bdf8" stroke-width="3" />
+      <path d="M -8 -8 L 8 8 M -8 8 L 8 -8" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+      <circle cx="0" cy="0" r="5" fill="#38bdf8" />
+
+      <!-- Sparkle stars -->
+      <path d="M 0 -38 L 4 -28 L 14 -28 L 6 -22 L 9 -12 L 0 -18 L -9 -12 L -6 -22 L -14 -28 L -4 -28 Z" fill="#22d3ee" transform="translate(68, -45) scale(0.7)" />
+      <path d="M 0 -38 L 4 -28 L 14 -28 L 6 -22 L 9 -12 L 0 -18 L -9 -12 L -6 -22 L -14 -28 L -4 -28 Z" fill="#a78bfa" transform="translate(-75, 25) scale(0.5)" />
+    </g>
+  </g>
+</svg>

@@ -496,6 +496,23 @@ html.tw-modal-open {
 }
 
 /* Mobile: header adjustments & dialog bottom sheet */
+@media (max-width: 768px) {
+  html {
+    padding-top: 0 !important;
+    scroll-padding-top: 0 !important;
+  }
+
+  body.has-tool-wrapper {
+    padding-top: 0 !important;
+  }
+
+  .tool-wrapper {
+    position: relative !important;
+    inset: auto !important;
+    box-shadow: 0 1px 0 var(--tw-border) !important;
+  }
+}
+
 @media (max-width: 560px) {
   .tool-header {
     gap: 8px;
