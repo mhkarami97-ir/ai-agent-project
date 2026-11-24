@@ -1,6 +1,6 @@
 {
   "name": "ai-agent-project",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "private": true,
   "description": "مجموعه ابزارهای کاربردی وب و اپلیکیشن پیش‌رونده PWA",
   "type": "module",

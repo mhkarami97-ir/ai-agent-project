@@ -1,14 +1,16 @@
-const CACHE_NAME = "web-tools-v2.2.1";
+const CACHE_NAME = "web-tools-v2.3.0";
 const OFFLINE_PAGE = "/offline.html";
 
 const urlsToCache = [
   "/",
   "/index.html",
   "/offline.html",
+  "/favicon.svg",
   "/favicon.png",
   "/favicon.ico",
   "/manifest.json",
   "/app-updater.js",
+  "/changelog.js",
   "/Vazirmatn-font-face.css",
   "/style.css",
   "/script.js",

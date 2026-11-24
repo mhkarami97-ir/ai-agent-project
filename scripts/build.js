@@ -208,10 +208,16 @@ function run() {
     let swContent = fs.readFileSync(swPath, "utf-8");
     const globalBuildHash = computeHash(totalHashesCombined || Date.now().toString());
 
-    // Update CACHE_NAME
+    // Update CACHE_NAME using package.json version
+    let version = "2.3.0";
+    try {
+      const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, "package.json"), "utf-8"));
+      if (pkg.version) version = pkg.version;
+    } catch (e) {}
+
     swContent = swContent.replace(
       /const CACHE_NAME\s*=\s*["'][^"']+["'];/,
-      `const CACHE_NAME = "web-tools-v2.2.0-${globalBuildHash}";`
+      `const CACHE_NAME = "web-tools-v${version}-${globalBuildHash}";`
     );
 
     // Update urlsToCache with hashed paths
@@ -226,7 +232,7 @@ function run() {
     }
 
     fs.writeFileSync(swPath, swContent, "utf-8");
-    console.log(`⚙️  Updated sw.js with CACHE_NAME: web-tools-v2.2.0-${globalBuildHash}`);
+    console.log(`⚙️  Updated sw.js with CACHE_NAME: web-tools-v${version}-${globalBuildHash}`);
   }
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
