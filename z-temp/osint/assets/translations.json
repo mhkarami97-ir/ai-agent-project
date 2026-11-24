@@ -1,0 +1,26 @@
+{
+  "fa": {
+    "title": "پیدا کردن اطلاعات افراد",
+    "heading_0": "OSINT Search Dashboard",
+    "button_0": "جستجو",
+    "button_1": "باز کردن همه لینک‌های جستجو",
+    "button_2": "کپی JSON",
+    "button_3": "دانلود JSON",
+    "label_0": "جستجو",
+    "text_lead_0": "وارد کنید: نام یا نام و نام خانوادگی (فارسی یا لاتین). این ابزار چندین سرویس عمومی را جستجو می‌کند (Wikipedia, Wikidata, DuckDuckGo instant answers) و لینک‌های عمیق به موتورهای جستجو و شبکه‌های اجتماعی می‌سازد.",
+    "text_small_1": "کلیک روی یک آیتم، صفحه جستجو را برای نام مورد نظر باز می‌کند (در تب جدید).",
+    "text_small_2": "در انتها می‌توانید خروجی را به صورت JSON کپی کنید."
+  },
+  "en": {
+    "title": "Find People's Information",
+    "heading_0": "OSINT Search Dashboard",
+    "button_0": "Search",
+    "button_1": "Open All Search Links",
+    "button_2": "Copy JSON",
+    "button_3": "Download JSON",
+    "label_0": "Search",
+    "text_lead_0": "Enter: name or first and last name (Persian or English). This tool searches multiple public services (Wikipedia, Wikidata, DuckDuckGo instant answers) and creates deep links to search engines and social networks.",
+    "text_small_1": "Clicking on an item opens the search page for the desired name (in a new tab).",
+    "text_small_2": "At the end, you can copy the output as JSON."
+  }
+}

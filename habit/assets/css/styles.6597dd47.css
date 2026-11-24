@@ -1,0 +1,221 @@
+/* Habit tracker: only what the shared tools.css does not cover */
+
+.stats {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 720px) {
+    .stats {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.stat {
+    padding: 0.875rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+}
+
+.stat-value {
+    color: var(--accent-text);
+    font-size: 1.875rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.stat-label {
+    color: var(--muted);
+    font-size: 0.8125rem;
+}
+
+.habit-layout {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 960px) {
+    .habit-layout {
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        align-items: start;
+    }
+}
+
+.form-pair {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+
+/* ---------- Habit cards ---------- */
+.habit-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.habit {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: var(--surface-2);
+    box-shadow: none;
+}
+
+.habit.is-done {
+    border-color: var(--success);
+}
+
+.habit-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.habit-title {
+    font-size: 1.125rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.habit-head .btn--icon svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.habit-description {
+    overflow-wrap: anywhere;
+}
+
+.habit-badges {
+    gap: 0.375rem;
+}
+
+.habit-today {
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.habit.is-done .habit-today {
+    color: var(--success);
+}
+
+.habit.is-done .progress-bar {
+    background: var(--success);
+}
+
+.week-dots {
+    display: flex;
+    gap: 0.375rem;
+}
+
+.dot {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    max-width: 2.5rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.dot.is-on {
+    border-color: var(--success);
+    background: var(--success);
+    color: var(--bg);
+}
+
+.dot.is-today:not(.is-on) {
+    border-color: var(--accent);
+    color: var(--accent-text);
+}
+
+.habit-actions .btn--primary {
+    flex: 1 1 10rem;
+}
+
+/* ---------- Weekly chart ---------- */
+.bars {
+    display: grid;
+    gap: 0.5rem;
+    height: 11rem;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.bar-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.bar-value {
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+
+.bar-track {
+    display: flex;
+    flex: 1;
+    align-items: flex-end;
+    width: min(100%, 2.5rem);
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background: var(--surface-3);
+}
+
+.bar-fill {
+    display: block;
+    width: 100%;
+    min-height: 2px;
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: var(--accent);
+    transition: height 0.3s ease;
+}
+
+.bar-fill.is-today {
+    background: var(--success);
+}
+
+.bar-label {
+    color: var(--muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+/* ---------- Reminder feed ---------- */
+.feed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 4rem;
+}
+
+.feed-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.feed-time {
+    flex-shrink: 0;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+}

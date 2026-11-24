@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa">
+<head>
+<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
+<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title data-i18n="title">سیستم پرسش و پاسخ</title>
+<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
+<link href="./assets/styles.b32aa17a.css" rel="stylesheet"/>
+<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container">
+<header>
+<h1 data-i18n="heading_0">💬 سیستم پرسش و پاسخ</h1>
+<div class="user-section">
+<input id="username" placeholder="نام کاربری خود را وارد کنید" type="text"/>
+<button class="btn btn-primary" data-i18n="button_0" id="setUsername">ثبت نام کاربری</button>
+<button class="btn btn-secondary" data-i18n="button_1" id="exportBtn">📥 خروجی JSON</button>
+<button class="btn btn-secondary" data-i18n="button_2" id="importBtn">📤 ورودی JSON</button>
+<input accept=".json" id="importFile" style="display: none;" type="file"/>
+</div>
+</header>
+<div class="main-content">
+<div class="new-question-section">
+<h2 data-i18n="heading_1">سوال جدید بپرسید</h2>
+<textarea id="questionInput" placeholder="سوال خود را بنویسید..."></textarea>
+<button class="btn btn-primary" data-i18n="button_3" id="submitQuestion">ارسال سوال</button>
+</div>
+<div class="questions-list" id="questionsList">
+<!-- سوالات اینجا نمایش داده می‌شوند -->
+</div>
+</div>
+</div>
+<script src="./assets/app.40e40fb6.js"></script>
+<script src="../assets/tool-wrapper.js"></script>
+</body>
+</html>

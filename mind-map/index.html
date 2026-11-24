@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="ابزار رسم نقشه ذهنی آنلاین" name="description"/>
+<title data-i18n="title">نقشه ذهنی</title>
+<link href="../Vazirmatn-font-face.1cb7f809.css" rel="stylesheet"/>
+<link href="./assets/style.a6b7f13c.css" rel="stylesheet"/>
+<link href="../assets/tool-wrapper.69878952.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1 data-i18n="title">نقشه ذهنی</h1>
+  <div class="toolbar" role="toolbar">
+    <button class="btn btn-primary" id="addNodeBtn" type="button"><span aria-hidden="true">➕</span> <span data-i18n="addNode">افزودن نود</span></button>
+    <button class="btn btn-mode" id="toggleModeBtn" type="button" aria-pressed="false"><span aria-hidden="true">🔗</span> <span id="modeLabel" data-i18n="connect">اتصال</span></button>
+    <button class="btn btn-secondary" id="deleteEdgeBtn" type="button" disabled><span aria-hidden="true">✂️</span> <span data-i18n="deleteEdge">حذف اتصال</span></button>
+    <span class="sep" aria-hidden="true"></span>
+    <button class="btn btn-icon" id="zoomOutBtn" type="button" data-i18n-title="zoomOut">−</button>
+    <button class="btn btn-icon" id="zoomInBtn" type="button" data-i18n-title="zoomIn">+</button>
+    <button class="btn btn-secondary" id="fitBtn" type="button"><span aria-hidden="true">⤢</span> <span data-i18n="fitView">نمایش همه</span></button>
+    <span class="sep" aria-hidden="true"></span>
+    <button class="btn btn-secondary" id="exportBtn" type="button"><span aria-hidden="true">⬇️</span> <span data-i18n="download">دانلود</span></button>
+    <button class="btn btn-secondary" id="importBtn" type="button"><span aria-hidden="true">⬆️</span> <span data-i18n="upload">آپلود</span></button>
+    <input accept=".json,application/json" id="importFile" type="file" hidden/>
+    <button class="btn btn-danger" id="clearBtn" type="button"><span aria-hidden="true">🗑️</span> <span data-i18n="clear">پاک کردن</span></button>
+    <span class="save-status" id="saveStatus" role="status" aria-live="polite"></span>
+  </div>
+</header>
+
+<div class="canvas-container" id="canvas" tabindex="-1">
+  <div class="world" id="world">
+    <svg class="edges" id="edges" width="1" height="1" aria-hidden="false"></svg>
+    <div id="nodesContainer"></div>
+  </div>
+  <div class="empty-hint" id="emptyHint" hidden data-i18n="emptyHint">برای شروع، «افزودن نود» را بزنید</div>
+</div>
+
+<div class="info-panel"><p>
+  <strong data-i18n="helpLabel">راهنما:</strong>
+  <span class="help-text" data-i18n="help1">با «افزودن نود» نود جدید بسازید؛ دکمهٔ ＋ روی هر نود، زیرمجموعه می‌سازد</span>
+  <span class="help-text" data-i18n="help2">برای اتصال، حالت «اتصال» را روشن کنید و روی دو نود کلیک کنید</span>
+  <span class="help-text" data-i18n="help3">نود را بکشید تا جابه‌جا شود؛ پس‌زمینه را بکشید تا نقشه حرکت کند؛ با چرخ ماوس زوم کنید</span>
+  <span class="help-text" data-i18n="help4">روی یک اتصال کلیک کنید و با Delete حذفش کنید؛ روی نود با کلیدهای جهت جابه‌جا و با Enter ویرایش کنید</span>
+</p></div>
+</div>
+
+<dialog id="nodeDialog" aria-labelledby="nodeDlgTitle">
+  <form id="nodeForm" method="dialog" novalidate>
+    <h2 id="nodeDlgTitle" data-i18n="editNode">ویرایش نود</h2>
+    <div class="form-group"><label for="nodeTitle" data-i18n="nodeTitleLabel">عنوان:</label>
+      <input class="form-control" id="nodeTitle" type="text" maxlength="120" autocomplete="off"/></div>
+    <div class="form-group"><label for="nodeDescription" data-i18n="nodeDescriptionLabel">توضیحات:</label>
+      <textarea class="form-control" id="nodeDescription" rows="3" maxlength="1000"></textarea></div>
+    <div class="form-group"><label for="nodeColor" data-i18n="nodeColorLabel">رنگ:</label>
+      <select class="form-control" id="nodeColor">
+        <option value="#4A90E2" data-i18n="colorBlue">آبی</option><option value="#7ED321" data-i18n="colorGreen">سبز</option>
+        <option value="#F5A623" data-i18n="colorOrange">نارنجی</option><option value="#D0021B" data-i18n="colorRed">قرمز</option>
+        <option value="#9013FE" data-i18n="colorPurple">بنفش</option><option value="#50E3C2" data-i18n="colorTeal">فیروزه‌ای</option>
+        <option value="#F8E71C" data-i18n="colorYellow">زرد</option><option value="#BD10E0" data-i18n="colorPink">صورتی</option>
+      </select></div>
+    <p class="form-error" id="nodeError" role="alert" hidden></p>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit" data-i18n="save">ذخیره</button>
+      <button class="btn btn-secondary" type="button" id="cancelBtn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <form method="dialog" novalidate>
+    <h2 id="confirmTitle" data-i18n="confirmTitle">تأیید</h2>
+    <p id="confirmMessage"></p>
+    <div class="form-actions">
+      <button class="btn btn-danger" type="submit" data-i18n="yes">بله</button>
+      <button class="btn btn-secondary" type="button" data-close data-i18n="no">خیر</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastAction" class="toast-action" type="button" hidden></button></div>
+
+<script src="./assets/core.8dfe4949.js"></script>
+<script src="./assets/script.2d10c6ae.js"></script>
+<script src="../assets/tool-wrapper.6554d042.js"></script>
+</body>
+</html>

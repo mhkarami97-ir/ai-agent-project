@@ -1,0 +1,101 @@
+/* Checklist: only what the shared tools.css does not cover */
+
+.items-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.items-heading {
+  min-width: 0;
+}
+
+.items-heading .card-title {
+  margin-bottom: 0;
+  overflow-wrap: anywhere;
+}
+
+#progressText {
+  flex-shrink: 0;
+}
+
+/* ---------- Items ---------- */
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-inline-end: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.todo-item.is-done {
+  background: var(--surface-2);
+}
+
+.todo-label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.todo-title {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.5;
+}
+
+.todo-item.is-done .todo-title {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.todo-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.125rem;
+}
+
+.todo-actions .btn--icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (hover: hover) {
+  .todo-item:hover {
+    border-color: var(--border-strong);
+  }
+}
+
+/* ---------- Export / import ---------- */
+.export-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .export-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

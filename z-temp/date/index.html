@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa">
+<head>
+<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
+<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title data-i18n="title">تبدیل‌کننده تقویم و محاسبه‌گر سن</title>
+<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
+<link href="./assets/css/style.304cb029.css" rel="stylesheet">
+<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+</link></head>
+<body>
+<header class="hero">
+<div class="container">
+<h1 data-i18n="heading_0">تبدیل‌کننده تقویم</h1>
+<p>تاریخ‌های شمسی، میلادی و قمری را تبدیل کنید و سن خود را بسنجید؛ همه روی مرورگر شما.</p>
+</div>
+</header>
+<main class="container">
+<section aria-labelledby="convert-title" class="card">
+<div class="card-header">
+<h2 data-i18n="heading_1" id="convert-title">تبدیل تاریخ</h2>
+<p>تاریخ را وارد کنید، مبدا را انتخاب کنید و معادل‌ها را دریافت نمایید.</p>
+</div>
+<form class="grid" id="convert-form">
+<label data-i18n="label_0">
+<span>تقویم مبدا</span>
+<select id="source-calendar">
+<option value="jalali">شمسی</option>
+<option value="gregorian">میلادی</option>
+<option value="hijri">قمری</option>
+</select>
+</label>
+<label data-i18n="label_1">
+<span>سال</span>
+<input id="input-year" inputmode="numeric" placeholder="1403" required="" type="number"/>
+</label>
+<label data-i18n="label_2">
+<span>ماه</span>
+<input id="input-month" inputmode="numeric" placeholder="1" required="" type="number"/>
+</label>
+<label data-i18n="label_3">
+<span>روز</span>
+<input id="input-day" inputmode="numeric" placeholder="1" required="" type="number"/>
+</label>
+<button class="primary" data-i18n="button_0" type="submit">تبدیل</button>
+</form>
+<div aria-live="polite" class="result" id="conversion-result"></div>
+</section>
+<section aria-labelledby="age-title" class="card">
+<div class="card-header">
+<h2 data-i18n="heading_2" id="age-title">محاسبه سن</h2>
+<p>تاریخ تولد خود را در هر تقویمی ثبت کنید تا سن دقیق را ببینید.</p>
+</div>
+<form class="grid" id="age-form">
+<label data-i18n="label_4">
+<span>تقویم تولد</span>
+<select id="age-calendar">
+<option value="jalali">شمسی</option>
+<option value="gregorian">میلادی</option>
+<option value="hijri">قمری</option>
+</select>
+</label>
+<label data-i18n="label_5">
+<span>سال</span>
+<input id="age-year" inputmode="numeric" placeholder="1370" required="" type="number"/>
+</label>
+<label data-i18n="label_6">
+<span>ماه</span>
+<input id="age-month" inputmode="numeric" placeholder="1" required="" type="number"/>
+</label>
+<label data-i18n="label_7">
+<span>روز</span>
+<input id="age-day" inputmode="numeric" placeholder="1" required="" type="number"/>
+</label>
+<button class="primary" data-i18n="button_1" type="submit">محاسبه سن</button>
+</form>
+<div aria-live="polite" class="result" id="age-result"></div>
+</section>
+<section aria-labelledby="history-title" class="card">
+<div class="card-header">
+<h2 data-i18n="heading_3" id="history-title">گزارش‌های ذخیره‌شده</h2>
+<p>نتایج تبدیل و سن‌سنجی اخیر شما در اینجا ذخیره می‌شود.</p>
+</div>
+<div class="history-actions">
+<button class="secondary" data-i18n="button_2" id="save-last" type="button">ثبت آخرین نتیجه</button>
+<button class="ghost" data-i18n="button_3" id="clear-history" type="button">پاک‌سازی</button>
+</div>
+<ul aria-live="polite" class="history-list" id="history-list"></ul>
+</section>
+</main>
+<script src="./assets/js/converters.559c7fe0.js"></script>
+<script src="./assets/js/app.47977e4f.js"></script>
+<script src="../assets/tool-wrapper.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html dir="rtl" lang="fa">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">سازنده آیکون</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+    <link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+    <link rel="stylesheet" href="./assets/style.5ecad947.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+</head>
+
+<body>
+    <main class="ic page">
+        <header>
+            <h1 data-i18n="heading_0">سازنده آیکون</h1>
+            <p class="muted" data-i18n="subtitle">تصویر خود را آپلود کنید و آیکون‌های favicon و PWA را به‌صورت محلی
+                دریافت کنید.</p>
+        </header>
+        <section class="ic-card"><input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden><label
+                for="file" id="drop" class="drop"><b data-i18n="heading_1">تصویر خود را اینجا رها کنید</b><span
+                    class="muted" data-i18n="hint">یا برای انتخاب تصویر لمس کنید — JPEG، PNG و WebP</span></label>
+        </section>
+        <section id="work" hidden>
+            <div class="ic-grid">
+                <section class="ic-card"><img id="preview"><button id="change" class="btn" data-i18n="button_1">تغییر
+                        تصویر</button></section>
+                <section class="ic-card">
+                    <h2 data-i18n="heading_2">تنظیمات</h2><label class="check"><input id="transparent" type="checkbox"
+                            checked><span data-i18n="label_1">شفاف</span></label><label data-i18n="label_0">رنگ
+                        پس‌زمینه</label>
+                    <div class="colors"><input id="color" type="color" value="#ffffff"><input id="colorText"
+                            class="input" dir="ltr" value="#ffffff"></div><label data-i18n="label_2">فاصله از حاشیه
+                        (%)</label>
+                    <div class="range"><input id="padding" type="range" min="0" max="30" value="10"><output
+                            id="padVal">10%</output></div><label class="check"><input id="contain" type="checkbox"
+                            checked><span data-i18n="fit">نمایش کامل تصویر (بدون برش)</span></label><button
+                        id="generate" class="btn primary" data-i18n="button_2">تولید آیکون‌ها</button>
+                </section>
+            </div>
+        </section>
+        <section id="results" class="ic-card" hidden>
+            <div class="row">
+                <h2 data-i18n="heading_3">آیکون‌های تولید شده</h2>
+                <div><button id="all" class="btn primary" data-i18n="button_3">دانلود همه</button><button id="reset"
+                        class="btn" data-i18n="button_4">شروع دوباره</button></div>
+            </div>
+            <p class="muted" data-i18n="zip_note">برای سازگاری، دانلود همه فایل‌ها را جداگانه دانلود می‌کند؛ فایل ZIP
+                نیازمند کتابخانهٔ اضافی است.</p>
+            <div id="icons" class="icons"></div>
+        </section>
+    </main>
+    <div id="toast" role="status" hidden></div>
+    <script src="./assets/script.b72a12a5.js"></script>
+    <script src="../assets/tool-wrapper.6554d042.js"></script>
+</body>
+
+</html>

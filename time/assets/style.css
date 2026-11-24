@@ -1,0 +1,266 @@
+/* Time converter: only what the shared tools.css does not cover */
+
+/* ---------- Now ---------- */
+.now {
+    display: grid;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+@media (min-width: 760px) {
+    .now {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+}
+
+.digital-time {
+    font-family: var(--mono);
+    font-size: clamp(2.5rem, 11vw, 3.75rem);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    text-align: start;
+}
+
+.digital-date {
+    margin-top: 0.25rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.digital-gregorian {
+    font-family: var(--mono);
+    text-align: start;
+}
+
+.stamps {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.stamp {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.stamp dt {
+    color: var(--muted);
+    font-size: 0.8125rem;
+}
+
+.stamp dd {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    min-width: 0;
+}
+
+.stamp strong {
+    overflow-wrap: anywhere;
+    font-family: var(--mono);
+    font-size: 1.0625rem;
+}
+
+/* ---------- Analog clock ---------- */
+.analog {
+    width: min(100%, 15rem);
+    margin-inline: auto;
+}
+
+.analog .face {
+    fill: var(--surface);
+    stroke: var(--accent);
+    stroke-width: 4;
+}
+
+.analog .tick {
+    stroke: var(--border-strong);
+    stroke-width: 1;
+}
+
+.analog .tick--hour {
+    stroke: var(--text);
+    stroke-width: 2;
+}
+
+.analog .numeral {
+    fill: var(--text);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.analog .hand {
+    stroke-linecap: round;
+}
+
+.analog .hand--hour {
+    stroke: var(--text);
+    stroke-width: 5;
+}
+
+.analog .hand--minute {
+    stroke: var(--muted);
+    stroke-width: 3.5;
+}
+
+.analog .hand--second {
+    stroke: var(--danger);
+    stroke-width: 1.5;
+}
+
+.analog .pivot {
+    fill: var(--accent);
+}
+
+/* ---------- Converters ---------- */
+.converters {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 960px) {
+    .converters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+}
+
+.unix-row {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 9rem);
+}
+
+.datetime {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+}
+
+.results {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.result-row {
+    display: grid;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-inline-start: 4px solid var(--accent);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.result-label {
+    grid-column: 1 / -1;
+    color: var(--muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.result-value {
+    overflow-wrap: anywhere;
+    font-family: var(--mono);
+    font-size: 0.9375rem;
+    text-align: start;
+}
+
+/* ---------- Time zones ---------- */
+.zones-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.zones-head .card-title {
+    margin-bottom: 0;
+}
+
+.zone-form {
+    flex: 1 1 18rem;
+    max-width: 26rem;
+}
+
+.zone-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+}
+
+.zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1rem;
+    background: var(--surface-2);
+    box-shadow: none;
+    text-align: center;
+}
+
+.zone-name {
+    color: var(--accent-text);
+    font-size: 1.0625rem;
+    font-weight: 800;
+}
+
+.zone-time {
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+}
+
+.zone-offset {
+    font-family: var(--mono);
+    font-size: 0.8125rem;
+    direction: ltr;
+}
+
+.zone-actions {
+    justify-content: center;
+    margin-top: 0.5rem;
+}
+
+/* ---------- History ---------- */
+.history-list {
+    display: grid;
+    gap: 0.5rem;
+    max-height: 24rem;
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 0.625rem 0.75rem;
+    border-inline-start: 4px solid var(--success);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.history-meta {
+    font-size: 0.8125rem;
+}
+
+.history-content {
+    font-family: var(--mono);
+    font-size: 0.9375rem;
+    overflow-wrap: anywhere;
+    direction: ltr;
+    text-align: start;
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa">
+<head>
+<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
+<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title data-i18n="title">دانلودر رسانه‌های اجتماعی</title>
+<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
+<link href="./assets/css/style.79f0d5db.css" rel="stylesheet"/>
+<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+</head>
+<body>
+<main class="container">
+<h1 data-i18n="heading_0">دانلودر رسانه‌ها (بدون نیاز به سرور)</h1>
+<p class="lead" data-i18n="text_lead_0">آدرس پست اینستاگرام، تلگرام، توییتر (X) یا لینکداین را وارد کنید، برنامه داخل مرورگر محتوا را واکشی و رسانه (عکس/ویدیو) را برای دانلود فراهم می‌کند.</p>
+<form id="fetchForm">
+<label data-i18n="label_0" for="urlInput">نشانی پست</label>
+<input id="urlInput" placeholder="مثال: https://www.instagram.com/p/...." required="" type="url"/>
+<div class="row">
+<button data-i18n="button_0" id="fetchBtn" type="submit">پیدا کن</button>
+<select id="proxySelect" title="پراکسی برای واکشی HTML">
+<option value="https://api.allorigins.win/raw?url=">AllOrigins (پیشنهادی)</option>
+<option value="https://thingproxy.freeboard.io/fetch/">ThingProxy (غیرقابل‌اطمینان)</option>
+</select>
+</div>
+</form>
+<section id="notice">
+<strong>هشدار حقوقی و حریم خصوصی</strong>
+<p>فقط محتوای عمومی و مجاز را دانلود کنید. درخواست‌ها ممکن است از طریق پراکسی‌های شخص‌ثالث ارسال شوند و آن‌ها ممکن است آدرس‌ها را ذخیره کنند — برای حفظ حریم خصوصی از خود-هاست کردن پراکسی (Cloudflare Worker) استفاده کنید.</p>
+</section>
+<section aria-live="polite" id="results"></section>
+</main>
+<script src="./assets/js/app.a7937684.js"></script>
+<script src="../assets/tool-wrapper.js"></script>
+</body>
+</html>

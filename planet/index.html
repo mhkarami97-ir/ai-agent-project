@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title data-i18n="title">مدیریت هوشمند گیاهان</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+<link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+<link rel="stylesheet" href="./assets/style.07bc341a.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+</head>
+<body>
+<main class="page pl">
+  <header class="pl-head">
+    <div>
+      <h1 data-i18n="app_title">گیاه من</h1>
+      <p class="pl-muted" data-i18n="app_subtitle">مراقب گیاهان خود باشید</p>
+    </div>
+    <div class="pl-head-actions">
+      <button type="button" class="pl-btn pl-btn--icon" id="exportBtn" data-i18n-aria="export" aria-label="خروجی گرفتن">📤</button>
+      <button type="button" class="pl-btn pl-btn--icon" id="importBtn" data-i18n-aria="import" aria-label="ورود اطلاعات">📥</button>
+      <button type="button" class="pl-btn pl-btn--primary" id="addPlantBtn" data-i18n="add_plant">افزودن گیاه</button>
+    </div>
+  </header>
+
+  <nav class="pl-nav" role="tablist" aria-label="بخش‌ها" data-i18n-aria="aria_sections">
+    <button type="button" class="pl-tab is-active" role="tab" aria-selected="true" data-view="plants"><span aria-hidden="true">🌿</span><span data-i18n="my_plants">گیاهان من</span></button>
+    <button type="button" class="pl-tab" role="tab" aria-selected="false" data-view="reminders"><span aria-hidden="true">🔔</span><span data-i18n="reminders">یادآوری‌ها</span><b class="pl-count" id="navCount" hidden>0</b></button>
+    <button type="button" class="pl-tab" role="tab" aria-selected="false" data-view="guide"><span aria-hidden="true">📖</span><span data-i18n="guide">راهنما</span></button>
+    <button type="button" class="pl-tab" role="tab" aria-selected="false" data-view="statistics"><span aria-hidden="true">📊</span><span data-i18n="statistics">آمار</span></button>
+  </nav>
+
+  <section id="view-plants" class="pl-view" role="tabpanel">
+    <input type="search" id="searchInput" class="pl-input" enterkeyhint="search" data-i18n-placeholder="search_placeholder" placeholder="جستجوی گیاه...">
+    <div class="pl-filters" id="filterTags" role="group" aria-label="فیلتر" data-i18n-aria="aria_filter"></div>
+    <div class="pl-grid" id="plantsGrid"></div>
+    <div class="pl-empty" id="emptyState" hidden>
+      <div class="pl-empty-icon" aria-hidden="true">🌱</div>
+      <h2 id="emptyTitle" data-i18n="no_plants">هنوز گیاهی اضافه نکرده‌اید</h2>
+      <p id="emptyDesc" class="pl-muted" data-i18n="no_plants_desc">با افزودن گیاه اول خود شروع کنید</p>
+      <button type="button" class="pl-btn pl-btn--primary" id="emptyAddBtn" data-i18n="add_first_plant">افزودن اولین گیاه</button>
+    </div>
+  </section>
+
+  <section id="view-reminders" class="pl-view" role="tabpanel" hidden>
+    <div class="pl-row-between">
+      <h2 data-i18n="today_reminders">یادآوری‌های امروز</h2>
+      <button type="button" class="pl-btn pl-btn--sm" id="clearCompletedBtn" data-i18n="clear_completed">پاک کردن سابقه انجام‌شده‌ها</button>
+    </div>
+    <div class="pl-list" id="todayReminders"></div>
+    <h2 data-i18n="future_reminders">یادآوری‌های آینده</h2>
+    <div class="pl-list" id="upcomingReminders"></div>
+  </section>
+
+  <section id="view-guide" class="pl-view" role="tabpanel" hidden>
+    <h2 data-i18n="guide_title">راهنمای نگهداری از گیاهان</h2>
+    <div id="guideBox"></div>
+  </section>
+
+  <section id="view-statistics" class="pl-view" role="tabpanel" hidden>
+    <h2 data-i18n="my_plants_stats">آمار گیاهان من</h2>
+    <div class="pl-stats">
+      <div class="pl-stat"><strong id="sTotal">0</strong><span data-i18n="total_plants">تعداد گیاهان</span></div>
+      <div class="pl-stat"><strong id="sToday">0</strong><span data-i18n="today_tasks">وظایف امروز</span></div>
+      <div class="pl-stat"><strong id="sDone">0</strong><span data-i18n="completed_tasks">انجام‌شده این ماه</span></div>
+      <div class="pl-stat"><strong id="sLoc">0</strong><span data-i18n="total_locations">مکان‌های مختلف</span></div>
+    </div>
+    <div class="pl-card"><h3 data-i18n="location_distribution">توزیع بر اساس مکان</h3><div id="chartLoc"></div></div>
+    <div class="pl-card"><h3 data-i18n="water_distribution">توزیع بر اساس نیاز آبی</h3><div id="chartWater"></div></div>
+    <div class="pl-card"><h3 data-i18n="light_distribution">توزیع بر اساس نیاز نوری</h3><div id="chartLight"></div></div>
+  </section>
+</main>
+
+<dialog id="plantDialog" class="pl-dialog" aria-labelledby="plantDialogTitle">
+  <form id="plantForm" method="dialog" autocomplete="off">
+    <h2 id="plantDialogTitle" data-i18n="add_new_plant">افزودن گیاه جدید</h2>
+    <div class="pl-grid-form">
+      <div class="pl-field pl-wide"><label for="fName" data-i18n="plant_name">نام گیاه</label><input id="fName" class="pl-input" type="text" required maxlength="80" data-i18n-placeholder="plant_name_placeholder" placeholder="مثلاً: پتوس سبز"></div>
+      <div class="pl-field pl-wide"><label for="fSci" data-i18n="scientific_name">نام علمی</label><input id="fSci" class="pl-input" type="text" maxlength="80" dir="ltr" data-i18n-placeholder="scientific_name_placeholder" placeholder="Epipremnum aureum"></div>
+      <div class="pl-field"><label for="fWater" data-i18n="water_needs">نیاز آبی</label><select id="fWater" class="pl-input" required></select></div>
+      <div class="pl-field"><label for="fLight" data-i18n="light_needs">نیاز نوری</label><select id="fLight" class="pl-input" required></select></div>
+      <div class="pl-field"><label for="fWInt" data-i18n="water_interval">آبیاری هر چند روز؟</label><input id="fWInt" class="pl-input" type="text" inputmode="numeric" required maxlength="2" placeholder="3"></div>
+      <div class="pl-field"><label for="fFInt" data-i18n="fertilize_interval">کوددهی هر چند روز؟ (اختیاری)</label><input id="fFInt" class="pl-input" type="text" inputmode="numeric" maxlength="2" placeholder="14"></div>
+      <div class="pl-field pl-wide"><label for="fLoc" data-i18n="location">مکان قرارگیری</label><input id="fLoc" class="pl-input" type="text" required maxlength="60" list="locList" data-i18n-placeholder="location_placeholder" placeholder="مثلاً: اتاق خواب"><datalist id="locList"></datalist></div>
+      <div class="pl-field pl-wide"><label for="fTags" data-i18n="tags">برچسب‌ها</label><input id="fTags" class="pl-input" type="text" maxlength="200" data-i18n-placeholder="tags_placeholder" placeholder="با کاما جدا کنید"></div>
+      <div class="pl-field pl-wide"><label for="fNotes" data-i18n="notes">یادداشت</label><textarea id="fNotes" class="pl-input" rows="3" maxlength="500" data-i18n-placeholder="notes_placeholder" placeholder="یادداشت‌های مربوط به گیاه..."></textarea></div>
+      <div class="pl-field pl-wide">
+        <label for="fImage" data-i18n="plant_image">تصویر گیاه</label>
+        <input id="fImage" class="pl-input" type="file" accept="image/*">
+        <div class="pl-preview" id="imgPreview" hidden><img alt=""><button type="button" class="pl-btn pl-btn--sm" id="imgRemove" data-i18n="remove_image">حذف تصویر</button></div>
+      </div>
+    </div>
+    <div class="pl-actions">
+      <button type="submit" class="pl-btn pl-btn--primary" data-i18n="save_plant">ذخیره گیاه</button>
+      <button type="button" class="pl-btn" id="plantCancel" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="detailsDialog" class="pl-dialog" aria-labelledby="detailsTitle">
+  <h2 id="detailsTitle"></h2>
+  <div id="detailsBody"></div>
+  <div class="pl-actions">
+    <button type="button" class="pl-btn pl-btn--primary" id="detailsEdit" data-i18n="edit">ویرایش</button>
+    <button type="button" class="pl-btn" id="detailsClose" data-i18n="close">بستن</button>
+  </div>
+</dialog>
+
+<dialog id="confirmDialog" class="pl-dialog pl-dialog--sm" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="pl-actions">
+      <button type="submit" value="ok" class="pl-btn pl-btn--danger" id="confirmOk" data-i18n="confirm_yes">بله</button>
+      <button type="submit" value="cancel" class="pl-btn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<div class="pl-toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="./assets/script.8958ccc9.js"></script>
+<script src="../assets/tool-wrapper.6554d042.js"></script>
+</body>
+</html>

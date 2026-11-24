@@ -1,0 +1,42 @@
+{
+  "fa": {
+    "title": "تشخیص متن از تصویر",
+    "heading_0": "تشخیص متن از تصویر",
+    "heading_1": "تصویر خود را انتخاب کنید",
+    "heading_2": "زبان متن:",
+    "heading_3": "پیش‌نمایش تصویر:",
+    "heading_4": "متن استخراج شده:",
+    "heading_5": "تاریخچه:",
+    "button_0": "انتخاب فایل",
+    "button_1": "شروع تشخیص متن",
+    "button_2": "کپی متن",
+    "button_3": "دانلود متن",
+    "button_4": "ذخیره در تاریخچه",
+    "button_5": "تلاش مجدد OCR",
+    "button_6": "پاک کردن تاریخچه",
+    "text_subtitle_0": "آپلود کنید، متن را استخراج کنید",
+    "text_status_text_2": "بررسی اتصال...",
+    "text_progress_text_3": "در حال پردازش...",
+    "text_no_history_4": "هیچ تاریخچه‌ای وجود ندارد"
+  },
+  "en": {
+    "title": "Text Recognition from Image",
+    "heading_0": "Text Recognition from Image",
+    "heading_1": "Select your image",
+    "heading_2": "Text Language:",
+    "heading_3": "Image Preview:",
+    "heading_4": "Extracted Text:",
+    "heading_5": "History:",
+    "button_0": "Select File",
+    "button_1": "Start Text Recognition",
+    "button_2": "Copy Text",
+    "button_3": "Download Text",
+    "button_4": "Save to History",
+    "button_5": "Retry OCR",
+    "button_6": "Clear History",
+    "text_subtitle_0": "Upload, Extract Text",
+    "text_status_text_2": "Checking connection...",
+    "text_progress_text_3": "Processing...",
+    "text_no_history_4": "No history available"
+  }
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title data-i18n="title">برنامه مدیریت بودجه شخصی</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+<link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+<link rel="stylesheet" href="./assets/style.4affe15b.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+</head>
+<body>
+<main class="page bp">
+  <header class="bp-head">
+    <div>
+      <h1 data-i18n="heading_0">مدیریت بودجه شخصی</h1>
+      <p class="bp-muted" data-i18n="text_subtitle_0">برنامه‌ریزی و تحلیل دارایی‌های خود</p>
+    </div>
+    <div class="bp-field bp-month">
+      <label for="monthSel" data-i18n="month_label">بازه:</label>
+      <select id="monthSel" class="bp-input"></select>
+    </div>
+  </header>
+
+  <section class="bp-summary" aria-label="خلاصه" data-i18n-aria="aria_summary">
+    <div class="bp-sum bp-sum--in"><span data-i18n="heading_1">کل درآمد</span><strong id="sumIn">0</strong></div>
+    <div class="bp-sum bp-sum--out"><span data-i18n="heading_2">کل هزینه</span><strong id="sumOut">0</strong></div>
+    <div class="bp-sum" id="sumBalBox"><span data-i18n="heading_3">موجودی</span><strong id="sumBal">0</strong></div>
+  </section>
+
+  <div class="bp-cols">
+    <section class="bp-card" aria-labelledby="addTitle">
+      <h2 id="addTitle" data-i18n="heading_4">افزودن تراکنش جدید</h2>
+      <form id="txForm" autocomplete="off">
+        <div class="bp-seg" role="radiogroup" aria-label="نوع" data-i18n-aria="label_0">
+          <button type="button" role="radio" class="bp-seg-btn is-active" aria-checked="true" data-type="expense" data-i18n="type_expense">هزینه</button>
+          <button type="button" role="radio" class="bp-seg-btn" aria-checked="false" data-type="income" data-i18n="type_income">درآمد</button>
+        </div>
+        <div class="bp-field"><label for="fCat" data-i18n="label_1">دسته‌بندی:</label><select id="fCat" class="bp-input" required></select></div>
+        <div class="bp-field"><label for="fDesc" data-i18n="label_2">توضیحات:</label><input id="fDesc" class="bp-input" type="text" required maxlength="120" data-i18n-placeholder="ph_desc" placeholder="توضیحات تراکنش"></div>
+        <div class="bp-field">
+          <label for="fAmount" data-i18n="label_3">مبلغ (تومان):</label>
+          <input id="fAmount" class="bp-input" type="text" inputmode="decimal" required placeholder="0">
+          <small class="bp-hint" id="amountHint" aria-live="polite"></small>
+        </div>
+        <div class="bp-field"><label for="fDate" data-i18n="label_4">تاریخ:</label><input id="fDate" class="bp-input" type="date" required></div>
+        <button type="submit" class="bp-btn bp-btn--primary bp-btn--block" data-i18n="button_0">افزودن تراکنش</button>
+      </form>
+    </section>
+
+    <section class="bp-card" aria-labelledby="chartTitle">
+      <h2 id="chartTitle" data-i18n="heading_5">نمودار تحلیلی</h2>
+      <div class="bp-tabs" role="tablist">
+        <button type="button" class="bp-tab is-active" role="tab" aria-selected="true" data-chart="pie" data-i18n="button_1">دایره‌ای</button>
+        <button type="button" class="bp-tab" role="tab" aria-selected="false" data-chart="bar" data-i18n="button_2">میله‌ای</button>
+        <button type="button" class="bp-tab" role="tab" aria-selected="false" data-chart="line" data-i18n="button_3">خطی</button>
+      </div>
+      <div id="chartBox" class="bp-chart"></div>
+    </section>
+  </div>
+
+  <section class="bp-card" aria-labelledby="histTitle">
+    <h2 id="histTitle" data-i18n="heading_6">تاریخچه تراکنش‌ها</h2>
+    <div class="bp-filters" role="group" aria-label="فیلتر" data-i18n-aria="aria_filter">
+      <button type="button" class="bp-chip is-active" data-filter="all" aria-pressed="true" data-i18n="button_4">همه</button>
+      <button type="button" class="bp-chip" data-filter="income" aria-pressed="false" data-i18n="button_5">درآمد</button>
+      <button type="button" class="bp-chip" data-filter="expense" aria-pressed="false" data-i18n="button_6">هزینه</button>
+    </div>
+    <input id="searchInput" class="bp-input" type="search" enterkeyhint="search" data-i18n-placeholder="ph_search" placeholder="جستجو در تراکنش‌ها...">
+    <div id="txList" class="bp-list" aria-live="polite"></div>
+    <div class="bp-actions">
+      <button type="button" class="bp-btn" id="exportBtn" data-i18n="button_7">خروجی CSV (Excel)</button>
+      <button type="button" class="bp-btn bp-btn--danger" id="clearBtn" data-i18n="button_8">پاک کردن همه داده‌ها</button>
+    </div>
+  </section>
+</main>
+
+<dialog id="editDialog" class="bp-dialog" aria-labelledby="editTitle">
+  <form id="editForm" method="dialog" autocomplete="off">
+    <h2 id="editTitle" data-i18n="heading_7">ویرایش تراکنش</h2>
+    <div class="bp-field"><label for="eType" data-i18n="label_0">نوع تراکنش:</label><select id="eType" class="bp-input" required></select></div>
+    <div class="bp-field"><label for="eCat" data-i18n="label_1">دسته‌بندی:</label><select id="eCat" class="bp-input" required></select></div>
+    <div class="bp-field"><label for="eDesc" data-i18n="label_2">توضیحات:</label><input id="eDesc" class="bp-input" type="text" required maxlength="120"></div>
+    <div class="bp-field"><label for="eAmount" data-i18n="label_3">مبلغ (تومان):</label><input id="eAmount" class="bp-input" type="text" inputmode="decimal" required></div>
+    <div class="bp-field"><label for="eDate" data-i18n="label_4">تاریخ:</label><input id="eDate" class="bp-input" type="date" required></div>
+    <div class="bp-actions">
+      <button type="submit" class="bp-btn bp-btn--primary" data-i18n="button_9">ذخیره تغییرات</button>
+      <button type="button" class="bp-btn" id="editCancel" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="confirmDialog" class="bp-dialog bp-dialog--sm" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="bp-actions">
+      <button type="submit" value="ok" class="bp-btn bp-btn--danger" data-i18n="confirm_yes">بله</button>
+      <button type="submit" value="cancel" class="bp-btn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<div class="bp-toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="./assets/script.9bf42f70.js"></script>
+<script src="../assets/tool-wrapper.6554d042.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html dir="rtl" lang="fa">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">فرمت‌دهی JSON</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+    <link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+    <link rel="stylesheet" href="./assets/css/styles.2175febb.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+</head>
+
+<body>
+    <main class="jf page">
+        <header>
+            <p class="eyebrow" data-i18n="eyebrow">JSON Formatter و Validator</p>
+            <h1 data-i18n="heading_0">فرمت‌دهی، اعتبارسنجی و نمایش درختی JSON در مرورگر</h1>
+            <p class="muted" data-i18n="lead">متن فقط در مرورگر شما پردازش و ذخیره می‌شود.</p>
+        </header>
+        <section class="jf-card">
+            <div class="row">
+                <h2 data-i18n="heading_1">متن JSON</h2><span id="counts" class="muted"></span>
+            </div><textarea id="input" class="jf-input" dir="ltr" spellcheck="false" placeholder='{"hello":"world"}'
+                data-i18n-placeholder="ph"></textarea>
+            <div class="actions"><button id="format" class="btn primary" data-i18n="button_0">فرمت کردن</button><button
+                    id="validate" class="btn" data-i18n="button_1">اعتبارسنجی</button><button id="minify" class="btn"
+                    data-i18n="minify">فشرده‌سازی</button><button id="copy" class="btn" data-i18n="copy"
+                    disabled>کپی</button><button id="clear" class="btn danger" data-i18n="button_2">پاک کردن</button>
+            </div>
+            <p id="status" role="status" aria-live="polite"></p>
+            <div class="samples"><span data-i18n="examples">مثال‌ها:</span><button class="chip" data-sample="object"
+                    data-i18n="button_3">آبجکت ساده</button><button class="chip" data-sample="array"
+                    data-i18n="button_4">آرایه</button><button class="chip" data-sample="nested"
+                    data-i18n="button_5">چندلایه</button></div>
+        </section>
+        <section class="jf-card">
+            <div class="row">
+                <h2 data-i18n="heading_2">ساختار JSON</h2>
+                <div><button id="expand" class="btn small" data-i18n="expand">باز کردن همه</button><button id="collapse"
+                        class="btn small" data-i18n="collapse">بستن همه</button></div>
+            </div>
+            <div id="tree" class="tree" aria-live="polite"></div>
+        </section>
+    </main>
+    <div id="toast" role="status" hidden></div>
+    <script src="./assets/js/main.5b73bb48.js"></script>
+    <script src="../assets/tool-wrapper.6554d042.js"></script>
+</body>
+
+</html>

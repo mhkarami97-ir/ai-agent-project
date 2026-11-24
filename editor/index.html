@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="ویرایشگر مارک‌داون راست‌به‌چپ با پیش‌نمایش زنده و خروجی PDF/Word">
+<title data-i18n="title">ویرایشگر مارک‌داون RTL</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+<link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+<link rel="stylesheet" href="./assets/css/styles.b1f15c1d.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+</head>
+<body>
+<main class="page pm">
+  <header class="pm-head">
+    <h1 data-i18n="text_title_0">ویرایشگر مارک‌داون</h1>
+    <p class="pm-muted" data-i18n="text_subtitle_1">پیش‌نمایش زنده + ذخیره خودکار + خروجی PDF/Word</p>
+  </header>
+
+  <section class="pm-bar" aria-label="نوار ابزار" data-i18n-aria="aria_toolbar">
+    <div class="pm-group">
+      <button type="button" class="pm-btn" id="newBtn" data-i18n="button_1">سند تازه</button>
+      <button type="button" class="pm-btn" id="sampleBtn" data-i18n="button_2">نمونهٔ مارک‌داون</button>
+      <button type="button" class="pm-btn" id="openBtn" data-i18n="open_file">باز کردن فایل</button>
+      <button type="button" class="pm-btn" id="saveBtn" data-i18n="button_3">ذخیره فوری</button>
+    </div>
+    <div class="pm-group">
+      <button type="button" class="pm-btn pm-btn--primary" id="pdfBtn" data-i18n="button_4">خروجی PDF</button>
+      <button type="button" class="pm-btn" id="docBtn" data-i18n="button_5">خروجی Word</button>
+      <button type="button" class="pm-btn" id="htmlBtn" data-i18n="export_html">خروجی HTML</button>
+      <button type="button" class="pm-btn" id="mdBtn" data-i18n="export_md">دانلود Markdown</button>
+    </div>
+  </section>
+
+  <div class="pm-status" role="status" aria-live="polite">
+    <span id="statusMsg"></span>
+    <span id="counts"></span>
+  </div>
+
+  <div class="pm-tabs" role="tablist" id="paneTabs">
+    <button type="button" role="tab" class="pm-tab is-active" aria-selected="true" data-pane="edit" data-i18n="tab_edit">نوشتن</button>
+    <button type="button" role="tab" class="pm-tab" aria-selected="false" data-pane="preview" data-i18n="tab_preview">پیش‌نمایش</button>
+  </div>
+
+  <section class="pm-panes" aria-label="ویرایشگر و پیش‌نمایش" data-i18n-aria="aria_panes">
+    <article class="pm-panel" id="editPane">
+      <header class="pm-panel-head">
+        <h2 data-i18n="heading_0">ویرایشگر (Markdown)</h2>
+        <span class="pm-hint" data-i18n="text_hint_2">از کلیدهای Ctrl/Cmd+S برای ذخیره دستی استفاده کنید.</span>
+      </header>
+      <div class="pm-fmt" role="toolbar" aria-label="قالب‌بندی" data-i18n-aria="aria_format">
+        <button type="button" class="pm-f" data-act="h" data-i18n-aria="f_heading" aria-label="عنوان"><b>H</b></button>
+        <button type="button" class="pm-f" data-act="bold" data-i18n-aria="f_bold" aria-label="پررنگ"><b>B</b></button>
+        <button type="button" class="pm-f" data-act="italic" data-i18n-aria="f_italic" aria-label="کج"><i>I</i></button>
+        <button type="button" class="pm-f" data-act="strike" data-i18n-aria="f_strike" aria-label="خط‌خورده"><s>S</s></button>
+        <button type="button" class="pm-f" data-act="code" data-i18n-aria="f_code" aria-label="کد">&lt;/&gt;</button>
+        <button type="button" class="pm-f" data-act="link" data-i18n-aria="f_link" aria-label="پیوند">🔗</button>
+        <button type="button" class="pm-f" data-act="ul" data-i18n-aria="f_ul" aria-label="فهرست">•</button>
+        <button type="button" class="pm-f" data-act="ol" data-i18n-aria="f_ol" aria-label="فهرست شماره‌دار">1.</button>
+        <button type="button" class="pm-f" data-act="quote" data-i18n-aria="f_quote" aria-label="نقل‌قول">❝</button>
+      </div>
+      <textarea id="editor" class="pm-editor" dir="auto" spellcheck="false" aria-label="ناحیهٔ نوشتن مارک‌داون" data-i18n-aria="aria_editor" data-i18n-placeholder="ph_editor"></textarea>
+    </article>
+    <article class="pm-panel" id="previewPane" hidden>
+      <header class="pm-panel-head">
+        <h2 data-i18n="heading_1">پیش‌نمایش زنده</h2>
+        <span class="pm-hint" data-i18n="text_hint_3">خروجی امن؛ HTML خام در متن اجرا نمی‌شود</span>
+      </header>
+      <div class="pm-preview markdown-body" id="preview" aria-live="polite"></div>
+    </article>
+  </section>
+</main>
+
+<input type="file" id="fileInput" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden>
+<dialog id="confirmDialog" class="pm-dialog" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="pm-dialog-actions">
+      <button type="submit" value="ok" class="pm-btn pm-btn--danger" data-i18n="confirm_yes">بله</button>
+      <button type="submit" value="cancel" class="pm-btn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<div class="pm-toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="./assets/js/app.4f03551b.js"></script>
+<script src="../assets/tool-wrapper.6554d042.js"></script>
+</body>
+</html>

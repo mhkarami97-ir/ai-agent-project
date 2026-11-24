@@ -1,0 +1,408 @@
+﻿
+:root {
+    --bg: #0f1724;
+    --card: #0b1220;
+    --accent: #06b6d4;
+    --muted: #0b1220;
+    --glass: rgba(255, 255, 255, 0.03)
+}
+
+* {
+    box-sizing: border-box
+}
+
+/* Ensure the Vazirmatn font is the default everywhere and controls inherit it */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Vazirmatn', system-ui, Segoe UI, Roboto, Arial, \"Noto Naskh Arabic\", sans-serif;
+    color: #0b1220;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: 400
+}
+
+/* Apply font to commonly used elements (catch anchors, chips, cards, controls) */
+input, textarea, select, button, a, .chip, .card, .small, .meta, .langList, .resource-list {
+    font-family: 'Vazirmatn', system-ui, Segoe UI, Roboto, Arial, sans-serif !important;
+    font-weight: 400
+}
+
+/* Accessible visually-hidden label */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0
+}
+
+.wrap {
+    max-width: 1100px;
+    margin: 32px auto;
+    padding: 24px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6)
+}
+
+h1 {
+    margin: 0 0 12px;
+    font-size: 22px
+}
+
+p.lead {
+    margin: 0 0 18px;
+    color: var(--muted)
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap
+}
+
+input[type=text], textarea, select, button {
+    font-family: 'Vazirmatn', inherit;
+}
+
+input[type=text] {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #0b0d11;
+    background: var(--glass);
+    color: inherit;
+    font-size: 16px;
+    min-width: 0
+}
+
+button {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: #042025;
+    font-weight: 600;
+    cursor: pointer
+}
+
+button.secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--muted)
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px
+}
+
+.col {
+    flex: 1
+}
+
+/* side column should be narrower on wide screens but stack on small screens */
+.col.side {
+    flex: 0 0 320px;
+    max-width: 360px
+}
+
+.card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.03)
+}
+
+.result {
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent)
+}
+
+.meta {
+    font-size: 12px;
+    color: var(--muted)
+}
+
+ul.list {
+    list-style: none;
+    padding: 0;
+    margin: 0
+}
+
+a.target {
+    color: var(--accent);
+    text-decoration: none
+}
+
+.small {
+    font-size: 13px;
+    color: var(--muted)
+}
+
+.links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px
+}
+
+.chip {
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    cursor: pointer
+}
+
+footer {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 13px
+}
+
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.06);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .9s linear infinite
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: rgba(6, 182, 212, 0.12);
+    color: var(--accent);
+    font-weight: 600
+}
+
+.langList {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap
+}
+
+.error {
+    color: #ffb4b4;
+    background: rgba(255, 180, 180, 0.04);
+    padding: 8px;
+    border-radius: 8px
+}
+
+.geo {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px
+}
+
+.source-tag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 11px;
+    color: var(--muted)
+}
+
+/* Resources panel styles */
+#resourcesPanel {
+    margin-top: 10px
+}
+
+.resource-category {
+    margin-top: 8px
+}
+
+.resource-category > .category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px
+}
+
+.resource-category .category-title {
+    font-weight: 700;
+    font-size: 14px
+}
+
+.resource-category .category-actions {
+    display: flex;
+    gap: 6px
+}
+
+.resource-search {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px
+}
+
+.resource-search input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.02);
+    color: inherit
+}
+
+.resource-search button {
+    padding: 6px 8px;
+    border-radius: 8px
+}
+
+.resource-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px
+}
+
+/* Avatar styling: respect RTL (float to the right) */
+.avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    float: right;
+    margin-left: 8px;
+    margin-right: 0
+}
+
+/* Make results responsive: allow columns to stack and content to wrap */
+@media (max-width: 900px) {
+    .wrap {
+        margin: 16px;
+        padding: 16px
+    }
+
+    .row {
+        flex-direction: column
+    }
+
+    .col.side {
+        flex: 1 1 auto;
+        max-width: none
+    }
+
+    .controls {
+        align-items: stretch
+    }
+
+    input[type=text] {
+        width: 100%
+    }
+}
+
+/* Prevent long URLs or text from overflowing */
+.result, .card {
+    word-break: break-word;
+    overflow-wrap: break-word
+}
+
+li.result a.target, li.result .meta, li.result .small {
+    display: block
+}
+
+/* Small tweak for RTL alignment */
+html[dir="rtl"] .controls {
+    direction: rtl
+}
+
+/* Ensure clickable chips don't cause overflow */
+.links .chip {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%
+}
+
+
+/* Dark Mode Styles */
+body[data-theme="dark"] {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #e0e0e0;
+}
+
+body[data-theme="dark"] .container {
+    background: #0f3460;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+body[data-theme="dark"] header {
+    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+}
+
+body[data-theme="dark"] .main-content,
+body[data-theme="dark"] main {
+    background: #0f3460;
+}
+
+body[data-theme="dark"] input,
+body[data-theme="dark"] textarea,
+body[data-theme="dark"] select {
+    background: #16213e;
+    border-color: #533483;
+    color: #e0e0e0;
+}
+
+body[data-theme="dark"] input:focus,
+body[data-theme="dark"] textarea:focus,
+body[data-theme="dark"] select:focus {
+    border-color: #764ba2;
+    box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.2);
+}
+
+body[data-theme="dark"] label,
+body[data-theme="dark"] h1,
+body[data-theme="dark"] h2,
+body[data-theme="dark"] h3,
+body[data-theme="dark"] h4,
+body[data-theme="dark"] h5,
+body[data-theme="dark"] h6 {
+    color: #e0e0e0;
+}
+
+body[data-theme="dark"] .card,
+body[data-theme="dark"] .box,
+body[data-theme="dark"] .panel {
+    background: #16213e;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+body[data-theme="dark"] footer {
+    background: #1a1a2e;
+    border-top-color: #533483;
+    color: #a0a0a0;
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: #1a1a2e;
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #533483;
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+}

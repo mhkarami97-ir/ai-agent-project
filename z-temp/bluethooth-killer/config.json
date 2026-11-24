@@ -1,0 +1,71 @@
+﻿{
+  "name": "bluetooth-speaker-jammer",
+  "version": "1.0.0",
+  "description": "Web-based Bluetooth speaker jamming tool using Web Bluetooth API",
+  "main": "index.html",
+  "keywords": [
+    "bluetooth",
+    "jammer",
+    "web-bluetooth",
+    "security",
+    "pentesting",
+    "ble",
+    "bluetooth-low-energy",
+    "speaker",
+    "audio",
+    "disruption"
+  ],
+  "author": "Security Research",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/bluetooth-killer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/bluetooth-killer/issues"
+  },
+  "homepage": "https://github.com/yourusername/bluetooth-killer#readme",
+  "config": {
+    "defaultThreads": 10,
+    "maxThreads": 50,
+    "minThreads": 1,
+    "optimizedInterval": 500,
+    "standardInterval": 1000,
+    "maxLogEntries": 1000,
+    "serverPort": 8000
+  },
+  "features": {
+    "webBluetooth": true,
+    "multiThreading": true,
+    "uuidRandomization": true,
+    "attackOptimization": true,
+    "realTimeLogs": true,
+    "statistics": true,
+    "responsiveUI": true
+  },
+  "attackMethods": [
+    "Connection Flooding",
+    "GATT Service Overload",
+    "Pairing Request Spam",
+    "Audio Stream Injection",
+    "L2CAP Flood",
+    "SDP Query Spam",
+    "MTU Size Attack",
+    "Notification Flood"
+  ],
+  "supportedBrowsers": {
+    "chrome": "56+",
+    "edge": "79+",
+    "opera": "43+",
+    "firefox": "109+ (with flags)",
+    "safari": "Not supported"
+  },
+  "requirements": {
+    "https": "Required (or localhost)",
+    "bluetooth": "Required on device",
+    "permissions": "Bluetooth access required"
+  },
+  "educational": true,
+  "disclaimer": "This tool is for educational and research purposes only. Unauthorized use is illegal."
+}
+

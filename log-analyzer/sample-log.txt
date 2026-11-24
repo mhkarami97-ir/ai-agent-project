@@ -1,0 +1,43 @@
+﻿2024-12-20 10:15:23 [APP] INFO Application started successfully
+2024-12-20 10:15:24 [AUTH] INFO User authentication system initialized
+2024-12-20 10:15:25 [DB] INFO Database connection established
+2024-12-20 10:16:01 [API] INFO Received GET request from 192.168.1.100
+2024-12-20 10:16:02 [API] DEBUG Processing user data
+2024-12-20 10:16:03 [API] INFO Request processed successfully
+2024-12-20 10:17:45 [AUTH] WARN Failed login attempt for user: admin
+2024-12-20 10:17:46 [AUTH] WARN IP address 192.168.1.150 flagged for suspicious activity
+2024-12-20 10:18:10 [DB] ERROR Connection timeout after 30 seconds
+2024-12-20 10:18:11 [DB] ERROR Failed to execute query: SELECT * FROM users
+2024-12-20 10:18:15 [DB] INFO Attempting to reconnect to database
+2024-12-20 10:18:17 [DB] INFO Database connection restored
+2024-12-20 10:19:30 [API] INFO Received POST request from 192.168.1.200
+2024-12-20 10:19:31 [API] DEBUG Validating request payload
+2024-12-20 10:19:32 [API] WARN Invalid data format in request body
+2024-12-20 10:19:33 [API] ERROR Request validation failed
+2024-12-20 10:20:00 [CACHE] INFO Cache cleared successfully
+2024-12-20 10:20:05 [CACHE] DEBUG Cache size: 1024 MB
+2024-12-20 10:21:15 [API] INFO Received DELETE request from 192.168.1.100
+2024-12-20 10:21:16 [API] DEBUG Checking user permissions
+2024-12-20 10:21:17 [API] ERROR User does not have permission to delete resource
+2024-12-20 10:22:30 [APP] WARN High memory usage detected: 85%
+2024-12-20 10:22:45 [APP] ERROR Out of memory exception
+2024-12-20 10:22:46 [APP] INFO Initiating garbage collection
+2024-12-20 10:23:00 [APP] INFO Memory usage normalized: 45%
+2024-12-20 10:24:10 [API] INFO Received GET request from 192.168.1.250
+2024-12-20 10:24:11 [API] DEBUG Fetching data from cache
+2024-12-20 10:24:12 [API] INFO Cache hit - returning cached data
+2024-12-20 10:25:30 [AUTH] INFO User logged in: john.doe@example.com
+2024-12-20 10:25:35 [AUTH] DEBUG Session created with 2 hour timeout
+2024-12-20 10:26:00 [API] INFO Received PUT request from 192.168.1.100
+2024-12-20 10:26:01 [API] DEBUG Updating resource ID: 12345
+2024-12-20 10:26:02 [DB] INFO Executing UPDATE query
+2024-12-20 10:26:03 [DB] INFO Query executed successfully, 1 row affected
+2024-12-20 10:26:04 [API] INFO Resource updated successfully
+2024-12-20 10:27:15 [SCHEDULER] INFO Running scheduled task: cleanup_temp_files
+2024-12-20 10:27:20 [SCHEDULER] INFO Removed 150 temporary files
+2024-12-20 10:28:00 [API] INFO Received GET request from 192.168.1.180
+2024-12-20 10:28:01 [API] ERROR Rate limit exceeded for IP: 192.168.1.180
+2024-12-20 10:29:00 [AUTH] INFO User logged out: john.doe@example.com
+2024-12-20 10:29:01 [AUTH] DEBUG Session terminated
+2024-12-20 10:30:00 [APP] INFO Hourly health check completed - All systems operational
+

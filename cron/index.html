@@ -1,0 +1,66 @@
+<!doctype html>
+<html dir="rtl" lang="fa">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">مدیریت کرون جاب‌ها</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+    <link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+    <link rel="stylesheet" href="./assets/css/styles.efcf6994.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+</head>
+
+<body>
+    <main class="cr page">
+        <header>
+            <h1 data-i18n="heading_0">مدیریت کرون جاب‌ها</h1>
+            <p class="muted" data-i18n="subtitle">ذخیره، اعتبارسنجی و پیش‌نمایش زمان اجرای کرون جاب‌ها — این ابزار
+                جاب‌ها را اجرا نمی‌کند.</p>
+        </header>
+        <section class="cr-card">
+            <h2 id="formtitle" data-i18n="heading_1">ایجاد کرون جاب جدید</h2>
+            <form id="form"><label data-i18n="label_0">نام جاب</label><input id="name" class="input" required
+                    maxlength="80"><label data-i18n="label_1">عبارت کرون</label><input id="expr" class="input mono"
+                    dir="ltr" required placeholder="0 9 * * 1">
+                <p id="desc" class="hint"></p>
+                <div id="runs" class="runs"></div><label data-i18n="label_2">توضیحات</label><textarea id="note"
+                    class="input" rows="2" maxlength="300"></textarea><label class="check"><input id="active"
+                        type="checkbox" checked><span data-i18n="label_3">فعال</span></label>
+                <div class="actions"><button class="btn primary" data-i18n="button_0">ایجاد جاب</button><button
+                        type="button" id="reset" class="btn" data-i18n="button_1">پاک کردن</button></div>
+            </form>
+        </section>
+        <section class="cr-card">
+            <div class="row">
+                <h2 data-i18n="heading_3">کرون جاب‌های موجود</h2>
+                <div><button id="export" class="btn small" data-i18n="button_4">خروجی</button><button id="import"
+                        class="btn small" data-i18n="button_5">ورودی</button><button id="clear" class="btn danger small"
+                        data-i18n="button_3">پاک کردن همه</button><input id="file" type="file" accept=".json" hidden>
+                </div>
+            </div>
+            <div id="jobs" class="list"></div>
+        </section>
+        <section class="cr-card">
+            <div class="row">
+                <h2 data-i18n="heading_4">تاریخچه تغییرات</h2><button id="clearhist" class="btn danger small"
+                    data-i18n="button_6">پاک کردن تاریخچه</button>
+            </div>
+            <div id="hist" class="list"></div>
+        </section>
+    </main>
+    <dialog id="confirm">
+        <form method="dialog">
+            <p id="confirmtext"></p>
+            <div class="actions"><button value="yes" class="btn danger" data-i18n="yes">بله</button><button
+                    value="cancel" class="btn" data-i18n="cancel">انصراف</button></div>
+        </form>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+    <script src="./assets/js/app.221c784c.js"></script>
+    <script src="../assets/tool-wrapper.6554d042.js"></script>
+</body>
+
+</html>

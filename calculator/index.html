@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">ماشین حساب پیشرفته</title>
+    <meta name="description" content="ماشین حساب ساده، مهندسی، برنامه‌نویسی و رسم نمودار تابع">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+    <link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+    <link rel="stylesheet" href="./assets/css/style.5e3a2a21.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+    <script src="./assets/js/app.2b9b602f.js" defer></script>
+    <script src="../assets/tool-wrapper.6554d042.js" defer></script>
+</head>
+
+<body>
+    <main class="page page--narrow">
+        <header class="page-header">
+            <h2 class="page-title" data-i18n="heading_0">ماشین حساب پیشرفته</h2>
+        </header>
+
+        <div class="stack">
+            <div class="tabs" role="tablist" aria-label="Calculator mode">
+                <button type="button" class="tab" role="tab" id="tab-simple" aria-controls="panel-simple"
+                    aria-selected="true" data-mode="simple" data-i18n="button_0">ساده</button>
+                <button type="button" class="tab" role="tab" id="tab-engineering" aria-controls="panel-engineering"
+                    aria-selected="false" data-mode="engineering" data-i18n="button_1">مهندسی</button>
+                <button type="button" class="tab" role="tab" id="tab-programming" aria-controls="panel-programming"
+                    aria-selected="false" data-mode="programming" data-i18n="button_2">برنامه‌نویسی</button>
+                <button type="button" class="tab" role="tab" id="tab-graph" aria-controls="panel-graph"
+                    aria-selected="false" data-mode="graph" data-i18n="button_3">نمودار</button>
+            </div>
+
+            <!-- Simple -->
+            <section id="panel-simple" role="tabpanel" aria-labelledby="tab-simple" data-panel="simple"
+                class="card card--lg stack">
+                <div class="calc-display">
+                    <button type="button" class="btn btn--ghost btn--sm calc-history-btn" data-action="history"
+                        aria-label="History">📜</button>
+                    <div class="calc-history" data-history dir="ltr"></div>
+                    <input class="calc-result" data-display type="text" value="0" readonly inputmode="none" dir="ltr"
+                        aria-label="Result">
+                </div>
+                <div class="keys" data-keys="padBasic"></div>
+            </section>
+
+            <!-- Scientific -->
+            <section id="panel-engineering" role="tabpanel" aria-labelledby="tab-engineering" data-panel="engineering"
+                class="card card--lg stack" hidden>
+                <div class="calc-display">
+                    <button type="button" class="btn btn--ghost btn--sm calc-history-btn" data-action="history"
+                        aria-label="History">📜</button>
+                    <div class="calc-history" data-history dir="ltr"></div>
+                    <input class="calc-result" data-display type="text" value="0" readonly inputmode="none" dir="ltr"
+                        aria-label="Result">
+                </div>
+
+                <div class="segmented" role="radiogroup" aria-label="Angle unit">
+                    <label class="segmented-item">
+                        <input type="radio" name="angle" value="deg" checked>
+                        <span data-i18n="label_0">درجه</span>
+                    </label>
+                    <label class="segmented-item">
+                        <input type="radio" name="angle" value="rad">
+                        <span data-i18n="label_1">رادیان</span>
+                    </label>
+                </div>
+
+                <div class="keys keys--5" data-keys="scientific"></div>
+                <div class="keys" data-keys="padBasic"></div>
+            </section>
+
+            <!-- Programmer -->
+            <section id="panel-programming" role="tabpanel" aria-labelledby="tab-programming" data-panel="programming"
+                class="card card--lg stack" hidden>
+                <div class="calc-display">
+                    <button type="button" class="btn btn--ghost btn--sm calc-history-btn" data-action="history"
+                        aria-label="History">📜</button>
+                    <div class="calc-history" data-history dir="ltr"></div>
+                    <input class="calc-result" data-display type="text" value="0" readonly inputmode="none" dir="ltr"
+                        aria-label="Result">
+
+                    <div class="base-grid" dir="ltr">
+                        <div class="base-cell"><span class="base-name">HEX</span><span data-base-out="16">0</span></div>
+                        <div class="base-cell"><span class="base-name">DEC</span><span data-base-out="10">0</span></div>
+                        <div class="base-cell"><span class="base-name">OCT</span><span data-base-out="8">0</span></div>
+                        <div class="base-cell"><span class="base-name">BIN</span><span data-base-out="2">0</span></div>
+                    </div>
+                </div>
+
+                <div class="segmented" role="radiogroup" aria-label="Number base">
+                    <label class="segmented-item">
+                        <input type="radio" name="base" value="16" checked>
+                        <span data-i18n="label_2">HEX</span>
+                    </label>
+                    <label class="segmented-item">
+                        <input type="radio" name="base" value="10">
+                        <span data-i18n="label_3">DEC</span>
+                    </label>
+                    <label class="segmented-item">
+                        <input type="radio" name="base" value="8">
+                        <span data-i18n="label_4">OCT</span>
+                    </label>
+                    <label class="segmented-item">
+                        <input type="radio" name="base" value="2">
+                        <span data-i18n="label_5">BIN</span>
+                    </label>
+                </div>
+
+                <div class="keys keys--6" data-keys="hexRow"></div>
+                <div class="keys keys--6" data-keys="bitwise"></div>
+                <div class="keys" data-keys="padProgrammer"></div>
+            </section>
+
+            <!-- Graph -->
+            <section id="panel-graph" role="tabpanel" aria-labelledby="tab-graph" data-panel="graph"
+                class="card card--lg" hidden>
+                <div class="graph-layout">
+                    <div class="stack">
+                        <h3 class="card-title" data-i18n="heading_1">رسم نمودار تابع</h3>
+
+                        <div>
+                            <label class="label" for="graph-function" data-i18n="label_6">تابع (از x استفاده
+                                کنید):</label>
+                            <input id="graph-function" class="field mono" type="text" dir="ltr" autocomplete="off"
+                                spellcheck="false" placeholder="x^2 · sin(x) · 2*x+3">
+                        </div>
+
+                        <div class="range-grid">
+                            <div>
+                                <label class="label" for="x-min">X min</label>
+                                <input id="x-min" class="field" type="number" value="-10" step="any" inputmode="decimal"
+                                    dir="ltr">
+                            </div>
+                            <div>
+                                <label class="label" for="x-max">X max</label>
+                                <input id="x-max" class="field" type="number" value="10" step="any" inputmode="decimal"
+                                    dir="ltr">
+                            </div>
+                            <div>
+                                <label class="label" for="y-min">Y min</label>
+                                <input id="y-min" class="field" type="number" value="-10" step="any" inputmode="decimal"
+                                    dir="ltr">
+                            </div>
+                            <div>
+                                <label class="label" for="y-max">Y max</label>
+                                <input id="y-max" class="field" type="number" value="10" step="any" inputmode="decimal"
+                                    dir="ltr">
+                            </div>
+                        </div>
+
+                        <div id="graph-error" class="alert alert--danger" role="alert" hidden></div>
+
+                        <div class="row">
+                            <button type="button" class="btn btn--primary" data-action="plot" data-i18n="button_94">رسم
+                                نمودار</button>
+                            <button type="button" class="btn btn--secondary" data-action="clear-graph"
+                                data-i18n="button_95">پاک کردن</button>
+                        </div>
+
+                        <div>
+                            <hr class="divider">
+                            <h4 class="label" data-examples-title>مثال‌های تابع</h4>
+                            <div id="graph-examples" class="row"></div>
+                        </div>
+                    </div>
+
+                    <canvas id="graph-canvas" class="graph-canvas"></canvas>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- History -->
+    <dialog id="history-dialog" class="modal" aria-labelledby="history-title">
+        <div class="modal-header">
+            <h2 id="history-title" class="modal-title" data-i18n="heading_2">تاریخچه محاسبات</h2>
+            <button type="button" class="btn btn--ghost btn--sm" data-action="close-history" aria-label="Close"
+                data-i18n="button_96">×</button>
+        </div>
+        <ul id="history-list" class="modal-body history-list"></ul>
+        <div class="modal-footer">
+            <button type="button" class="btn btn--danger btn--sm" data-action="clear-history" data-i18n="button_97">پاک
+                کردن تاریخچه</button>
+        </div>
+    </dialog>
+</body>
+
+</html>

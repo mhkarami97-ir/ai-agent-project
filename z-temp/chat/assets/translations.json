@@ -1,0 +1,26 @@
+{
+  "fa": {
+    "title": "سیستم چت",
+    "heading_0": "💬 سیستم چت",
+    "heading_1": "⚙️ تنظیمات اولیه",
+    "button_0": "ورود",
+    "button_1": "خروج",
+    "button_2": "ارسال",
+    "button_3": "ذخیره Token",
+    "text_note_0": "⚠️ Token شما فقط در مرورگر شما ذخیره می‌شود و به سرور ارسال نمی‌شود",
+    "text_note_1": "📝نکته مهم:برای اینکه همه کاربران بتوانند پیام ارسال کنند، باید یک Token مشترک در فایل script.js قرار دهید (متغیر SHARED_TOKEN). این Token باید دسترسیgistداشته باشد و بتواند روی Gist مشترک بنویسد.",
+    "text_note_2": "💡راه حل:یک Token مخصوص برای این چت ایجاد کنید و آن را در متغیر SHARED_TOKEN در فایل script.js قرار دهید. به این ترتیب همه کاربران می‌توانند بدون نیاز به وارد کردن Token، پیام ارسال کنند."
+  },
+  "en": {
+    "title": "Chat System",
+    "heading_0": "💬 Chat System",
+    "heading_1": "⚙️ Initial Settings",
+    "button_0": "Login",
+    "button_1": "Logout",
+    "button_2": "Send",
+    "button_3": "Save Token",
+    "text_note_0": "⚠️ Your token is only stored in your browser and is not sent to the server",
+    "text_note_1": "📝 Important Note: For all users to be able to send messages, you must place a shared token in the script.js file (SHARED_TOKEN variable). This token must have gist access and be able to write to the shared Gist.",
+    "text_note_2": "💡 Solution: Create a dedicated token for this chat and place it in the SHARED_TOKEN variable in the script.js file. This way, all users can send messages without needing to enter a token."
+  }
+}

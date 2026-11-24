@@ -1,0 +1,16 @@
+{
+  "fa": {
+    "title": "دانلودر رسانه‌های اجتماعی",
+    "heading_0": "دانلودر رسانه‌ها (بدون نیاز به سرور)",
+    "button_0": "پیدا کن",
+    "label_0": "نشانی پست",
+    "text_lead_0": "آدرس پست اینستاگرام، تلگرام، توییتر (X) یا لینکداین را وارد کنید، برنامه داخل مرورگر محتوا را واکشی و رسانه (عکس/ویدیو) را برای دانلود فراهم می‌کند."
+  },
+  "en": {
+    "title": "Social Media Downloader",
+    "heading_0": "Media Downloader (No Server Required)",
+    "button_0": "Find",
+    "label_0": "Post Address",
+    "text_lead_0": "Enter the address of an Instagram, Telegram, Twitter (X), or LinkedIn post. The in-browser application fetches the content and provides media (photo/video) for download."
+  }
+}

@@ -1,0 +1,124 @@
+/* Time tracker: only what the shared tools.css does not cover */
+
+/* ---------- Today ---------- */
+.today {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+}
+
+.today-total {
+    color: var(--accent-text);
+    font-size: clamp(1.75rem, 1.2rem + 3vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.today-running {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- New task ---------- */
+.task-form {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 720px) {
+    .task-form {
+        align-items: end;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+    }
+}
+
+/* ---------- Tasks ---------- */
+.task-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.task {
+    display: grid;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    background: var(--surface-2);
+    box-shadow: none;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.task.is-running {
+    border-color: var(--success);
+    background: linear-gradient(0deg, var(--success-soft), var(--success-soft)), var(--surface-2);
+}
+
+.task-info {
+    min-width: 0;
+}
+
+.task-title {
+    font-size: 1.0625rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.task-meta {
+    gap: 0.375rem;
+    margin-top: 0.25rem;
+}
+
+.badge--muted {
+    background: var(--surface-3);
+    color: var(--muted);
+}
+
+.task-time {
+    font-family: var(--mono);
+    font-size: clamp(1.25rem, 1rem + 1.5vw, 1.75rem);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.task-actions {
+    grid-column: 1 / -1;
+}
+
+.task-actions .btn--primary,
+.task-actions .btn--secondary {
+    flex: 1 1 8rem;
+}
+
+/* ---------- Report ---------- */
+.report-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.day {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.day-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+}
+
+.day-total {
+    color: var(--accent-text);
+    font-weight: 800;
+}
+
+.day-categories {
+    gap: 0.375rem;
+}

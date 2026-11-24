@@ -1,0 +1,141 @@
+/* Travel planner: only what the shared tools.css does not cover */
+
+/* ---------- Route form ---------- */
+.route-fields {
+    display: grid;
+    align-items: end;
+    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.swap-btn {
+    justify-self: center;
+    border-radius: 50%;
+}
+
+.swap-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+@media (min-width: 640px) {
+    .route-fields {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    }
+
+    .swap-btn {
+        margin-bottom: 0.125rem;
+    }
+}
+
+/* ---------- Result ---------- */
+.result-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+}
+
+.result-card .alert {
+    width: 100%;
+}
+
+.result-route {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.result-distance {
+    color: var(--accent-text);
+    font-size: clamp(1.75rem, 1.2rem + 2.5vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.result-times {
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.result-times li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+}
+
+/* ---------- Plans ---------- */
+.plan-numbers {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+
+.plans {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.plans-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.plans-head .card-title {
+    margin-bottom: 0;
+}
+
+.plans-summary {
+    align-self: flex-start;
+    white-space: normal;
+}
+
+.plan-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.plan {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.plan-title {
+    font-size: 1.0625rem;
+}
+
+.plan-meta {
+    gap: 0.5rem;
+}
+
+.plan-notes {
+    color: var(--muted);
+    white-space: pre-wrap;
+}
+
+.plan-delete {
+    justify-self: flex-start;
+}

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title data-i18n="title">لایتنر برای تمرین واژگان</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script>
+(function(){try{var t=(localStorage.getItem('theme')||'').replace(/"/g,'');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+<link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+<link rel="stylesheet" href="./assets/style.7fb1d56a.css">
+<link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+</head>
+<body>
+<main class="page lt">
+  <header class="lt-head">
+    <h1 data-i18n="heading_0">سیستم لایتنر</h1>
+    <p class="lt-muted" data-i18n="text_subtitle_0">یادگیری هوشمند واژگان</p>
+  </header>
+
+  <nav class="lt-nav" role="tablist" aria-label="بخش‌ها" data-i18n-aria="aria_sections">
+    <button type="button" class="lt-tab is-active" role="tab" aria-selected="true" data-tab="review"><span data-i18n="tab_review">آزمون روزانه</span><b class="lt-count" id="dueBadge" hidden>0</b></button>
+    <button type="button" class="lt-tab" role="tab" aria-selected="false" data-tab="add" data-i18n="tab_add">افزودن کلمات</button>
+    <button type="button" class="lt-tab" role="tab" aria-selected="false" data-tab="list" data-i18n="tab_list">لیست کلمات</button>
+    <button type="button" class="lt-tab" role="tab" aria-selected="false" data-tab="stats" data-i18n="tab_stats">آمار</button>
+  </nav>
+
+  <section id="tab-review" class="lt-panel" role="tabpanel">
+    <div class="lt-bar">
+      <div><span data-i18n="bar_today">امروز</span><strong id="sToday">0</strong></div>
+      <div><span data-i18n="bar_remaining">باقیمانده</span><strong id="sRemaining">0</strong></div>
+      <div><span data-i18n="bar_correct">درست</span><strong id="sCorrect">0</strong></div>
+    </div>
+    <div class="lt-progress" id="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progressFill"></span></div>
+
+    <div class="lt-empty" id="noCards" hidden>
+      <div class="lt-empty-icon" aria-hidden="true">✨</div>
+      <h2 data-i18n="no_cards">امروز کارتی برای مرور نیست!</h2>
+      <p class="lt-muted" data-i18n="no_cards_hint">می‌توانید کلمات جدید اضافه کنید یا فردا برگردید.</p>
+    </div>
+
+    <div class="lt-card" id="cardBox" hidden>
+      <span class="lt-box-badge" id="boxBadge"></span>
+      <p class="lt-q" id="cardQ" dir="auto"></p>
+      <div class="lt-a" id="cardA" dir="auto" hidden></div>
+      <button type="button" class="lt-btn lt-btn--primary lt-btn--lg" id="flipBtn" data-i18n="show_answer">نمایش پاسخ</button>
+      <div class="lt-answers" id="answerBtns" hidden>
+        <button type="button" class="lt-btn lt-btn--ok lt-btn--lg" id="knewBtn" data-i18n="knew">✓ می‌دانستم</button>
+        <button type="button" class="lt-btn lt-btn--bad lt-btn--lg" id="didntBtn" data-i18n="didnt_know">✗ نمی‌دانستم</button>
+      </div>
+    </div>
+
+    <div class="lt-empty" id="doneBox" hidden>
+      <div class="lt-empty-icon" aria-hidden="true">🎉</div>
+      <h2 data-i18n="done_title">آفرین! کارت‌های امروز را مرور کردید</h2>
+      <p id="doneText"></p>
+      <button type="button" class="lt-btn lt-btn--primary" id="backBtn" data-i18n="back">بازگشت</button>
+    </div>
+  </section>
+
+  <section id="tab-add" class="lt-panel" role="tabpanel" hidden>
+    <h2 data-i18n="add_title">افزودن کلمات جدید</h2>
+    <div class="lt-field"><label for="wFront" data-i18n="label_front">کلمه/عبارت (جلو):</label><input id="wFront" class="lt-input" type="text" maxlength="200" dir="auto" data-i18n-placeholder="ph_front" placeholder="Apple"></div>
+    <div class="lt-field"><label for="wBack" data-i18n="label_back">معنی (پشت):</label><input id="wBack" class="lt-input" type="text" maxlength="200" dir="auto" enterkeyhint="done" data-i18n-placeholder="ph_back" placeholder="سیب"></div>
+    <button type="button" class="lt-btn lt-btn--primary lt-btn--block" id="addOneBtn" data-i18n="add_word">افزودن کلمه</button>
+    <div class="lt-divider"><span data-i18n="or">یا</span></div>
+    <h3 data-i18n="bulk_title">افزودن دسته‌ای</h3>
+    <p class="lt-muted" data-i18n="bulk_help">هر خط یک کلمه: کلمه | معنی</p>
+    <div class="lt-field"><label for="bulk" data-i18n="label_bulk">لیست کلمات:</label><textarea id="bulk" class="lt-input" rows="8" dir="auto" placeholder="Apple | سیب&#10;Book | کتاب&#10;Cat | گربه"></textarea></div>
+    <button type="button" class="lt-btn lt-btn--primary lt-btn--block" id="addBulkBtn" data-i18n="add_list">افزودن لیست</button>
+    <div class="lt-msg" id="addMsg" role="status" hidden></div>
+  </section>
+
+  <section id="tab-list" class="lt-panel" role="tabpanel" hidden>
+    <h2 data-i18n="list_title">لیست تمام کلمات</h2>
+    <input id="search" class="lt-input" type="search" enterkeyhint="search" data-i18n-placeholder="ph_search" placeholder="جستجوی کلمه..." data-i18n-aria="ph_search" aria-label="جستجوی کلمه">
+    <div class="lt-filters" id="filters" role="group" aria-label="فیلتر" data-i18n-aria="aria_filter"></div>
+    <div class="lt-words" id="words"></div>
+  </section>
+
+  <section id="tab-stats" class="lt-panel" role="tabpanel" hidden>
+    <h2 data-i18n="stats_title">آمار یادگیری</h2>
+    <div class="lt-stats">
+      <div class="lt-stat"><strong id="stTotal">0</strong><span data-i18n="st_total">کل کلمات</span></div>
+      <div class="lt-stat"><strong id="stDue">0</strong><span data-i18n="st_due">سررسید امروز</span></div>
+      <div class="lt-stat"><strong id="stReviewed">0</strong><span data-i18n="st_reviewed">مرور شده امروز</span></div>
+      <div class="lt-stat"><strong id="stStreak">0</strong><span data-i18n="st_streak">روز متوالی</span></div>
+      <div class="lt-stat"><strong id="stAcc">0%</strong><span data-i18n="st_acc">دقت امروز</span></div>
+    </div>
+    <h3 data-i18n="box_dist">توزیع جعبه‌ها</h3>
+    <div id="boxDist"></div>
+    <div class="lt-danger">
+      <h3 data-i18n="danger_title">منطقه خطر</h3>
+      <p data-i18n="danger_text">حذف تمام داده‌ها (قابل بازگشت نیست!)</p>
+      <button type="button" class="lt-btn lt-btn--bad" id="clearAllBtn" data-i18n="clear_all">پاک کردن همه چیز</button>
+    </div>
+  </section>
+</main>
+
+<dialog id="editDialog" class="lt-dialog" aria-labelledby="editTitle">
+  <form id="editForm" method="dialog">
+    <h2 id="editTitle" data-i18n="edit_title">ویرایش کلمه</h2>
+    <div class="lt-field"><label for="eFront" data-i18n="label_front">کلمه/عبارت (جلو):</label><input id="eFront" class="lt-input" type="text" required maxlength="200" dir="auto"></div>
+    <div class="lt-field"><label for="eBack" data-i18n="label_back">معنی (پشت):</label><input id="eBack" class="lt-input" type="text" required maxlength="200" dir="auto"></div>
+    <div class="lt-actions">
+      <button type="submit" class="lt-btn lt-btn--primary" data-i18n="save">ذخیره</button>
+      <button type="button" class="lt-btn" id="editCancel" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="confirmDialog" class="lt-dialog lt-dialog--sm" aria-labelledby="confirmText">
+  <form method="dialog">
+    <p id="confirmText"></p>
+    <div class="lt-actions">
+      <button type="submit" value="ok" class="lt-btn lt-btn--bad" data-i18n="confirm_yes">بله</button>
+      <button type="submit" value="cancel" class="lt-btn" data-i18n="cancel">انصراف</button>
+    </div>
+  </form>
+</dialog>
+<div class="lt-toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="./assets/script.4dcd8da5.js"></script>
+<script src="../assets/tool-wrapper.6554d042.js"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa">
+<head>
+<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
+<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title data-i18n="title">سیستم چت</title>
+<link href="../Vazirmatn-font-face.css" rel="stylesheet"/>
+<link href="./assets/style.b0065fed.css" rel="stylesheet"/>
+<link href="../assets/tool-wrapper.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container">
+<div class="chat-header">
+<h1 data-i18n="heading_0">💬 سیستم چت</h1>
+<div class="user-info" id="userInfo">
+<input id="usernameInput" maxlength="20" placeholder="نام کاربری خود را وارد کنید..." type="text"/>
+<button data-i18n="button_0" id="setUsernameBtn">ورود</button>
+</div>
+<div class="current-user" id="currentUser" style="display: none;">
+<span>کاربر: <strong id="usernameDisplay"></strong></span>
+<button data-i18n="button_1" id="logoutBtn">خروج</button>
+</div>
+</div>
+<div class="chat-container" id="chatContainer">
+<div class="messages" id="messages">
+<div class="welcome-message">
+<p>👋 به سیستم چت خوش آمدید!</p>
+<p>لطفاً ابتدا نام کاربری خود را وارد کنید.</p>
+</div>
+</div>
+</div>
+<div class="chat-input-container" id="chatInputContainer" style="display: none;">
+<div class="input-wrapper">
+<input id="messageInput" maxlength="500" placeholder="پیام خود را بنویسید..." type="text"/>
+<button data-i18n="button_2" id="sendBtn">ارسال</button>
+</div>
+<div class="info-text">
+<p>💡 این چت از GitHub Gists برای ذخیره پیام‌ها استفاده می‌کند</p>
+<p id="gistIdInfo" style="margin-top: 5px; font-size: 11px; display: none;">🔗 Gist ID: <code id="gistIdDisplay"></code></p>
+</div>
+</div>
+<div class="setup-section" id="setupSection" style="display: none;">
+<div class="setup-box">
+<h2 data-i18n="heading_1">⚙️ تنظیمات اولیه</h2>
+<p>برای استفاده از این چت، نیاز به یک GitHub Personal Access Token دارید:</p>
+<ol>
+<li>به <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings → Developer settings → Personal access tokens</a> بروید</li>
+<li>یک Token جدید با دسترسی <code>gist</code> ایجاد کنید</li>
+<li>Token را در فیلد زیر وارد کنید (فقط یک بار نیاز است)</li>
+</ol>
+<input id="githubTokenInput" placeholder="GitHub Personal Access Token" type="password"/>
+<button data-i18n="button_3" id="saveTokenBtn">ذخیره Token</button>
+<p class="note" data-i18n="text_note_0">⚠️ Token شما فقط در مرورگر شما ذخیره می‌شود و به سرور ارسال نمی‌شود</p>
+<p class="note" data-i18n="text_note_1" style="margin-top: 10px;">
+                    📝 <strong>نکته مهم:</strong> برای اینکه همه کاربران بتوانند پیام ارسال کنند، باید یک Token مشترک در فایل script.js قرار دهید (متغیر SHARED_TOKEN). این Token باید دسترسی <code>gist</code> داشته باشد و بتواند روی Gist مشترک بنویسد.
+                </p>
+<p class="note" data-i18n="text_note_2" style="margin-top: 10px; background: #fff3cd; padding: 10px; border-radius: 5px;">
+                    💡 <strong>راه حل:</strong> یک Token مخصوص برای این چت ایجاد کنید و آن را در متغیر SHARED_TOKEN در فایل script.js قرار دهید. به این ترتیب همه کاربران می‌توانند بدون نیاز به وارد کردن Token، پیام ارسال کنند.
+                </p>
+</div>
+</div>
+</div>
+<script src="./assets/script.e84f625f.js"></script>
+<script src="../assets/tool-wrapper.js"></script>
+</body>
+</html>

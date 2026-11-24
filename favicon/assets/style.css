@@ -1,0 +1,222 @@
+.ic {
+  --bg: #fff;
+  --tx: #1b1f2a;
+  --mu: #667085;
+  --bd: #e2e5ee;
+  --in: #fff;
+  --ac: #6366f1;
+  --act: #fff;
+  max-width: 1000px;
+  margin: auto;
+  padding: 1.5rem max(1rem, env(safe-area-inset-right)) 2rem;
+  color: var(--tx);
+  font-family: Vazirmatn, sans-serif;
+  line-height: 1.7;
+}
+html[data-theme="dark"] .ic {
+  --bg: #181c2e;
+  --tx: #e8eaf3;
+  --mu: #9aa3b8;
+  --bd: #2c3250;
+  --in: #11152a;
+  --ac: #818cf8;
+  --act: #10132a;
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .ic {
+    --bg: #181c2e;
+    --tx: #e8eaf3;
+    --mu: #9aa3b8;
+    --bd: #2c3250;
+    --in: #11152a;
+    --ac: #818cf8;
+    --act: #10132a;
+  }
+}
+body {
+  margin: 0;
+  background: #f4f5f9;
+}
+html[data-theme="dark"] body {
+  background: #0f1220;
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) body {
+    background: #0f1220;
+  }
+}
+.ic h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 5vw, 2.2rem);
+}
+.ic h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+.muted {
+  color: var(--mu);
+  margin: 0.3rem 0;
+}
+.ic header {
+  margin-bottom: 1rem;
+}
+.ic-card {
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  margin-bottom: 1rem;
+}
+.drop {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  text-align: center;
+  border: 2px dashed var(--bd);
+  border-radius: 14px;
+  cursor: pointer;
+}
+.drop:hover,
+.drop.over {
+  border-color: var(--ac);
+  background: color-mix(in srgb, var(--ac) 8%, transparent);
+}
+.ic-grid {
+  display: grid;
+  gap: 1rem;
+}
+.ic-grid img {
+  max-width: 100%;
+  max-height: 350px;
+  display: block;
+  margin: auto;
+  border-radius: 12px;
+  background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0/20px 20px;
+}
+.input {
+  min-height: 44px;
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+  color: var(--tx);
+  background: var(--in);
+  border: 1.5px solid var(--bd);
+  border-radius: 10px;
+}
+.colors {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.4rem 0 1rem;
+}
+.colors input[type="color"] {
+  width: 56px;
+}
+.colors .input {
+  flex: 1;
+}
+.ic-card > label {
+  display: block;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+.check {
+  display: flex !important;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+.check input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--ac);
+}
+.range {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+}
+.range input {
+  flex: 1;
+  accent-color: var(--ac);
+}
+.btn {
+  min-height: 46px;
+  padding: 0.5rem 1.1rem;
+  font: inherit;
+  font-weight: 700;
+  color: var(--tx);
+  background: transparent;
+  border: 1.5px solid var(--bd);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.primary {
+  background: var(--ac);
+  border-color: var(--ac);
+  color: var(--act);
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+.icon {
+  padding: 0.8rem;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  text-align: center;
+  background: var(--in);
+}
+.icon img {
+  max-width: 100%;
+  height: 96px;
+  object-fit: contain;
+  background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0/16px 16px;
+}
+.icon code {
+  display: block;
+  font-size: 0.78rem;
+  direction: ltr;
+  overflow-wrap: anywhere;
+  margin: 0.4rem 0;
+}
+.icon .btn {
+  width: 100%;
+  min-height: 40px;
+  font-size: 0.85rem;
+}
+#toast {
+  position: fixed;
+  bottom: 1rem;
+  inset-inline: 1rem;
+  margin: auto;
+  max-width: 400px;
+  background: #111827;
+  color: #fff;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  font-weight: 600;
+}
+@media (min-width: 720px) {
+  .ic-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 500px) {
+  .row .btn {
+    width: 100%;
+    margin-top: 0.3rem;
+  }
+}

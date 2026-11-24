@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">ساختن و خواندن QR</title>
+    <meta name="description" content="سازنده و خواننده آنلاین کد QR با پشتیبانی کامل موبایل">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+    <link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+    <link rel="stylesheet" href="./assets/css/styles.e3964793.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+    <!-- deferred scripts run in this order; jsQR is downloaded on demand by app.js -->
+    <script src="./assets/js/vendor-qrcode.min.aef4c27d.js" defer></script>
+    <script src="./assets/js/app.a58e3c9d.js" defer></script>
+    <script src="../assets/tool-wrapper.6554d042.js" defer></script>
+</head>
+
+<body>
+    <main class="page">
+        <header class="page-header">
+            <p class="eyebrow" data-i18n="text_hero__eyebrow_0">ساده، سریع، بدون بک‌اند</p>
+            <h2 class="page-title" data-i18n="heading_0">سازنده و خواننده QR</h2>
+            <p class="page-lead" data-i18n="text_lead">متن یا لینک خود را بنویسید و خروجی QR بسازید یا با آپلود تصویر / دوربین، محتوای کد را بخوانید. همه چیز فقط در مرورگر انجام می‌شود.</p>
+        </header>
+
+        <div class="qr-layout">
+            <!-- Generator -->
+            <section class="card card--lg stack" aria-labelledby="generator-title">
+                <div>
+                    <h3 class="card-title" id="generator-title" data-i18n="heading_1">ساخت کد QR</h3>
+                    <p class="muted" data-i18n="text_generator_lead">خروجی PNG با رنگ دلخواه دریافت کنید. آخرین تنظیمات در مرورگر ذخیره می‌شود.</p>
+                </div>
+
+                <form class="stack" id="qr-generator" novalidate>
+                    <div>
+                        <label class="label" for="qr-text" data-i18n="label_0">متن یا لینک</label>
+                        <textarea class="field" id="qr-text" name="qr-text" rows="4" dir="auto" required
+                            placeholder="https://example.com" spellcheck="false"></textarea>
+                    </div>
+
+                    <div class="options">
+                        <div>
+                            <label class="label" for="qr-color" data-i18n="label_1">رنگ QR</label>
+                            <input class="color-picker" id="qr-color" name="qr-color" type="color" value="#111827">
+                        </div>
+                        <div>
+                            <label class="label" for="qr-bg" data-i18n="label_2">رنگ پس‌زمینه</label>
+                            <input class="color-picker" id="qr-bg" name="qr-bg" type="color" value="#ffffff">
+                        </div>
+                        <div>
+                            <label class="label" for="qr-size" data-i18n="label_3">اندازه (پیکسل)</label>
+                            <select class="field" id="qr-size" name="qr-size">
+                                <option value="200">200</option>
+                                <option value="240" selected>240</option>
+                                <option value="320">320</option>
+                                <option value="512">512</option>
+                                <option value="1024">1024</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="label" for="qr-level" data-i18n="label_level">تصحیح خطا</label>
+                            <select class="field" id="qr-level" name="qr-level">
+                                <option value="L" data-i18n="level_L">پایین (۷٪)</option>
+                                <option value="M" data-i18n="level_M" selected>متوسط (۱۵٪)</option>
+                                <option value="Q" data-i18n="level_Q">بالا (۲۵٪)</option>
+                                <option value="H" data-i18n="level_H">خیلی بالا (۳۰٪)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <p class="alert alert--warning" id="contrast-warning" role="status" hidden></p>
+
+                    <div class="row">
+                        <button class="btn btn--primary" type="submit" data-i18n="button_0">ساخت QR</button>
+                        <button class="btn btn--secondary" id="download-btn" type="button" data-i18n="button_1">دانلود PNG</button>
+                        <button class="btn btn--ghost" id="copy-btn" type="button" data-i18n="button_2">کپی متن</button>
+                    </div>
+                    <p class="hint" id="generator-status" role="status"></p>
+                </form>
+
+                <div class="preview" aria-live="polite">
+                    <canvas class="qr-canvas" id="qr-canvas" width="240" height="240" role="img"
+                        aria-label="QR preview" data-i18n-label="label_preview"></canvas>
+                </div>
+            </section>
+
+            <!-- Reader -->
+            <section class="card card--lg stack" aria-labelledby="reader-title">
+                <div>
+                    <h3 class="card-title" id="reader-title" data-i18n="heading_2">خواندن کد QR</h3>
+                    <p class="muted" data-i18n="text_reader_lead">عکس را آپلود کنید یا از دوربین استفاده کنید تا متن داخل QR نمایش داده شود.</p>
+                </div>
+
+                <div class="stack">
+                    <div>
+                        <label class="label" for="qr-file" data-i18n="label_4">آپلود تصویر QR</label>
+                        <input class="field" id="qr-file" type="file" accept="image/*">
+                    </div>
+
+                    <div class="divider-label" role="presentation"><span data-i18n="text_or">یا</span></div>
+
+                    <div class="row">
+                        <button class="btn btn--secondary" id="start-camera" type="button" data-i18n="button_3">شروع اسکن دوربین</button>
+                        <button class="btn btn--ghost" id="stop-camera" type="button" data-i18n="button_4" disabled>توقف</button>
+                    </div>
+
+                    <div class="camera-box" id="camera-box" hidden>
+                        <video id="qr-video" autoplay muted playsinline></video>
+                        <span class="scan-frame" aria-hidden="true"></span>
+                    </div>
+
+                    <p class="hint" id="reader-status" role="status"></p>
+
+                    <article class="result" aria-live="polite">
+                        <h4 class="label" data-i18n="heading_3">خروجی</h4>
+                        <pre class="result-output" id="reader-output" dir="auto">چیزی برای نمایش نیست</pre>
+                        <p class="hint" id="link-hint" hidden></p>
+                        <div class="row">
+                            <button class="btn btn--secondary btn--sm" id="open-link" type="button" data-i18n="button_5" disabled>باز کردن لینک</button>
+                            <button class="btn btn--ghost btn--sm" id="copy-result" type="button" data-i18n="button_6" disabled>کپی متن</button>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+
+</html>

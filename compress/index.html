@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title data-i18n="title">فشرده‌ساز تصاویر</title>
+	<meta name="description" content="فشرده‌سازی و تغییر اندازهٔ تصاویر مستقیم در مرورگر، بدون ارسال فایل به سرور">
+	<link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+	<!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+	<script>
+		try {
+			var savedTheme = localStorage.getItem('theme');
+			if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+		} catch (e) { }
+	</script>
+
+	<link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+	<link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+	<link rel="stylesheet" href="./assets/style.088a78b4.css">
+	<link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+	<script src="./assets/app.1330e086.js" defer></script>
+	<script src="../assets/tool-wrapper.6554d042.js" defer></script>
+</head>
+
+<body>
+	<main class="page">
+		<header class="page-header">
+			<h2 class="page-title" data-i18n="heading_0">فشرده‌ساز تصاویر در مرورگر</h2>
+			<p class="page-lead" data-i18n="text_privacy">تمام پردازش‌ها در دستگاه کاربر انجام می‌شود. داده‌ای ارسال
+				نمی‌گردد.</p>
+		</header>
+
+		<div class="stack">
+			<label class="dropzone" id="dropzone" for="fileInput">
+				<svg class="dropzone-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+					<path d="M12 16V4" />
+					<path d="m7 9 5-5 5 5" />
+					<path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+				</svg>
+				<strong data-i18n="drop_title">فایل‌ها را اینجا رها کنید یا برای انتخاب بزنید</strong>
+				<span class="muted" data-i18n="drop_hint">JPG، PNG، WebP، HEIC (در مرورگرهای سازگار)</span>
+				<input class="sr-only" id="fileInput" type="file" accept="image/*" multiple>
+			</label>
+
+			<section class="card stack" aria-labelledby="settingsTitle">
+				<h3 class="card-title" id="settingsTitle" data-i18n="heading_1">تنظیمات</h3>
+
+				<div class="settings-grid">
+					<div>
+						<label class="label range-label" for="quality">
+							<span data-i18n="label_1">کیفیت JPEG/WebP (%)</span>
+							<output id="qualityVal" for="quality">80</output>
+						</label>
+						<input class="range" id="quality" type="range" min="40" max="95" value="80">
+						<p class="hint" id="qualityHint" data-i18n="hint_png_quality" hidden>PNG بدون افت کیفیت ذخیره
+							می‌شود و تنظیم کیفیت روی آن اثر ندارد.</p>
+					</div>
+
+					<div>
+						<label class="label" for="maxDim" data-i18n="label_2">حداکثر عرض/ارتفاع (px؛ 0 = بدون
+							تغییر)</label>
+						<input class="field" id="maxDim" type="number" min="0" step="1" value="0" inputmode="numeric"
+							dir="ltr">
+					</div>
+
+					<div>
+						<label class="label" for="format" data-i18n="label_3">فرمت خروجی</label>
+						<select class="field" id="format">
+							<option value="jpeg">JPEG</option>
+							<option value="webp">WebP</option>
+							<option value="png" data-i18n="format_png">PNG (بدون افت کیفیت، حجم بیشتر)</option>
+						</select>
+					</div>
+				</div>
+			</section>
+
+			<div class="card actions-bar">
+				<div class="row">
+					<button class="btn btn--primary" id="compressBtn" type="button" data-i18n="button_2"
+						disabled>فشرده‌سازی</button>
+					<button class="btn btn--secondary" id="zipBtn" type="button" data-i18n="button_3" disabled>دانلود
+						ZIP</button>
+					<button class="btn btn--ghost" id="clearBtn" type="button" data-i18n="button_1" disabled>حذف
+						همه</button>
+				</div>
+				<p class="muted actions-summary" id="summary" aria-live="polite"></p>
+			</div>
+
+			<p class="alert alert--warning" id="staleHint" data-i18n="text_stale" role="status" hidden>تنظیمات تغییر
+				کرده؛ برای اعمال، دوباره فشرده‌سازی کنید.</p>
+
+			<div class="thumb-grid" id="preview"></div>
+			<p class="empty" id="emptyState" data-i18n="empty_state">هنوز تصویری انتخاب نشده است.</p>
+		</div>
+	</main>
+
+	<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+
+</html>

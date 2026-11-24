@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title data-i18n="title">تبدیل‌کننده زمان</title>
+    <meta name="description" content="تبدیل Unix Timestamp به تاریخ و برعکس، ساعت زنده و مناطق زمانی">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Apply the saved theme before first paint (prevents a light/dark flash) -->
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+        } catch (e) { }
+    </script>
+
+    <link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+    <link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+    <link rel="stylesheet" href="./assets/style.7546bfb9.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+    <script src="./assets/script.dc8bd899.js" defer></script>
+    <script src="../assets/tool-wrapper.6554d042.js" defer></script>
+</head>
+
+<body>
+    <main class="page">
+        <header class="page-header">
+            <h2 class="page-title" data-i18n="heading_0">تبدیل‌کننده Timestamp</h2>
+            <p class="page-lead" data-i18n="text_subtitle_0">تبدیل یونیکس به تاریخ و زمان</p>
+        </header>
+
+        <div class="stack">
+            <!-- Now -->
+            <section class="card card--lg now" aria-labelledby="nowTitle">
+                <div class="stack">
+                    <h3 class="card-title" id="nowTitle" data-i18n="heading_1">زمان فعلی شما</h3>
+
+                    <div class="digital">
+                        <p class="digital-time" id="digitalTime" dir="ltr">00:00:00</p>
+                        <p class="digital-date" id="digitalDate">—</p>
+                        <p class="digital-gregorian muted" id="digitalGregorian" dir="ltr">—</p>
+                    </div>
+
+                    <dl class="stamps">
+                        <div class="stamp">
+                            <dt data-i18n="label_unix_seconds">Unix (ثانیه)</dt>
+                            <dd>
+                                <strong id="currentTimestamp" dir="ltr">0</strong>
+                                <button class="btn btn--ghost btn--sm" id="copyCurrentTimestamp" type="button" data-i18n="button_copy">کپی</button>
+                            </dd>
+                        </div>
+                        <div class="stamp">
+                            <dt data-i18n="label_unix_millis">Unix (میلی‌ثانیه)</dt>
+                            <dd>
+                                <strong id="currentTimestampMs" dir="ltr">0</strong>
+                                <button class="btn btn--ghost btn--sm" id="copyCurrentTimestampMs" type="button" data-i18n="button_copy">کپی</button>
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <svg class="analog" id="analogClock" viewBox="-100 -100 200 200" role="img" aria-label="Analog clock"
+                    data-i18n-label="label_analog_clock">
+                    <circle class="face" r="96" />
+                    <g data-ticks></g>
+                    <line class="hand hand--hour" data-hand="hour" y2="-50" />
+                    <line class="hand hand--minute" data-hand="minute" y2="-72" />
+                    <line class="hand hand--second" data-hand="second" y2="-80" />
+                    <circle class="pivot" r="4" />
+                </svg>
+            </section>
+
+            <div class="converters">
+                <!-- Unix -> date -->
+                <section class="card card--lg stack" aria-labelledby="unixTitle">
+                    <h3 class="card-title" id="unixTitle" data-i18n="heading_2">تبدیل Unix Timestamp به تاریخ</h3>
+
+                    <div class="unix-row">
+                        <div>
+                            <label class="label" for="unixInput" data-i18n="label_unix_input">Timestamp</label>
+                            <input class="field mono" id="unixInput" type="text" inputmode="decimal" dir="ltr"
+                                autocomplete="off" spellcheck="false" placeholder="1703073600" data-i18n-placeholder="placeholder_unix">
+                        </div>
+                        <div>
+                            <label class="label" for="unixUnit" data-i18n="label_unit">واحد</label>
+                            <select class="field" id="unixUnit">
+                                <option value="auto" data-i18n="unit_auto">خودکار</option>
+                                <option value="s" data-i18n="unit_s">ثانیه</option>
+                                <option value="ms" data-i18n="unit_ms">میلی‌ثانیه</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="hint" id="unixHint" role="status"></p>
+
+                    <div class="row">
+                        <button class="btn btn--primary" id="convertToDate" type="button" data-i18n="button_1">تبدیل</button>
+                        <button class="btn btn--secondary" id="useCurrentTimestamp" type="button" data-i18n="button_2">استفاده از زمان فعلی</button>
+                    </div>
+
+                    <div class="results" id="unixResults" aria-live="polite"></div>
+                </section>
+
+                <!-- Date -> unix -->
+                <section class="card card--lg stack" aria-labelledby="dateTitle">
+                    <h3 class="card-title" id="dateTitle" data-i18n="heading_3">تبدیل تاریخ به Unix Timestamp</h3>
+
+                    <div class="datetime">
+                        <div>
+                            <label class="label" for="dateInput" data-i18n="label_0">تاریخ:</label>
+                            <input class="field" id="dateInput" type="date" dir="ltr">
+                        </div>
+                        <div>
+                            <label class="label" for="timeInput" data-i18n="label_1">ساعت:</label>
+                            <input class="field" id="timeInput" type="time" step="1" dir="ltr">
+                        </div>
+                        <div>
+                            <label class="label" for="timezoneInput" data-i18n="label_2">منطقه زمانی:</label>
+                            <select class="field" id="timezoneInput"></select>
+                        </div>
+                    </div>
+
+                    <button class="btn btn--primary" id="convertToUnix" type="button" data-i18n="button_3">تبدیل به Unix</button>
+                    <div class="results" id="dateResults" aria-live="polite"></div>
+                </section>
+            </div>
+
+            <!-- Time zones -->
+            <section class="card card--lg stack" aria-labelledby="zonesTitle">
+                <div class="zones-head">
+                    <h3 class="card-title" id="zonesTitle" data-i18n="heading_4">تبدیل بین مناطق زمانی</h3>
+                    <form class="input-row zone-form" id="zoneForm" autocomplete="off">
+                        <input class="field" id="zoneInput" type="text" list="zoneList" dir="ltr" spellcheck="false"
+                            placeholder="Asia/Kolkata" data-i18n-placeholder="placeholder_zone"
+                            aria-label="Time zone" data-i18n-label="label_add_zone">
+                        <datalist id="zoneList"></datalist>
+                        <button class="btn btn--secondary" type="submit" data-i18n="button_add_zone">افزودن</button>
+                    </form>
+                </div>
+                <div class="zone-grid" id="zoneGrid"></div>
+            </section>
+
+            <!-- History -->
+            <section class="card card--lg stack" aria-labelledby="historyTitle">
+                <div class="zones-head">
+                    <h3 class="card-title" id="historyTitle" data-i18n="heading_13">تاریخچه تبدیل‌ها</h3>
+                    <button class="btn btn--danger btn--sm" id="clearHistory" type="button" data-i18n="button_12" hidden>پاک کردن تاریخچه</button>
+                </div>
+                <div class="history-list" id="historyList"></div>
+            </section>
+        </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <dialog class="modal" id="confirmDialog" aria-labelledby="confirmTitle">
+        <form method="dialog" class="modal-form">
+            <div class="modal-header">
+                <h2 class="modal-title" id="confirmTitle" data-dialog-title></h2>
+            </div>
+            <div class="modal-body">
+                <p data-dialog-message></p>
+            </div>
+            <div class="modal-footer modal-footer--split">
+                <button type="button" class="btn btn--ghost" data-dialog-cancel data-i18n="dialog_cancel">انصراف</button>
+                <button type="submit" class="btn btn--danger" value="ok" data-i18n="dialog_confirm">تأیید</button>
+            </div>
+        </form>
+    </dialog>
+</body>
+
+</html>

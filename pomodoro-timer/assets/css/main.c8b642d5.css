@@ -1,0 +1,219 @@
+/* Pomodoro: only what the shared tools.css does not cover */
+
+.pomo-layout {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 960px) {
+    .pomo-layout {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        align-items: start;
+    }
+}
+
+.timer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.timer-head .card-title {
+    margin-bottom: 0;
+}
+
+/* ---------- Timer ---------- */
+.timer-card {
+    --phase: var(--accent);
+}
+
+.timer-card[data-mode="short"],
+.timer-card[data-mode="long"] {
+    --phase: var(--success);
+}
+
+.timer {
+    position: relative;
+    width: min(100%, 17rem);
+    margin-inline: auto;
+}
+
+.ring {
+    display: block;
+    width: 100%;
+    height: auto;
+    fill: none;
+}
+
+.ring-track {
+    stroke: var(--surface-3);
+    stroke-width: 8;
+}
+
+.ring-progress {
+    stroke: var(--phase);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.4s linear, stroke 0.3s ease;
+}
+
+.timer-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.125rem;
+}
+
+.timer-value {
+    font-size: clamp(2.25rem, 12vw, 3.25rem);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    direction: ltr;
+}
+
+.timer-label {
+    color: var(--muted);
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.btn--lg {
+    min-width: 8rem;
+    min-height: 3.25rem;
+    font-size: 1.0625rem;
+}
+
+.timer-card .tab[aria-selected="true"] {
+    background: var(--phase);
+    color: var(--bg);
+}
+
+.timer-card .btn--primary {
+    background: var(--phase);
+    color: var(--bg);
+}
+
+@media (max-width: 480px) {
+    .controls .btn--lg {
+        flex: 1 1 100%;
+    }
+}
+
+/* ---------- Settings ---------- */
+.settings {
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-strong);
+}
+
+.settings summary {
+    padding: 0.5rem 0;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.settings-form {
+    margin-top: 0.75rem;
+}
+
+.settings-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+
+.check-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    cursor: pointer;
+}
+
+/* ---------- Statistics ---------- */
+.stats {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stat {
+    padding: 0.875rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    text-align: center;
+}
+
+.stat-value {
+    color: var(--accent-text);
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.stat-label {
+    color: var(--muted);
+    font-size: 0.8125rem;
+}
+
+@media (max-width: 420px) {
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+.history {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.history .card-title {
+    margin-bottom: 0;
+}
+
+.history-list {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.day {
+    display: grid;
+    gap: 0.375rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.day-bar {
+    display: block;
+    height: 0.375rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--surface-3);
+}
+
+.day-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+}
+
+.day-details {
+    font-size: 0.8125rem;
+}

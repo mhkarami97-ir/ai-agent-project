@@ -1,0 +1,70 @@
+<!doctype html>
+<html dir="rtl" lang="fa">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title data-i18n="title">Regex Playground</title>
+    <link rel="icon" href="/favicon.ico">
+    <script>(function () { try { var t = (localStorage.getItem('theme') || '').replace(/"/g, ''); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t } catch (e) { } })()</script>
+    <link rel="stylesheet" href="../Vazirmatn-font-face.1cb7f809.css">
+    <link rel="stylesheet" href="../assets/tools.99bb9f2b.css">
+    <link rel="stylesheet" href="./assets/style.d3e0446e.css">
+    <link rel="stylesheet" href="../assets/tool-wrapper.69878952.css">
+</head>
+
+<body>
+    <main class="rx page">
+        <header>
+            <p class="eyebrow" data-i18n="eyebrow">آزمایش عبارات منظم</p>
+            <h1 data-i18n="heading_0">ریجکس پلی‌گراند</h1>
+            <p class="muted" data-i18n="subtitle">تطابق‌ها، گروه‌ها و برجسته‌سازی را ببینید. آزمایش در Worker و با
+                محدودیت زمان اجرا می‌شود.</p>
+        </header>
+        <section class="rx-card"><label data-i18n="label_0">عبارت منظم</label><input id="pattern" class="input"
+                dir="ltr" spellcheck="false" placeholder="\d{4}">
+            <div class="flags"><label><input id="g" type="checkbox" checked> g</label><label><input id="i"
+                        type="checkbox"> i</label><label><input id="m" type="checkbox"> m</label><label><input id="s"
+                        type="checkbox"> s</label><label><input id="u" type="checkbox" checked> u</label></div><label
+                data-i18n="label_4">متن آزمایشی</label><textarea id="text" class="input" dir="auto"
+                spellcheck="false"></textarea>
+            <div class="actions"><button id="test" class="btn primary" data-i18n="button_0">تست کن</button><button
+                    id="clear" class="btn" data-i18n="button_1">پاک کن</button><button id="save" class="btn"
+                    data-i18n="button_2">ذخیره Snippet</button></div>
+            <p id="status" role="status"></p>
+        </section>
+        <section class="rx-card">
+            <h2 data-i18n="heading_1">نتایج مطابقت</h2>
+            <div id="matches"></div>
+            <h2 data-i18n="heading_3">متن با برجسته‌سازی مطابقت‌ها</h2>
+            <div id="highlight" class="highlight"></div>
+        </section>
+        <section class="rx-card">
+            <h2 data-i18n="heading_2">توضیحات</h2>
+            <div id="explain"></div>
+        </section>
+        <section class="rx-card">
+            <h2 data-i18n="heading_4">Snippetهای ذخیره شده</h2>
+            <div id="snips"></div>
+        </section>
+        <section class="rx-card">
+            <h2 data-i18n="heading_5">الگوهای آماده</h2>
+            <div id="samples" class="chips"></div>
+        </section>
+    </main>
+    <dialog id="dialog">
+        <form method="dialog">
+            <h2 data-i18n="heading_6">ذخیره Snippet</h2><input id="snipName" class="input"
+                data-i18n-placeholder="ph_name"><textarea id="snipDesc" class="input"
+                data-i18n-placeholder="ph_desc"></textarea>
+            <div class="actions"><button id="saveConfirm" class="btn primary" value="ok"
+                    data-i18n="button_11">ذخیره</button><button class="btn" value="cancel"
+                    data-i18n="button_12">لغو</button></div>
+        </form>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+    <script src="./assets/script.68072a1a.js"></script>
+    <script src="../assets/tool-wrapper.6554d042.js"></script>
+</body>
+
+</html>

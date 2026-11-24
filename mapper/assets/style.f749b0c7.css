@@ -1,0 +1,130 @@
+/* Unit converter: only what the shared tools.css does not cover */
+
+.converter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* value on one side, unit picker on the other */
+.conv-row {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 11rem);
+}
+
+.conv-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.conv-result {
+  padding-right: 3rem;
+  background: var(--surface);
+  color: var(--accent-text);
+  font-weight: 800;
+}
+
+.result-field {
+  position: relative;
+  min-width: 0;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 50%;
+  right: 0.25rem;
+  transform: translateY(-50%);
+}
+
+.copy-btn svg,
+.swap-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.swap-row {
+  display: flex;
+  justify-content: center;
+}
+
+.swap-btn {
+  border-radius: 50%;
+  transition: transform 0.25s ease;
+}
+
+.swap-btn:active {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 420px) {
+  .conv-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- Favorites ---------- */
+.favorites-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.favorites-head .card-title {
+  margin-bottom: 0;
+}
+
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.favorite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.favorite-content {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.favorite-title {
+  color: var(--accent-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.favorite-conversion {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.favorite-actions {
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .favorite-actions {
+    width: 100%;
+  }
+
+  .favorite-actions .btn {
+    flex: 1;
+  }
+}
