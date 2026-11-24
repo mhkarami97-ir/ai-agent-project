@@ -16,6 +16,7 @@
 mono_crash.*
 
 # Build results
+dist/
 tools/
 [Dd]ebug/
 [Dd]ebugPublic/

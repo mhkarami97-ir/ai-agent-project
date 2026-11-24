@@ -8,11 +8,13 @@
   });
 
   const ICONS = Object.freeze({
-    back: '<path d="M5 12h14M13 6l6 6-6 6"/>',
-    moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
-    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
-    mail: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3.5 7 8.5 6 8.5-6"/>',
-    close: '<path d="M6 6l12 12M18 6 6 18"/>',
+    back: '<path d="M19 12H5M12 19l-7-7 7-7"/>',
+    moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+    mail: '<rect width="20" height="16" x="2" y="4" rx="3"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+    close: '<path d="M18 6 6 18M6 6l12 12"/>',
+    share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>',
+    check: '<polyline points="20 6 9 17 4 12"/>',
   });
 
   const STORAGE_KEYS = Object.freeze({ theme: "theme", lang: "lang" });
@@ -22,6 +24,7 @@
     #modal;
     #contactButton;
     #previouslyFocused = null;
+    #toastTimer = null;
 
     static #escapeHtml(text) {
       const div = document.createElement("div");
@@ -47,6 +50,7 @@
       document.body.classList.add("has-tool-wrapper");
       this.#applyStoredPreferences();
       this.#watchThemeFromOtherTabs();
+      this.#ensurePwaUpdater();
     }
 
     openContactModal() {
@@ -90,21 +94,54 @@
       return localStorage.getItem(STORAGE_KEYS.lang) || "fa";
     }
 
+    showToast(message) {
+      let toast = document.getElementById("toolToast");
+      if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toolToast";
+        toast.className = "tool-toast";
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.classList.add("show");
+      if (this.#toastTimer) clearTimeout(this.#toastTimer);
+      this.#toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2500);
+    }
+
+    #ensurePwaUpdater() {
+      if ("serviceWorker" in navigator && !window.__appUpdaterLoaded) {
+        window.__appUpdaterLoaded = true;
+        const script = document.createElement("script");
+        script.src = "/app-updater.js";
+        script.defer = true;
+        document.head.appendChild(script);
+      }
+    }
+
     #injectWrapper() {
       const name = ToolWrapper.#escapeHtml(CONFIG.toolName);
       this.#wrapper = document.createElement("div");
       this.#wrapper.className = "tool-wrapper";
       this.#wrapper.innerHTML = `
                 <div class="tool-header">
-                    <button type="button" class="tool-back-btn" id="toolBackBtn" title="بازگشت به صفحه اصلی" aria-label="Back to home">
+                    <a href="${CONFIG.homeUrl}" class="tool-back-btn" id="toolBackBtn" title="بازگشت به خانه" aria-label="بازگشت به خانه">
                         ${ToolWrapper.#icon("back")}
-                    </button>
-                    <h1 class="tool-header-title">${name}</h1>
+                        <span class="tool-back-text">خانه</span>
+                    </a>
+                    <div class="tool-header-center">
+                        <span class="tool-title-dot" aria-hidden="true"></span>
+                        <h1 class="tool-header-title" title="${name}">${name}</h1>
+                    </div>
                     <div class="tool-header-actions">
-                        <button type="button" class="tool-theme-btn" id="toolThemeBtn" title="تغییر تم" aria-label="Toggle theme">
+                        <button type="button" class="tool-action-btn tool-share-btn" id="toolShareBtn" title="اشتراک‌گذاری و کپی لینک" aria-label="کپی لینک">
+                            ${ToolWrapper.#icon("share")}
+                        </button>
+                        <button type="button" class="tool-action-btn tool-theme-btn" id="toolThemeBtn" title="تغییر تم" aria-label="تغییر تم">
                             ${ToolWrapper.#icon("moon", "icon-moon")}${ToolWrapper.#icon("sun", "icon-sun")}
                         </button>
-                        <button type="button" class="tool-contact-btn" id="toolContactBtn" title="تماس با ما / گزارش مشکل" aria-label="Contact us">
+                        <button type="button" class="tool-action-btn tool-contact-btn" id="toolContactBtn" title="تماس با ما / گزارش مشکل" aria-label="تماس با ما">
                             ${ToolWrapper.#icon("mail")}
                         </button>
                     </div>
@@ -160,9 +197,37 @@
     #bindEvents() {
       this.#wrapper
         .querySelector("#toolBackBtn")
-        .addEventListener("click", () => {
-          window.location.href = CONFIG.homeUrl;
+        .addEventListener("click", (e) => {
+          if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
+            e.preventDefault();
+            window.location.href = CONFIG.homeUrl;
+          }
         });
+
+      this.#wrapper
+        .querySelector("#toolShareBtn")
+        ?.addEventListener("click", async () => {
+          const shareData = {
+            title: document.title,
+            text: document.title,
+            url: window.location.href,
+          };
+          if (navigator.share) {
+            try {
+              await navigator.share(shareData);
+              return;
+            } catch (err) {
+              if (err.name === "AbortError") return;
+            }
+          }
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            this.showToast("لینک این ابزار کپی شد ✨");
+          } catch {
+            this.showToast(window.location.href);
+          }
+        });
+
       this.#wrapper
         .querySelector("#toolThemeBtn")
         .addEventListener("click", () => this.toggleTheme());
@@ -293,6 +358,7 @@
       toggleLanguage: () => instance.toggleLanguage(),
       getCurrentTheme: () => instance.getCurrentTheme(),
       getCurrentLanguage: () => instance.getCurrentLanguage(),
+      showToast: (msg) => instance.showToast(msg),
     });
   }
 

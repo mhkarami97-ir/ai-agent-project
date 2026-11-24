@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "web-tools-v2.1.1";
+﻿const CACHE_NAME = "web-tools-v2.2.0";
 const OFFLINE_PAGE = "/offline.html";
 
 const urlsToCache = [
@@ -10,6 +10,8 @@ const urlsToCache = [
   "/manifest.json",
   "/app-updater.js",
   "/Vazirmatn-font-face.css",
+  "/style.css",
+  "/script.js",
   "/assets/tool-wrapper.js",
   "/assets/tool-wrapper.css",
   "/assets/contact-form.css",
@@ -24,7 +26,7 @@ function shouldCache(url) {
 
   // Cache static assets
   if (
-    pathname.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)
+    pathname.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json)$/)
   ) {
     return true;
   }
@@ -44,7 +46,6 @@ function shouldCache(url) {
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log("Opened cache");
       // cache: "reload" bypasses the browser HTTP cache, so a new version
       // never precaches stale copies of the files
       return cache.addAll(
@@ -92,19 +93,67 @@ self.addEventListener("message", (event) => {
   }
 });
 
-// Cache first, then network, with a safe offline fallback
+// Smart strategy: Network First for HTML and localhost, Cache First for hashed assets
 async function handleRequest(event) {
   const { request } = event;
+  const url = new URL(request.url);
 
+  const isHtml =
+    request.mode === "navigate" ||
+    request.destination === "document" ||
+    url.pathname.endsWith(".html") ||
+    url.pathname.endsWith("/");
+
+  const isLocalhost =
+    url.hostname === "localhost" ||
+    url.hostname === "127.0.0.1" ||
+    url.hostname === "0.0.0.0";
+
+  // 1. Navigation / HTML requests: Network First, fallback to cache, then offline page
+  if (isHtml) {
+    try {
+      const response = await fetch(request, { cache: "no-cache" });
+      if (response.ok && shouldCache(request.url)) {
+        const copy = response.clone();
+        event.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)),
+        );
+      }
+      return response;
+    } catch {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      const offline = await caches.match(OFFLINE_PAGE);
+      if (offline) return offline;
+      return new Response("Offline", { status: 504, statusText: "Offline" });
+    }
+  }
+
+  // 2. Localhost development: Network First for all assets so live edits reflect immediately
+  if (isLocalhost) {
+    try {
+      const response = await fetch(request);
+      if (response.ok && shouldCache(request.url)) {
+        const copy = response.clone();
+        event.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)),
+        );
+      }
+      return response;
+    } catch {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+    }
+  }
+
+  // 3. Static assets in production: Cache First, fallback to network
   const cached = await caches.match(request);
   if (cached) {
     return cached;
   }
 
   try {
-    // no-cache: revalidate with the server instead of trusting the HTTP cache
     const response = await fetch(request, { cache: "no-cache" });
-
     if (response.ok && shouldCache(request.url)) {
       const copy = response.clone();
       event.waitUntil(
@@ -116,18 +165,9 @@ async function handleRequest(event) {
           ),
       );
     }
-
     return response;
   } catch (error) {
     console.warn("[SW] Network request failed:", request.url, error);
-
-    if (request.mode === "navigate") {
-      const offlinePage = await caches.match(OFFLINE_PAGE);
-      if (offlinePage) {
-        return offlinePage;
-      }
-    }
-
     return new Response("", { status: 504, statusText: "Offline" });
   }
 }

@@ -58,8 +58,14 @@
         }
 
         #applyUpdate() {
-            const waiting = this.#registration?.waiting;
+            const btn = document.getElementById('updateButton');
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('loading');
+                btn.innerHTML = '<span>در حال اعمال...</span>';
+            }
 
+            const waiting = this.#registration?.waiting;
             if (waiting) {
                 // The new worker activates, controllerchange fires, and the page reloads
                 waiting.postMessage({ type: 'SKIP_WAITING' });
@@ -68,31 +74,81 @@
             }
         }
 
+        #ensureNotificationElement() {
+            let notification = document.getElementById('updateNotification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'updateNotification';
+                notification.className = 'update-notification hidden';
+                notification.setAttribute('role', 'alert');
+                notification.setAttribute('aria-live', 'polite');
+                notification.innerHTML = `
+                    <div class="update-content">
+                        <div class="update-icon-wrap" aria-hidden="true">
+                            <svg class="update-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                <path d="M3 3v5h5"/>
+                                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                                <path d="M16 21h5v-5"/>
+                            </svg>
+                            <span class="update-pulse-dot"></span>
+                        </div>
+                        <div class="update-text">
+                            <div class="update-title-row">
+                                <strong class="update-title">نسخه جدید در دسترس است</strong>
+                                <span class="update-badge">PWA</span>
+                            </div>
+                            <p class="update-desc">برای دریافت آخرین تغییرات و بهبودها، برنامه را به‌روزرسانی کنید.</p>
+                        </div>
+                        <div class="update-actions">
+                            <button id="updateButton" class="update-button" type="button">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 2v6h-6"/>
+                                    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+                                    <path d="M3 22v-6h6"/>
+                                    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                                </svg>
+                                <span>به‌روزرسانی</span>
+                            </button>
+                            <button id="dismissUpdate" class="dismiss-button" type="button" title="بستن" aria-label="بستن اعلان">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(notification);
+                this.#bindUi();
+            }
+            return notification;
+        }
+
         #showNotification() {
-            const notification = document.getElementById('updateNotification');
-            notification?.classList.remove('hidden');
-            notification?.classList.add('show');
+            const notification = this.#ensureNotificationElement();
+            notification.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                notification.classList.add('show');
+            });
         }
 
         #hideNotification() {
             const notification = document.getElementById('updateNotification');
-            notification?.classList.remove('show');
-            notification?.classList.add('hidden');
+            if (!notification) return;
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 350);
         }
 
         #bindUi() {
-            const bind = () => {
-                document.getElementById('updateButton')?.addEventListener('click', () => this.#applyUpdate());
-                document.getElementById('dismissUpdate')?.addEventListener('click', () => this.#hideNotification());
-            };
-
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', bind);
-            } else {
-                bind();
-            }
+            document.getElementById('updateButton')?.addEventListener('click', () => this.#applyUpdate());
+            document.getElementById('dismissUpdate')?.addEventListener('click', () => this.#hideNotification());
         }
     }
 
-    new AppUpdater().init();
+    if (!window.__appUpdaterInitialized) {
+        window.__appUpdaterInitialized = true;
+        new AppUpdater().init();
+    }
 })();
