@@ -314,7 +314,7 @@ const tools = [
     category: "productivity",
     faName: "یادداشت",
     enName: "Note",
-    faDesc: "یادداشت‌برداری سریع و آفلاین",
+    faDesc: "یادداشت‌برداری سریع و آسان",
     enDesc: "Quick notes",
     icon: "note",
   },
@@ -704,55 +704,55 @@ const LIST_DATA = Object.freeze({
       name: "قیمت لحظه‌ای طلا",
       id: "what_my_price_bot",
       category: "info",
-      icon: "💰",
+      icon: "coins",
     },
     {
       name: "طالع بینی",
       id: "my_persian_fortune_telling_bot",
       category: "culture",
-      icon: "🔮",
+      icon: "fortune",
     },
     {
       name: "یادگیری زبان",
       id: "my_english_persian_learner_bot",
       category: "info",
-      icon: "🎓",
+      icon: "graduation",
     },
     {
       name: "شعر فارسی",
       id: "my_persian_poem_bot",
       category: "culture",
-      icon: "📜",
+      icon: "poem",
     },
     {
       name: "تقویم شمسی",
       id: "my_persian_date_bot",
       category: "info",
-      icon: "📅",
+      icon: "calendar",
     },
     {
       name: "آب و هوا",
       id: "what_my_weather_bot",
       category: "info",
-      icon: "🌤️",
+      icon: "cloud-sun",
     },
     {
       name: "مبدل واحد",
       id: "my_unit_convert_bot",
       category: "tools",
-      icon: "🔄",
+      icon: "convert-units",
     },
     {
       name: "تغییر فونت",
       id: "my_font_changer_bot",
       category: "tools",
-      icon: "🔤",
+      icon: "text-format",
     },
     {
       name: "پیام ناشناس",
       id: "my_unknown_message_bot",
       category: "tools",
-      icon: "🕵️",
+      icon: "ghost-message",
     },
   ],
   channels: [
@@ -760,37 +760,37 @@ const LIST_DATA = Object.freeze({
       name: "میم خنده‌دار",
       id: "griphin_meme",
       category: "lifestyle",
-      icon: "😂",
+      icon: "meme",
     },
     {
       name: "پرامپ هوش مصنوعی",
       id: "griphin_prompt",
       category: "tech",
-      icon: "🤖",
+      icon: "prompt",
     },
     {
       name: "پروکسی تلگرام",
       id: "griphin_proxy",
       category: "tech",
-      icon: "🛡️",
+      icon: "shield-lock",
     },
     {
       name: "شعر فارسی",
       id: "griphin_poem",
       category: "lifestyle",
-      icon: "📜",
+      icon: "poem",
     },
     {
       name: "اخبار تکنولوژی",
       id: "karam97_dev",
       category: "tech",
-      icon: "💻",
+      icon: "terminal",
     },
     {
       name: "سفرنامه",
       id: "karamtravel",
       category: "lifestyle",
-      icon: "✈️",
+      icon: "plane",
     },
   ],
   sites: [
@@ -1068,6 +1068,11 @@ const SVG_ICONS = Object.freeze({
   "keyboard": '<svg class="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>',
   "brain-network": '<svg class="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="m7 7 3.5 3.5M17 7l-3.5 3.5M7 17l3.5-3.5M17 17l-3.5-3.5"/></svg>',
   "metronome": '<svg class="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 7 18H5z"/><path d="m12 10 4-6"/></svg>',
+  "fortune": '<svg class="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>',
+  "poem": '<svg class="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10M6 14h6"/></svg>',
+  "ghost-message": '<svg class="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-2 2.5 2 2.5-2 2.5 2 2.5-2 3 2V10a8 8 0 0 0-8-8z"/></svg>',
+  "meme": '<svg class="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>',
+  "prompt": '<svg class="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m8 9 3 3-3 3M13 15h3"/></svg>',
 
   // Tabs SVG Icons
   "tab-tools": '<svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
@@ -1185,6 +1190,11 @@ class ListBrowser {
     this.#viewMode = forcedMode || (this.#viewMode === "grid" ? "list" : "grid");
     localStorage.setItem("tools_view_mode", this.#viewMode);
     this.#applyViewMode();
+    if (this.#dom.list) {
+      this.#dom.list.classList.remove("tab-transition");
+      void this.#dom.list.offsetWidth;
+      this.#dom.list.classList.add("tab-transition");
+    }
     if (navigator.vibrate) navigator.vibrate(10);
   }
 
@@ -1265,6 +1275,15 @@ class ListBrowser {
       this.#query = ListBrowser.#normalize(e.target.value);
       this.#dom.searchClear?.classList.toggle("hidden", !e.target.value);
       this.#filterAndRender();
+    });
+
+    this.#dom.search.addEventListener("focus", () => {
+      document.getElementById("navSearchBtn")?.classList.add("active");
+    });
+
+    this.#dom.search.addEventListener("blur", () => {
+      document.getElementById("navSearchBtn")?.classList.remove("active");
+      this.#updateBottomNav(this.#activeKey);
     });
 
     this.#dom.searchClear?.addEventListener("click", () => {
@@ -1348,6 +1367,11 @@ class ListBrowser {
     this.#updateTabs(key);
     this.#updateBottomNav(key);
     this.#filterAndRender();
+    if (this.#dom.list) {
+      this.#dom.list.classList.remove("tab-transition");
+      void this.#dom.list.offsetWidth;
+      this.#dom.list.classList.add("tab-transition");
+    }
   }
 
   #renderTabs() {
@@ -1585,7 +1609,8 @@ class SettingsModalManager {
     this.#backdrop = document.getElementById("settingsBackdrop");
     this.#closeBtn = document.getElementById("closeSettingsBtn");
 
-    document.getElementById("openSettingsBtn")?.addEventListener("click", () => this.open());
+    document.getElementById("openSettingsBtn")?.addEventListener("click", () => this.open("general"));
+    document.getElementById("headerVersionTag")?.addEventListener("click", () => this.open("changelog"));
     this.#closeBtn?.addEventListener("click", () => this.close());
     this.#backdrop?.addEventListener("click", () => this.close());
 
@@ -1593,6 +1618,15 @@ class SettingsModalManager {
       if (e.key === "Escape" && !this.#modal.hidden) {
         this.close();
       }
+    });
+
+    // Settings Tab Switching
+    const tabBtns = this.#modal.querySelectorAll(".settings-tab-btn");
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this.switchTab(btn.dataset.settingsTab);
+        if (navigator.vibrate) navigator.vibrate(8);
+      });
     });
 
     // View segmented buttons inside Settings
@@ -1647,10 +1681,38 @@ class SettingsModalManager {
     this.#renderChangelog();
   }
 
-  open() {
+  open(initialTab = "general") {
+    this.switchTab(initialTab);
     this.#modal.hidden = false;
     requestAnimationFrame(() => this.#modal.classList.add("active"));
     document.body.style.overflow = "hidden";
+  }
+
+  switchTab(tabKey) {
+    const tabBtns = this.#modal.querySelectorAll(".settings-tab-btn");
+    tabBtns.forEach((b) => {
+      const isMatch = b.dataset.settingsTab === tabKey;
+      b.classList.toggle("active", isMatch);
+      b.setAttribute("aria-selected", isMatch);
+    });
+
+    const panes = [
+      { id: "paneSettingsGeneral", key: "general" },
+      { id: "paneSettingsChangelog", key: "changelog" },
+      { id: "paneSettingsAbout", key: "about" },
+    ];
+
+    panes.forEach(({ id, key }) => {
+      const pane = document.getElementById(id);
+      if (!pane) return;
+      const isMatch = key === tabKey;
+      pane.classList.toggle("hidden", !isMatch);
+      if (isMatch) {
+        pane.classList.remove("tab-transition");
+        void pane.offsetWidth;
+        pane.classList.add("tab-transition");
+      }
+    });
   }
 
   close() {

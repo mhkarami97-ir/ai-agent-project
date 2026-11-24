@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#7c5cff" />
-    <meta name="description" content="مجموعه کامل ابزارهای آنلاین و کاربردی وب بدون نیاز به سرور - Web Tools Collection" />
+    <meta name="description" content="مجموعه کامل ابزارهای آنلاین و کاربردی وب - Web Tools Collection" />
     <meta name="apple-mobile-web-app-title" content="جعبه ابزار" />
     
     <!-- Icons -->
@@ -78,7 +78,6 @@
                             <h1 class="brand-name">جعبه ابزار</h1>
                             <span class="version-tag" id="headerVersionTag">v2.3.0</span>
                         </div>
-                        <p class="brand-subtitle">ابزارهای سریع، آفلاین و بدون نیاز به سرور</p>
                     </div>
                 </div>
 
@@ -191,13 +190,8 @@
 
         <!-- Footer -->
         <footer class="app-footer">
-            <div class="footer-meta">
-                <span>توسعه داده شده توسط <a href="https://mhkarami97.ir" target="_blank" rel="noopener">محمد حسین کرمی</a></span>
-                <span class="footer-separator">•</span>
-                <span><a href="https://github.com/mhkarami97/ai-agent-project" target="_blank" rel="noopener">گیت‌هاب پروژه</a></span>
-            </div>
-            <div class="footer-copy">
-                <span>نسخه ۲.۳.۰ • کاملاً مستقل و آفلاین</span>
+            <div class="footer-simple">
+                <span>جعبه ابزار</span>
             </div>
         </footer>
     </div>
@@ -264,137 +258,174 @@
                 </button>
             </div>
 
+            <!-- Settings Nav Tabs -->
+            <div class="settings-nav-tabs" role="tablist" aria-label="تب‌های تنظیمات">
+                <button type="button" class="settings-tab-btn active" data-settings-tab="general" role="tab" aria-selected="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>تنظیمات</span>
+                </button>
+                <button type="button" class="settings-tab-btn" data-settings-tab="changelog" role="tab" aria-selected="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>تغییرات نسخه‌ها</span>
+                    <span class="settings-tab-badge">جدید</span>
+                </button>
+                <button type="button" class="settings-tab-btn" data-settings-tab="about" role="tab" aria-selected="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>درباره سازنده</span>
+                </button>
+            </div>
+
             <div class="settings-content">
-                <!-- Appearance Section -->
-                <section class="settings-card">
-                    <h3 class="settings-card-title">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M12 2a7 7 0 0 0 7 7c0 2-2 3-2 3s1 1 1 3-2 3-2 3"></path>
-                        </svg>
-                        <span>پوسته و نحوه نمایش</span>
-                    </h3>
-
-                    <div class="setting-row">
-                        <div class="setting-label-col">
-                            <strong>پوسته رنگی</strong>
-                            <span>حالت نمایش تیره، روشن یا هماهنگ با سیستم</span>
-                        </div>
-                        <div class="segmented-control" id="themeSegmented">
-                            <button type="button" class="seg-btn" data-theme-val="system">خودکار</button>
-                            <button type="button" class="seg-btn" data-theme-val="light">روشن</button>
-                            <button type="button" class="seg-btn" data-theme-val="dark">تیره</button>
-                        </div>
-                    </div>
-
-                    <div class="setting-row">
-                        <div class="setting-label-col">
-                            <strong>نوع چیدمان ابزارها</strong>
-                            <span>نمایش شبکه‌ای (کارت‌های بزرگ) یا لیستی (متراکم)</span>
-                        </div>
-                        <div class="segmented-control" id="viewSegmented">
-                            <button type="button" class="seg-btn" data-view-val="grid">شبکه‌ای</button>
-                            <button type="button" class="seg-btn" data-view-val="list">لیستی</button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- App Status & Cache Section -->
-                <section class="settings-card">
-                    <h3 class="settings-card-title">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                        </svg>
-                        <span>وضعیت و حافظه برنامه</span>
-                    </h3>
-
-                    <div class="setting-row">
-                        <div class="setting-label-col">
-                            <strong>نسخه اپلیکیشن</strong>
-                            <span id="settingsVersionLabel">نسخه ۲.۳.۰ (PWA / APK)</span>
-                        </div>
-                        <button type="button" class="btn-action-outline" id="checkUpdatesBtn">
-                            <svg class="btn-spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-                            </svg>
-                            <span>بررسی آپدیت</span>
-                        </button>
-                    </div>
-
-                    <div class="setting-row">
-                        <div class="setting-label-col">
-                            <strong>حافظه کش و فایل‌های آفلاین</strong>
-                            <span>در صورت بروز هرگونه مشکل، کش را پاک کنید</span>
-                        </div>
-                        <button type="button" class="btn-action-outline text-danger" id="clearCacheBtn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
-                            <span>پاکسازی کش</span>
-                        </button>
-                    </div>
-                </section>
-
-                <!-- Changelog Section -->
-                <section class="settings-card">
-                    <h3 class="settings-card-title">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                        <span>تغییرات نسخه‌ها و ویژگی‌های جدید</span>
-                    </h3>
-                    <div id="changelogContainer" class="changelog-container">
-                        <!-- Rendered dynamically from changelog.js -->
-                    </div>
-                </section>
-
-                <!-- About Developer Section -->
-                <section class="settings-card about-dev-card">
-                    <h3 class="settings-card-title">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <span>درباره سازنده</span>
-                    </h3>
-
-                    <div class="dev-profile">
-                        <div class="dev-avatar">
-                            <span>MK</span>
-                        </div>
-                        <div class="dev-details">
-                            <h4 class="dev-name">محمد حسین کرمی</h4>
-                            <p class="dev-bio">مهندس نرم‌افزار، توسعه‌دهنده وب و اپلیکیشن، علاقه‌مند به هوش مصنوعی و خلق ابزارهای متن‌باز و کاربردی.</p>
-                        </div>
-                    </div>
-
-                    <div class="dev-links-grid">
-                        <a href="https://mhkarami97.ir" target="_blank" rel="noopener" class="dev-link-pill">
+                <!-- Pane 1: General Settings -->
+                <div class="settings-tab-pane active" id="paneSettingsGeneral">
+                    <!-- Appearance Section -->
+                    <section class="settings-card">
+                        <h3 class="settings-card-title">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="2" y1="12" x2="22" y2="12"></line>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                <path d="M12 2a7 7 0 0 0 7 7c0 2-2 3-2 3s1 1 1 3-2 3-2 3"></path>
                             </svg>
-                            <span>وب‌سایت رسمی (mhkarami97.ir)</span>
-                        </a>
+                            <span>پوسته و نحوه نمایش</span>
+                        </h3>
 
-                        <a href="https://github.com/mhkarami97" target="_blank" rel="noopener" class="dev-link-pill">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                            </svg>
-                            <span>پروفایل گیت‌هاب</span>
-                        </a>
+                        <div class="setting-row">
+                            <div class="setting-label-col">
+                                <strong>پوسته رنگی</strong>
+                                <span>حالت نمایش تیره، روشن یا هماهنگ با سیستم</span>
+                            </div>
+                            <div class="segmented-control" id="themeSegmented">
+                                <button type="button" class="seg-btn" data-theme-val="system">خودکار</button>
+                                <button type="button" class="seg-btn" data-theme-val="light">روشن</button>
+                                <button type="button" class="seg-btn" data-theme-val="dark">تیره</button>
+                            </div>
+                        </div>
 
-                        <a href="https://cafebazaar.ir/developer/mhkarami97" target="_blank" rel="noopener" class="dev-link-pill">
+                        <div class="setting-row">
+                            <div class="setting-label-col">
+                                <strong>نوع چیدمان ابزارها</strong>
+                                <span>نمایش شبکه‌ای (۳ ستونه) یا لیستی (متراکم)</span>
+                            </div>
+                            <div class="segmented-control" id="viewSegmented">
+                                <button type="button" class="seg-btn" data-view-val="grid">شبکه‌ای</button>
+                                <button type="button" class="seg-btn" data-view-val="list">لیستی</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- App Status & Cache Section -->
+                    <section class="settings-card">
+                        <h3 class="settings-card-title">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-                                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                             </svg>
-                            <span>اپلیکیشن‌های کافه‌بازار</span>
-                        </a>
-                    </div>
-                </section>
+                            <span>وضعیت و حافظه برنامه</span>
+                        </h3>
+
+                        <div class="setting-row">
+                            <div class="setting-label-col">
+                                <strong>نسخه اپلیکیشن</strong>
+                                <span id="settingsVersionLabel">نسخه ۲.۳.۰ (PWA / APK)</span>
+                            </div>
+                            <button type="button" class="btn-action-outline" id="checkUpdatesBtn">
+                                <svg class="btn-spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                </svg>
+                                <span>بررسی آپدیت</span>
+                            </button>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-label-col">
+                                <strong>حافظه کش و داده‌های موقت</strong>
+                                <span>در صورت بروز هرگونه مشکل، کش را پاک کنید</span>
+                            </div>
+                            <button type="button" class="btn-action-outline text-danger" id="clearCacheBtn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                <span>پاکسازی کش</span>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Pane 2: Changelog & What's New -->
+                <div class="settings-tab-pane hidden" id="paneSettingsChangelog">
+                    <section class="settings-card">
+                        <div class="changelog-header-banner">
+                            <div class="changelog-header-icon-wrap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="settings-card-title-plain">تغییرات نسخه‌ها و امکانات جدید</h3>
+                                <p class="changelog-intro-desc">تاریخچه تغییرات، بهبودها و قابلیت‌های اضافه شده در هر نسخه</p>
+                            </div>
+                        </div>
+                        <div id="changelogContainer" class="changelog-container">
+                            <!-- Rendered dynamically from changelog.js -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Pane 3: About Developer -->
+                <div class="settings-tab-pane hidden" id="paneSettingsAbout">
+                    <section class="settings-card about-dev-card">
+                        <h3 class="settings-card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>درباره سازنده</span>
+                        </h3>
+
+                        <div class="dev-profile">
+                            <div class="dev-avatar">
+                                <span>MK</span>
+                            </div>
+                            <div class="dev-details">
+                                <h4 class="dev-name">محمد حسین کرمی</h4>
+                                <p class="dev-bio">مهندس نرم‌افزار، توسعه‌دهنده وب و اپلیکیشن، علاقه‌مند به هوش مصنوعی و خلق ابزارهای متن‌باز و کاربردی.</p>
+                            </div>
+                        </div>
+
+                        <div class="dev-links-grid">
+                            <a href="https://mhkarami97.ir" target="_blank" rel="noopener" class="dev-link-pill">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                </svg>
+                                <span>وب‌سایت رسمی (mhkarami97.ir)</span>
+                            </a>
+
+                            <a href="https://github.com/mhkarami97" target="_blank" rel="noopener" class="dev-link-pill">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                                </svg>
+                                <span>پروفایل گیت‌هاب</span>
+                            </a>
+
+                            <a href="https://cafebazaar.ir/developer/mhkarami97" target="_blank" rel="noopener" class="dev-link-pill">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                </svg>
+                                <span>اپلیکیشن‌های کافه‌بازار</span>
+                            </a>
+                        </div>
+                    </section>
+                </div>
             </div>
         </div>
     </div>
