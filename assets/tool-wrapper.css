@@ -103,8 +103,9 @@ body.has-tool-wrapper {
 .tool-back-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 0 12px 0 10px;
+  padding: 0 12px;
   height: 38px;
   border-radius: 12px;
   border: 1px solid var(--tw-border);
@@ -529,6 +530,7 @@ html.tw-modal-open {
     width: 36px;
     height: 36px;
     padding: 0;
+    gap: 0;
   }
 
   .tool-header-actions {
