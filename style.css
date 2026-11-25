@@ -1758,3 +1758,208 @@ body[data-theme="light"] .bottom-nav-item.active .bottom-nav-label {
     padding: 14px 14px 20px;
   }
 }
+
+/* ==========================================================================
+   PWA Update Notification
+   ========================================================================== */
+
+@keyframes update-spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes update-pulse {
+  0%   { box-shadow: 0 0 0 0 var(--accent2-glow); }
+  70%  { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.update-notification {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  left: 12px;
+  right: 12px;
+  z-index: 10002;
+  max-width: 560px;
+  margin: 0 auto;
+  border-radius: var(--radius-md);
+  background: var(--card-solid);
+  border: 1px solid var(--border-hover);
+  box-shadow: var(--shadow), 0 0 0 1px var(--accent-glow);
+  opacity: 0;
+  transform: translateY(-16px);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.update-notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.update-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.update-icon-wrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+}
+
+.update-icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.update-pulse-dot {
+  position: absolute;
+  top: -3px;
+  inset-inline-end: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent2);
+  border: 2px solid var(--card-solid);
+  animation: update-pulse 1.8s ease-out infinite;
+}
+
+.update-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.update-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.update-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.update-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(124, 92, 255, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(124, 92, 255, 0.25);
+}
+
+.update-desc {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.update-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.update-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 4px 14px var(--accent-glow);
+  transition: transform 0.15s ease, filter 0.2s ease;
+}
+
+.update-button:hover { filter: brightness(1.1); }
+.update-button:active { transform: scale(0.96); }
+
+.update-button:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.update-button .btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.update-button.loading .btn-icon {
+  animation: update-spin-slow 1s linear infinite;
+}
+
+.dismiss-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dismiss-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text);
+}
+
+.dismiss-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 520px) {
+  .update-content {
+    flex-wrap: wrap;
+  }
+
+  .update-text {
+    flex-basis: calc(100% - 56px);
+  }
+
+  .update-actions {
+    flex: 1 1 100%;
+  }
+
+  .update-button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .update-notification,
+  .update-pulse-dot,
+  .update-button.loading .btn-icon {
+    animation: none;
+    transition: none;
+  }
+}
