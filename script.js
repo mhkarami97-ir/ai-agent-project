@@ -1106,6 +1106,10 @@ class ListBrowser {
     { key: "sites", label: "سایت‌ها", iconKey: "tab-sites" },
   ]);
 
+  static #moreKeys = new Set(["sites", "channels", "bots"]);
+
+  static #rtlPattern = /[\u0590-\u08FF]/;
+
   static #externalBuilders = Object.freeze({
     apps: { url: (id) => `https://cafebazaar.ir/app/${id}`, label: (id) => id },
     bots: { url: (id) => `https://t.me/${id}`, label: (id) => `@${id}` },
@@ -1151,6 +1155,8 @@ class ListBrowser {
       tabs: document.getElementById("tabs"),
       viewToggle: document.getElementById("viewToggleBtn"),
       bottomNav: document.getElementById("mobileBottomNav"),
+      moreBtn: document.getElementById("navMoreBtn"),
+      moreSheet: document.getElementById("moreSheet"),
     };
 
     this.#initViewMode();
@@ -1346,15 +1352,44 @@ class ListBrowser {
       } else if (btn.id === "navSearchBtn") {
         window.scrollTo({ top: 0, behavior: "smooth" });
         setTimeout(() => this.#dom.search.focus(), 200);
-      } else if (btn.id === "navSettingsBtn") {
-        settingsManager.open();
+      } else if (btn.id === "navMoreBtn") {
+        this.#toggleMore();
       }
       if (navigator.vibrate) navigator.vibrate(10);
     });
 
-    window.addEventListener("hashchange", () =>
-      this.#activate(this.#readHash()),
-    );
+    this.#dom.moreSheet?.addEventListener("click", (e) => {
+      if (e.target.closest("[data-more-close]")) {
+        this.#toggleMore(false);
+        return;
+      }
+      const item = e.target.closest(".more-sheet-item");
+      if (!item) return;
+      const key = item.dataset.category;
+      this.#toggleMore(false);
+      window.location.hash = key;
+      this.#activate(key);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (navigator.vibrate) navigator.vibrate(10);
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") this.#toggleMore(false);
+    });
+
+    window.addEventListener("hashchange", () => {
+      this.#toggleMore(false);
+      this.#activate(this.#readHash());
+    });
+  }
+
+  #toggleMore(force) {
+    const { moreSheet, moreBtn } = this.#dom;
+    if (!moreSheet) return;
+    const open = force ?? moreSheet.hidden;
+    moreSheet.hidden = !open;
+    moreBtn?.setAttribute("aria-expanded", String(open));
+    moreBtn?.classList.toggle("open", open);
   }
 
   #readHash() {
@@ -1400,10 +1435,15 @@ class ListBrowser {
   #updateBottomNav(key) {
     const navTools = document.getElementById("navToolsBtn");
     const navApps = document.getElementById("navAppsBtn");
+    const navMore = document.getElementById("navMoreBtn");
     if (navTools && navApps) {
       navTools.classList.toggle("active", key === "tools");
       navApps.classList.toggle("active", key === "apps");
     }
+    navMore?.classList.toggle("active", ListBrowser.#moreKeys.has(key));
+    this.#dom.moreSheet?.querySelectorAll(".more-sheet-item").forEach((item) => {
+      item.classList.toggle("active", item.dataset.category === key);
+    });
   }
 
   #filterAndRender() {
@@ -1436,6 +1476,7 @@ class ListBrowser {
       ? ' target="_blank" rel="noopener noreferrer"'
       : "";
     const tg = entry.telegramId ? ` data-tg="${esc(entry.telegramId)}"` : "";
+    const descDir = ListBrowser.#rtlPattern.test(entry.desc ?? "") ? "rtl" : "ltr";
     const groupLabel = ListBrowser.#groupDefs.get(this.#activeKey)?.get(entry.group)?.label || "";
 
     return `
@@ -1449,9 +1490,9 @@ class ListBrowser {
           <div class="card-body">
             <div class="tool-name-wrap">
               <span class="tool-fa-name">${esc(entry.name)}</span>
-              <span class="tool-en-name">${esc(entry.enName)}</span>
+              <span class="tool-en-name" dir="ltr">${esc(entry.enName)}</span>
             </div>
-            <p class="tool-desc">${esc(entry.desc)}</p>
+            <p class="tool-desc" dir="${descDir}">${esc(entry.desc)}</p>
           </div>
 
           <div class="card-footer">

@@ -1,4 +1,4 @@
-const CACHE_NAME = "web-tools-v2.3.0-f9882d62";
+const CACHE_NAME = "web-tools-v2.3.0-82159dcf";
 const OFFLINE_PAGE = "/offline.html";
 
 const urlsToCache = [
@@ -12,8 +12,8 @@ const urlsToCache = [
   "/app-updater.b936ee5b.js",
   "/changelog.15201dbc.js",
   "/Vazirmatn-font-face.1cb7f809.css",
-  "/style.f8b616c0.css",
-  "/script.8836ebd0.js",
+  "/style.63064c26.css",
+  "/script.11d3a996.js",
   "/assets/tool-wrapper.6554d042.js",
   "/assets/tool-wrapper.e749e568.css",
   "/assets/contact-form.f8964a90.css",
