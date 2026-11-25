@@ -1697,18 +1697,45 @@ body[data-theme="light"] .bottom-nav-item.active .bottom-nav-label {
   }
 }
 
+/* ==========================================================================
+   Mobile Refinements
+   ========================================================================== */
+
 @media (max-width: 768px) {
   .header-actions {
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px;
+    flex-wrap: nowrap;
+    gap: 6px;
   }
 
   .search-box {
-    order: 2;
-    flex: 1 1 100%;
+    flex: 1 1 0;
     min-width: 0;
-    width: 100%;
+  }
+
+  .search-input {
+    height: 40px;
+    font-size: 13px;
+    text-overflow: ellipsis;
+  }
+
+  .search-input::placeholder {
+    font-size: 12.5px;
+    text-overflow: ellipsis;
+  }
+
+  .header-action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .header-action-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .brand-name {
+    white-space: nowrap;
   }
 
   #toolsList .tool-name-wrap {
@@ -1756,6 +1783,33 @@ body[data-theme="light"] .bottom-nav-item.active .bottom-nav-label {
 
   .settings-content {
     padding: 14px 14px 20px;
+  }
+}
+
+@media (max-width: 380px) {
+  .header-actions {
+    gap: 4px;
+  }
+
+  .header-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .search-input {
+    height: 36px;
+    padding-inline: 34px 30px;
+  }
+
+  .search-icon {
+    inset-inline-start: 10px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .search-clear-btn {
+    inset-inline-end: 6px;
   }
 }
 
